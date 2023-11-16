@@ -1,0 +1,29 @@
+#*******************************************************************************
+#
+# Snakefile
+# Pat Schloss
+# Schloss Lab
+# University of Michigan
+#
+# Purpose:  Snakemake file for running data processing steps in reanalysis of
+#           Martino et al. 2019 mSystems
+#
+#*******************************************************************************
+
+datasets = ["Sponges", "Sleep_Apnea", "keyboard"]
+
+rule targets:
+  input:
+    "deicode_benchmarking/case_studies/data/Sponges/table.biom",
+    "deicode_benchmarking/case_studies/data/Sponges/metadata.txt",
+    "deicode_benchmarking/case_studies/sub_sample/biom_tables_Sponges/1_110/table.biom"
+
+rule expand_gz:
+  input:
+    "{path_to_file}.gz"
+  output:
+    "{path_to_file}"
+  shell:
+    """
+    gunzip -k {input}
+    """
