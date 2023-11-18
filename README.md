@@ -9,15 +9,15 @@ written in Python, was obtained from [its GitHub repository](https://github.com/
 Make sure conda and mamba are installed. Installing TinyTex may take some fenagling and on Mac OSX seems to need to be installed in the home directory Library (i.e., `~/Library/TinyTex`) using `install.packages`. See [this issue](https://github.com/rstudio/tinytex/issues/24) for more clues on installing `tinytex`.
 
 ```bash
-#mamba config --set channel_priority strict
-mamba env create -f workflow/envs/XXXXXXX.yml 
-conda activate XXXXXXX
+mamba config --set channel_priority strict
+mamba env create -f workflow/envs/martino.yml 
+conda activate martino
 ```
 
-Use Snakemake (installed in `XXXXXXX` environment) to build project
+Use Snakemake (installed in `martino` environment) to build project
 
 ```bash
-snakemake --use-conda --conda-frontend mamba -c1 write_paper
+snakemake --use-conda --conda-frontend mamba -c10
 ```
 
 
@@ -29,9 +29,10 @@ snakemake --use-conda --conda-frontend mamba -c1 write_paper
 
 ## Code modifications
 
-Python/Numpy was pitching a fit about the use of `np.int` in these files  
+Python/Numpy was pitching a fit about the use of `np.int` in these files.
 
-  * `~/opt/miniconda3/envs/rclr/lib/python3.11/site-packages/deicode/_optspace.py`  
-  * `~/opt/miniconda3/envs/rclr/lib/python3.11/site-packages/gemelli/optspace.py`
-
-I replaced `np.int` with `int` and everything seemed to work fine
+  * `~/opt/miniconda3/envs/rpca/lib/python3.11/site-packages/deicode/_optspace.py`  
+  * `~/opt/miniconda3/envs/rpca/lib/python3.11/site-packages/gemelli/optspace.py`
+  * `.snakemake/conda/*/lib/python3.11/site-packages/deicode/optspace.py`
+  
+I replaced `np.int` with `int` and everything seemed to work fine. The files in `.snakemake/` are for the local environment when running snakemake. 

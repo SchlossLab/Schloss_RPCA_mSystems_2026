@@ -3,11 +3,12 @@
 notes.md
 .vscode
 .snakemake
+Rplots.pdf
 
 deicode_benchmarking/
 scratch/
 
-
+data/
 
 
 ## .gitignore contents from deicode-benchmarking repository

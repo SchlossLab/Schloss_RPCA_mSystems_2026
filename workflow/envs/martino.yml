@@ -6,3 +6,5 @@ dependencies:
   - snakemake=7.32.4
   - r-base=4.3.2
   - r-tidyverse=2.0.0
+  - r-vegan=2.6_4
+  - bioconductor-phyloseq=1.44.0

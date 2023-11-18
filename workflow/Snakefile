@@ -10,20 +10,135 @@
 #
 #*******************************************************************************
 
-datasets = ["Sponges", "Sleep_Apnea", "keyboard"]
+depths = [500, 1000, 2000, 4000, 10000]
+distances = ["bray", "euclidean"]
+processes = ["optspace", "rpca"]
 
 rule targets:
   input:
-    "deicode_benchmarking/case_studies/data/Sponges/table.biom",
-    "deicode_benchmarking/case_studies/data/Sponges/metadata.txt",
-    "deicode_benchmarking/case_studies/sub_sample/biom_tables_Sponges/1_110/table.biom"
+    expand("data/simulation/positive_{process}.{depth}.euclidean.pcoa.axes",
+           process = processes, depth = depths),
+    expand("data/simulation/positive_{process}.{depth}.euclidean.permanova.tsv",
+           process = processes, depth = depths),
+    expand("data/simulation/positive_{process}.{depth}.euclidean.knn.tsv",
+           process = processes, depth = depths),
+    expand("data/simulation/positive_raw.{depth}.{distance}.pcoa.axes",
+           depth = depths, distance = distances),
+    expand("data/simulation/positive_raw.{depth}.{distance}.permanova.tsv",
+           depth = depths, distance = distances),
+    expand("data/simulation/positive_raw.{depth}.{distance}.knn.tsv",
+           depth = depths, distance = distances),
+    "data/simulation/positive_raw.count_test.tsv",
+    "figures/positive_knn_analysis.png"
 
-rule expand_gz:
+
+rule extract_depths_positive:
   input:
-    "{path_to_file}.gz"
+    csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
+    rscript="workflow/scripts/extract_depths_positive.R"
   output:
-    "{path_to_file}"
+    "data/simulation/positive_raw.{depth}.tsv.gz"
   shell:
     """
-    gunzip -k {input}
+    mkdir -p data/simulation/
+    {input.rscript} {input.csv} {wildcards.depth}
     """
+
+rule calc_dist_vegan_worare:
+  input:
+    tsv="data/simulation/positive_raw.{depth}.tsv.gz",
+    rscript="workflow/scripts/calc_dist_vegan_worare.R"
+  output:
+    "data/simulation/positive_raw.{depth}.{distance}.dist.gz"
+  shell:
+    """
+    {input.rscript} {input.tsv} {wildcards.distance}
+    """
+
+rule calc_dist_rpca:
+  input:
+    csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
+    rscript="workflow/scripts/calc_dist_rpca_positive.py"
+  output:
+    "data/simulation/positive_optspace.{depth}.euclidean.dist.gz",
+    "data/simulation/positive_rpca.{depth}.euclidean.dist.gz"
+  conda:
+    "envs/rpca.yml"
+  shell:
+    """
+    {input.rscript} {wildcards.depth}
+    """
+
+
+rule create_design_positive:
+  input:
+    csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
+    rscript="workflow/scripts/create_design_positive.R"
+  output:
+    "data/simulation/positive_raw.design.gz"
+  shell:
+    """
+    {input.rscript} {input.csv} {output}
+    """
+
+rule calc_pcoa_coords:
+  input:
+    dmatrix = "data/simulation/positive_{process}.{depth}.{distance}.dist.gz",
+    rscript = "workflow/scripts/calc_pcoa_coords.R"
+  output:
+    "data/simulation/positive_{process}.{depth}.{distance}.pcoa.axes"
+  shell:
+    """
+    {input.rscript} {input.dmatrix} {output}
+    """
+
+rule test_depths_positive:
+  input:
+    csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
+    rscript="workflow/scripts/test_depths_positive.R"
+  output:
+    "data/simulation/positive_raw.count_test.tsv"
+  shell:
+    """
+    mkdir -p data/simulation/
+    {input.rscript} {input.csv} {output}
+    """
+
+rule test_permanova:
+  input:
+    dmatrix = "data/simulation/positive_{process}.{depth}.{distance}.dist.gz",
+    design = "data/simulation/positive_raw.design.gz",
+    rscript = "workflow/scripts/test_permanova.R"
+  output:
+    "data/simulation/positive_{process}.{depth}.{distance}.permanova.tsv"
+  shell:
+    """
+    {input.rscript} {input.dmatrix} {input.design} {output}
+    """
+    
+rule test_knn:
+  input:
+    dmatrix = "data/simulation/positive_{process}.{depth}.{distance}.dist.gz",
+    design = "data/simulation/positive_raw.design.gz",
+    rscript = "workflow/scripts/test_knn.R"
+  output:
+    "data/simulation/positive_{process}.{depth}.{distance}.knn.tsv"
+  shell:
+    """
+    {input.rscript} {input.dmatrix} {input.design} {output}
+    """
+
+rule plot_positive_knn_analysis:
+  input:
+    process=expand("data/simulation/positive_{process}.{depth}.euclidean.knn.tsv",
+           process = processes, depth = depths),
+    raw=expand("data/simulation/positive_raw.{depth}.{distance}.knn.tsv",
+           depth = depths, distance = distances),
+    rscript="workflow/scripts/plot_positive_knn.R"
+  output:
+    "figures/positive_knn_analysis.png"
+  shell:
+    """
+    {input.rscript}
+    """
+
