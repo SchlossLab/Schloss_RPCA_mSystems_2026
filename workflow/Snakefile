@@ -14,9 +14,12 @@ depths = [500, 1000, 2000, 4000, 10000]
 distances = ["bray", "euclidean"]
 processes = ["optspace", "rpca"]
 approaches = ["cm", "pds"]
+controls = ["positive", "negative"]
 
 rule targets:
   input:
+    expand("data/simulation/overlap_raw.{depth}.oclr.gz",
+           depth = depths),
     expand("data/simulation/overlap_{process}.{depth}.euclidean.pcoa.axes",
            process = processes, depth = depths),
     expand("data/simulation/overlap_raw.{depth}.{distance}.pcoa.axes",
@@ -28,18 +31,38 @@ rule targets:
     expand("data/simulation/overlap_{process}.{depth}.euclidean.knn_{approach}.tsv",
            process = processes, depth = depths, approach = approaches),
     expand("data/simulation/overlap_raw.{depth}.{distance}.knn_{approach}.tsv",
-           process = processes, depth = depths, distance = distances, approach = approaches),
+           process = processes, depth = depths, distance = distances,
+           approach = approaches),
     expand("data/simulation/overlap_raw.{depth}.dtest.tsv",
            depth = depths),
-    "figures/overlap_knn_analysis.png",
-    "figures/overlap10000.pcoa.png"
+    expand("data/simulation/{control}_raw.4000.oclr.gz",
+           control = controls),
+    expand("data/simulation/{control}_{process}.4000.euclidean.pcoa.axes",
+           control = controls, process = processes),
+    expand("data/simulation/{control}_raw.4000.{distance}.pcoa.axes",
+           control = controls, distance = distances),
+    expand("data/simulation/{control}_{process}.4000.euclidean.permanova.tsv",
+           control = controls, process = processes),
+    expand("data/simulation/{control}_raw.4000.{distance}.permanova.tsv",
+           control = controls, distance = distances),
+    expand("data/simulation/{control}_{process}.4000.euclidean.knn_{approach}.tsv",
+           control = controls, process = processes, approach = approaches),
+    expand("data/simulation/{control}_raw.4000.{distance}.knn_{approach}.tsv",
+           control = controls, process = processes, distance = distances,
+           approach = approaches),
+    expand("data/simulation/{control}_raw.4000.dtest.tsv",
+           control = controls)
+    # "figures/overlap_knn_analysis.png",
+    # "figures/overlap10000.pcoa.png",
 
 
 
-rule extract_depths_overlap:
+
+
+rule extract_counts_overlap:
   input:
     csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
-    rscript="workflow/scripts/extract_depths_overlap.R"
+    rscript="workflow/scripts/extract_counts_overlap.R"
   output:
     "data/simulation/overlap_raw.{depth}.tsv.gz"
   shell:
@@ -48,21 +71,37 @@ rule extract_depths_overlap:
     {input.rscript} {input.csv} {wildcards.depth}
     """
 
+rule extract_counts_control:
+  input:
+    pyscript="workflow/scripts/extract_counts_control.py",
+    deicode="deicode_benchmarking/simulations/scripts/simulations.py"
+  output:
+    expand("data/simulation/{control}_raw.4000.tsv.gz",
+           control = ["positive", "negative"])
+  conda:
+    "envs/rpca.yml"
+  shell:
+    """
+    mkdir -p data/simulation/
+    PYTHONPATH='.' {input.pyscript}
+    """
+
+
 rule calc_dist_vegan_worare:
   input:
-    tsv="data/simulation/overlap_raw.{depth}.tsv.gz",
+    tsv="data/simulation/{simulation}_raw.{depth}.tsv.gz",
     rscript="workflow/scripts/calc_dist_vegan_worare.R"
   output:
-    "data/simulation/overlap_raw.{depth}.{distance}.dist.gz"
+    "data/simulation/{simulation}_raw.{depth}.{distance}.dist.gz"
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance}
     """
 
-rule calc_dist_rpca:
+rule calc_dist_rpca_overlap:
   input:
     csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
-    rscript="workflow/scripts/calc_dist_rpca_overlap.py"
+    pyscript="workflow/scripts/calc_dist_rpca_overlap.py"
   output:
     "data/simulation/overlap_optspace.{depth}.euclidean.dist.gz",
     "data/simulation/overlap_rpca.{depth}.euclidean.dist.gz"
@@ -70,7 +109,23 @@ rule calc_dist_rpca:
     "envs/rpca.yml"
   shell:
     """
-    {input.rscript} {wildcards.depth}
+    {input.pyscript} {wildcards.depth}
+    """
+
+rule calc_dist_rpca_control:
+  input:
+    tsv="data/simulation/{control}_raw.4000.tsv.gz",
+    pyscript="workflow/scripts/calc_dist_rpca_control.py"
+  output:
+    "data/simulation/{control}_optspace.4000.euclidean.dist.gz",
+    "data/simulation/{control}_rpca.4000.euclidean.dist.gz"
+  wildcard_constraints:
+    control="positive|negative"
+  conda:
+    "envs/rpca.yml"
+  shell:
+    """
+    {input.pyscript} {input.tsv}
     """
 
 rule create_design_simulation:
@@ -86,27 +141,39 @@ rule create_design_simulation:
 
 rule calc_pcoa_coords:
   input:
-    dmatrix = "data/simulation/overlap_{process}.{depth}.{distance}.dist.gz",
+    dmatrix = "data/simulation/{approach}_{process}.{depth}.{distance}.dist.gz",
     rscript = "workflow/scripts/calc_pcoa_coords.R"
   output:
-    "data/simulation/overlap_{process}.{depth}.{distance}.pcoa.axes"
+    "data/simulation/{approach}_{process}.{depth}.{distance}.pcoa.axes"
   shell:
     """
     {input.rscript} {input.dmatrix} {output}
     """
 
-
+rule calc_oclr:
+  input:
+    tsv="data/simulation/{control}_raw.{depth}.tsv.gz",
+    pyscript="workflow/scripts/calc_oclr.py"
+  output:
+    tsv="data/simulation/{control}_raw.{depth}.oclr.gz",
+  conda:
+    "envs/rpca.yml"
+  shell:
+    """
+    {input.pyscript} {input.tsv}
+    """
+  
 
 
 
 
 rule test_depths:
   input:
-    tsv="data/simulation/overlap_raw.{depth}.tsv.gz",
+    tsv="data/simulation/{approach}_raw.{depth}.tsv.gz",
     design="data/simulation/overlap.design.gz",
     rscript="workflow/scripts/test_depths.R"
   output:
-    "data/simulation/overlap_raw.{depth}.dtest.tsv"
+    "data/simulation/{approach}_raw.{depth}.dtest.tsv"
   shell:
     """
     {input.rscript} {input.tsv} {input.design} {output}
@@ -114,11 +181,11 @@ rule test_depths:
 
 rule test_permanova:
   input:
-    dmatrix = "data/simulation/overlap_{process}.{depth}.{distance}.dist.gz",
+    dmatrix = "data/simulation/{approach}_{process}.{depth}.{distance}.dist.gz",
     design = "data/simulation/overlap.design.gz",
     rscript = "workflow/scripts/test_permanova.R"
   output:
-    "data/simulation/overlap_{process}.{depth}.{distance}.permanova.tsv"
+    "data/simulation/{approach}_{process}.{depth}.{distance}.permanova.tsv"
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -126,11 +193,11 @@ rule test_permanova:
     
 rule test_knn_pds:
   input:
-    dmatrix = "data/simulation/overlap_{process}.{depth}.{distance}.dist.gz",
+    dmatrix = "data/simulation/{approach}_{process}.{depth}.{distance}.dist.gz",
     design = "data/simulation/overlap.design.gz",
     rscript = "workflow/scripts/test_train_knn.R"
   output:
-    "data/simulation/overlap_{process}.{depth}.{distance}.knn_pds.tsv"
+    "data/simulation/{approach}_{process}.{depth}.{distance}.knn_pds.tsv"
   shell:
     """
     R -e 'source("{input.rscript}"); run_knn("{input.design}", "{input.dmatrix}", "{output}")'
@@ -138,11 +205,11 @@ rule test_knn_pds:
 
 rule test_knn_cm:
   input:
-    dmatrix = "data/simulation/overlap_{process}.{depth}.{distance}.dist.gz",
+    dmatrix = "data/simulation/{approach}_{process}.{depth}.{distance}.dist.gz",
     design = "data/simulation/overlap.design.gz",
     rscript = "workflow/scripts/test_train_knn.R"
   output:
-    "data/simulation/overlap_{process}.{depth}.{distance}.knn_cm.tsv"
+    "data/simulation/{approach}_{process}.{depth}.{distance}.knn_cm.tsv"
   shell:
     """
     R -e 'source("{input.rscript}"); run_knn("{input.design}", "{input.dmatrix}", "{output}",

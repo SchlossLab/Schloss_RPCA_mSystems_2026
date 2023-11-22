@@ -12,7 +12,6 @@ depth_ = int(sys.argv[1])
 
 subsampled = pd.read_csv('deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz', index_col=[0,1,2,3])
 
-results = {}
 depths_ = set(subsampled.index.get_level_values('sequence_depth'))
 
 rank_ = 2
@@ -21,9 +20,6 @@ power_ = 20
 
 subtmp=subsampled.loc[(rank_,power_,depth_,),:].copy().T 
 subtmp_sub = subtmp.copy()
-#meta on cluster
-meta = np.array([1]*int(subtmp.shape[0]/2)+[2]*int(subtmp.shape[0]/2)).T
-meta = pd.DataFrame(meta,index=subtmp.index,columns=['group'])
 
 X_sparse=rclr().fit_transform(subtmp_sub.copy())
 U,s,V=OptSpace(iteration=1000).fit_transform(X_sparse)
