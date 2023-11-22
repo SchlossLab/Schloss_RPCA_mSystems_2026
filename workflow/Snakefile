@@ -17,28 +17,30 @@ approaches = ["cm", "pds"]
 
 rule targets:
   input:
-    expand("data/simulation/positive_{process}.{depth}.euclidean.pcoa.axes",
+    expand("data/simulation/overlap_{process}.{depth}.euclidean.pcoa.axes",
            process = processes, depth = depths),
-    expand("data/simulation/positive_raw.{depth}.{distance}.pcoa.axes",
+    expand("data/simulation/overlap_raw.{depth}.{distance}.pcoa.axes",
            depth = depths, distance = distances),
-    expand("data/simulation/positive_{process}.{depth}.euclidean.permanova.tsv",
+    expand("data/simulation/overlap_{process}.{depth}.euclidean.permanova.tsv",
            process = processes, depth = depths),
-    expand("data/simulation/positive_raw.{depth}.{distance}.permanova.tsv",
+    expand("data/simulation/overlap_raw.{depth}.{distance}.permanova.tsv",
            depth = depths, distance = distances),
-    expand("data/simulation/positive_{process}.{depth}.euclidean.knn_{approach}.tsv",
+    expand("data/simulation/overlap_{process}.{depth}.euclidean.knn_{approach}.tsv",
            process = processes, depth = depths, approach = approaches),
-    expand("data/simulation/positive_raw.{depth}.{distance}.knn_{approach}.tsv",
+    expand("data/simulation/overlap_raw.{depth}.{distance}.knn_{approach}.tsv",
            process = processes, depth = depths, distance = distances, approach = approaches),
-    "data/simulation/positive_raw.count_test.tsv",
-    "figures/positive_knn_analysis.png"
+    "data/simulation/overlap_raw.count_test.tsv",
+    "figures/overlap_knn_analysis.png",
+    "figures/overlap10000.pcoa.png"
 
 
-rule extract_depths_positive:
+
+rule extract_depths_overlap:
   input:
     csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
-    rscript="workflow/scripts/extract_depths_positive.R"
+    rscript="workflow/scripts/extract_depths_overlap.R"
   output:
-    "data/simulation/positive_raw.{depth}.tsv.gz"
+    "data/simulation/overlap_raw.{depth}.tsv.gz"
   shell:
     """
     mkdir -p data/simulation/
@@ -47,10 +49,10 @@ rule extract_depths_positive:
 
 rule calc_dist_vegan_worare:
   input:
-    tsv="data/simulation/positive_raw.{depth}.tsv.gz",
+    tsv="data/simulation/overlap_raw.{depth}.tsv.gz",
     rscript="workflow/scripts/calc_dist_vegan_worare.R"
   output:
-    "data/simulation/positive_raw.{depth}.{distance}.dist.gz"
+    "data/simulation/overlap_raw.{depth}.{distance}.dist.gz"
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance}
@@ -59,10 +61,10 @@ rule calc_dist_vegan_worare:
 rule calc_dist_rpca:
   input:
     csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
-    rscript="workflow/scripts/calc_dist_rpca_positive.py"
+    rscript="workflow/scripts/calc_dist_rpca_overlap.py"
   output:
-    "data/simulation/positive_optspace.{depth}.euclidean.dist.gz",
-    "data/simulation/positive_rpca.{depth}.euclidean.dist.gz"
+    "data/simulation/overlap_optspace.{depth}.euclidean.dist.gz",
+    "data/simulation/overlap_rpca.{depth}.euclidean.dist.gz"
   conda:
     "envs/rpca.yml"
   shell:
@@ -70,13 +72,12 @@ rule calc_dist_rpca:
     {input.rscript} {wildcards.depth}
     """
 
-
-rule create_design_positive:
+rule create_design_simulation:
   input:
     csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
-    rscript="workflow/scripts/create_design_positive.R"
+    rscript="workflow/scripts/create_design_simulation.R"
   output:
-    "data/simulation/positive_raw.design.gz"
+    "data/simulation/overlap.design.gz"
   shell:
     """
     {input.rscript} {input.csv} {output}
@@ -84,21 +85,26 @@ rule create_design_positive:
 
 rule calc_pcoa_coords:
   input:
-    dmatrix = "data/simulation/positive_{process}.{depth}.{distance}.dist.gz",
+    dmatrix = "data/simulation/overlap_{process}.{depth}.{distance}.dist.gz",
     rscript = "workflow/scripts/calc_pcoa_coords.R"
   output:
-    "data/simulation/positive_{process}.{depth}.{distance}.pcoa.axes"
+    "data/simulation/overlap_{process}.{depth}.{distance}.pcoa.axes"
   shell:
     """
     {input.rscript} {input.dmatrix} {output}
     """
 
-rule test_depths_positive:
+
+
+
+
+
+rule test_depths_overlap:
   input:
     csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
-    rscript="workflow/scripts/test_depths_positive.R"
+    rscript="workflow/scripts/test_depths.R"
   output:
-    "data/simulation/positive_raw.count_test.tsv"
+    "data/simulation/overlap_raw.count_test.tsv"
   shell:
     """
     mkdir -p data/simulation/
@@ -107,11 +113,11 @@ rule test_depths_positive:
 
 rule test_permanova:
   input:
-    dmatrix = "data/simulation/positive_{process}.{depth}.{distance}.dist.gz",
-    design = "data/simulation/positive_raw.design.gz",
+    dmatrix = "data/simulation/overlap_{process}.{depth}.{distance}.dist.gz",
+    design = "data/simulation/overlap.design.gz",
     rscript = "workflow/scripts/test_permanova.R"
   output:
-    "data/simulation/positive_{process}.{depth}.{distance}.permanova.tsv"
+    "data/simulation/overlap_{process}.{depth}.{distance}.permanova.tsv"
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -119,11 +125,11 @@ rule test_permanova:
     
 rule test_knn_pds:
   input:
-    dmatrix = "data/simulation/positive_{process}.{depth}.{distance}.dist.gz",
-    design = "data/simulation/positive_raw.design.gz",
+    dmatrix = "data/simulation/overlap_{process}.{depth}.{distance}.dist.gz",
+    design = "data/simulation/overlap.design.gz",
     rscript = "workflow/scripts/test_train_knn.R"
   output:
-    "data/simulation/positive_{process}.{depth}.{distance}.knn_pds.tsv"
+    "data/simulation/overlap_{process}.{depth}.{distance}.knn_pds.tsv"
   shell:
     """
     R -e 'source("{input.rscript}"); run_knn("{input.design}", "{input.dmatrix}", "{output}")'
@@ -131,11 +137,11 @@ rule test_knn_pds:
 
 rule test_knn_cm:
   input:
-    dmatrix = "data/simulation/positive_{process}.{depth}.{distance}.dist.gz",
-    design = "data/simulation/positive_raw.design.gz",
+    dmatrix = "data/simulation/overlap_{process}.{depth}.{distance}.dist.gz",
+    design = "data/simulation/overlap.design.gz",
     rscript = "workflow/scripts/test_train_knn.R"
   output:
-    "data/simulation/positive_{process}.{depth}.{distance}.knn_cm.tsv"
+    "data/simulation/overlap_{process}.{depth}.{distance}.knn_cm.tsv"
   shell:
     """
     R -e 'source("{input.rscript}"); run_knn("{input.design}", "{input.dmatrix}", "{output}",
@@ -144,15 +150,32 @@ rule test_knn_cm:
                                               k_grid = 13)'
     """
 
-rule plot_positive_knn_analysis:
+
+
+
+
+rule plot_overlap_knn_analysis:
   input:
-    rpca=expand("data/simulation/positive_{process}.{depth}.euclidean.knn_{approach}.tsv",
+    rpca=expand("data/simulation/overlap_{process}.{depth}.euclidean.knn_{approach}.tsv",
            process = processes, depth = depths, approach = approaches),
-    raw=expand("data/simulation/positive_raw.{depth}.{distance}.knn_{approach}.tsv",
+    raw=expand("data/simulation/overlap_raw.{depth}.{distance}.knn_{approach}.tsv",
            process = processes, depth = depths, distance = distances, approach = approaches),
-    rscript="workflow/scripts/plot_positive_knn.R"
+    rscript="workflow/scripts/plot_overlap_knn.R"
   output:
-    "figures/positive_knn_analysis.png"
+    "figures/overlap_knn_analysis.png"
+  shell:
+    """
+    {input.rscript}
+    """
+
+rule plot_pcoa:
+  input:
+    bray_coords="data/simulation/overlap_raw.10000.bray.pcoa.axes",
+    rpca_coords="data/simulation/overlap_rpca.10000.euclidean.pcoa.axes",
+    design = "data/simulation/overlap.design.gz",
+    rscript="workflow/scripts/plot_overlap10000_pcoa.R"
+  output:
+    "figures/overlap10000.pcoa.png"
   shell:
     """
     {input.rscript}

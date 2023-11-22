@@ -9,8 +9,8 @@ dmatrix_file_name <- args[1]
 design_file_name <- args[2]
 output_file_name <- args[3]
 
-# dmatrix_file_name <- "data/simulation/positive_raw.4000.braycurtis.dist.gz"
-# design_file_name <- "data/simulation/positive_raw.design.gz"
+# dmatrix_file_name <- "data/simulation/overlap_raw.4000.braycurtis.dist.gz"
+# design_file_name <- "data/simulation/overlap_raw.design.gz"
 
 dmatrix <- read_tsv(dmatrix_file_name,
                     col_types = cols(sample = col_character(),

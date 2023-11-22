@@ -12,7 +12,7 @@ pooled_data <- list.files(path = "data/simulation", pattern = "knn_.*.tsv", full
                              ".*\\.\\d*\\.(.*)\\.knn.*",
                              "\\1"),
          process = str_replace(file_name,
-                             "data/simulation/positive_(.*)\\.\\d*\\..*",
+                             "data/simulation/overlap_(.*)\\.\\d*\\..*",
                              "\\1"),
          approach = str_replace(file_name,
                                 ".*knn_(.*)\\..*",
@@ -54,4 +54,4 @@ pooled_data %>%
   theme_classic() +
   theme(strip.background = element_rect(color = NA, fill = "lightgray"))
 
-ggsave("figures/positive_knn_analysis.png", width = 5, height = 8)
+ggsave("figures/overlap_knn_analysis.png", width = 5, height = 8)

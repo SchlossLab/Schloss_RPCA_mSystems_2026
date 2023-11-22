@@ -31,7 +31,7 @@ distance.cdist(U,U)
 df = pd.DataFrame(distance.cdist(U,U))
 df.columns = subtmp.index
 df.insert(0, 'sample', subtmp.index)
-df.to_csv(f'data/simulation/positive_rpca.{depth_}.euclidean.dist.gz', sep = '\t', index = False)
+df.to_csv(f'data/simulation/overlap_rpca.{depth_}.euclidean.dist.gz', sep = '\t', index = False)
 
 X_spn = np.array(subtmp_sub.copy()).astype(float)
 X_spn[X_spn==0] = np.nan
@@ -39,4 +39,4 @@ U_,s_,V_=OptSpace(iteration=1000).fit_transform(X_spn)
 df = pd.DataFrame(distance.cdist(U_,U_))
 df.columns = subtmp.index
 df.insert(0, 'sample', subtmp.index)
-df.to_csv(f'data/simulation/positive_optspace.{depth_}.euclidean.dist.gz', sep = '\t', index = False)
+df.to_csv(f'data/simulation/overlap_optspace.{depth_}.euclidean.dist.gz', sep = '\t', index = False)

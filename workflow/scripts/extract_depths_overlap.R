@@ -18,4 +18,4 @@ simulation_file_name %>%
   column_to_rownames("OTUs") %>%
   t() %>%
   as_tibble(rownames = "sample") %>%
-  write_tsv(glue("data/simulation/positive_raw.{depth}.tsv.gz"))
+  write_tsv(glue("data/simulation/overlap_raw.{depth}.tsv.gz"))

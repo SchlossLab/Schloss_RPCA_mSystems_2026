@@ -8,8 +8,8 @@ args <- commandArgs(trailingOnly = TRUE)
 dmatrix_file_name <- args[1]
 ordination_file_name <- args[2]
 
-# dmatrix_file_name <- "data/simulation/positive_raw.4000.braycurtis.dist.gz"
-# ordination_file_name <- "data/simulation/positive_raw.4000.braycurtis.pcoa.axes"
+# dmatrix_file_name <- "data/simulation/overlap_raw.4000.braycurtis.dist.gz"
+# ordination_file_name <- "data/simulation/overlap_raw.4000.braycurtis.pcoa.axes"
 
 pcoa <- read_tsv(dmatrix_file_name,
                  col_types = cols(sample = col_character(),
