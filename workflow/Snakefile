@@ -13,21 +13,22 @@
 depths = [500, 1000, 2000, 4000, 10000]
 distances = ["bray", "euclidean"]
 processes = ["optspace", "rpca"]
+approaches = ["cm", "pds"]
 
 rule targets:
   input:
     expand("data/simulation/positive_{process}.{depth}.euclidean.pcoa.axes",
            process = processes, depth = depths),
-    expand("data/simulation/positive_{process}.{depth}.euclidean.permanova.tsv",
-           process = processes, depth = depths),
-    expand("data/simulation/positive_{process}.{depth}.euclidean.knn.tsv",
-           process = processes, depth = depths),
     expand("data/simulation/positive_raw.{depth}.{distance}.pcoa.axes",
            depth = depths, distance = distances),
+    expand("data/simulation/positive_{process}.{depth}.euclidean.permanova.tsv",
+           process = processes, depth = depths),
     expand("data/simulation/positive_raw.{depth}.{distance}.permanova.tsv",
            depth = depths, distance = distances),
-    expand("data/simulation/positive_raw.{depth}.{distance}.knn.tsv",
-           depth = depths, distance = distances),
+    expand("data/simulation/positive_{process}.{depth}.euclidean.knn_{approach}.tsv",
+           process = processes, depth = depths, approach = approaches),
+    expand("data/simulation/positive_raw.{depth}.{distance}.knn_{approach}.tsv",
+           process = processes, depth = depths, distance = distances, approach = approaches),
     "data/simulation/positive_raw.count_test.tsv",
     "figures/positive_knn_analysis.png"
 
@@ -116,24 +117,39 @@ rule test_permanova:
     {input.rscript} {input.dmatrix} {input.design} {output}
     """
     
-rule test_knn:
+rule test_knn_pds:
   input:
     dmatrix = "data/simulation/positive_{process}.{depth}.{distance}.dist.gz",
     design = "data/simulation/positive_raw.design.gz",
-    rscript = "workflow/scripts/test_knn.R"
+    rscript = "workflow/scripts/test_train_knn.R"
   output:
-    "data/simulation/positive_{process}.{depth}.{distance}.knn.tsv"
+    "data/simulation/positive_{process}.{depth}.{distance}.knn_pds.tsv"
   shell:
     """
-    {input.rscript} {input.dmatrix} {input.design} {output}
+    R -e 'source("{input.rscript}"); run_knn("{input.design}", "{input.dmatrix}", "{output}")'
+    """
+
+rule test_knn_cm:
+  input:
+    dmatrix = "data/simulation/positive_{process}.{depth}.{distance}.dist.gz",
+    design = "data/simulation/positive_raw.design.gz",
+    rscript = "workflow/scripts/test_train_knn.R"
+  output:
+    "data/simulation/positive_{process}.{depth}.{distance}.knn_cm.tsv"
+  shell:
+    """
+    R -e 'source("{input.rscript}"); run_knn("{input.design}", "{input.dmatrix}", "{output}",
+                                              v_fraction = 0.6, t_fraction = 0.6,
+                                              n_iloops = 100, n_oloops = 100,
+                                              k_grid = 13)'
     """
 
 rule plot_positive_knn_analysis:
   input:
-    process=expand("data/simulation/positive_{process}.{depth}.euclidean.knn.tsv",
-           process = processes, depth = depths),
-    raw=expand("data/simulation/positive_raw.{depth}.{distance}.knn.tsv",
-           depth = depths, distance = distances),
+    rpca=expand("data/simulation/positive_{process}.{depth}.euclidean.knn_{approach}.tsv",
+           process = processes, depth = depths, approach = approaches),
+    raw=expand("data/simulation/positive_raw.{depth}.{distance}.knn_{approach}.tsv",
+           process = processes, depth = depths, distance = distances, approach = approaches),
     rscript="workflow/scripts/plot_positive_knn.R"
   output:
     "figures/positive_knn_analysis.png"
