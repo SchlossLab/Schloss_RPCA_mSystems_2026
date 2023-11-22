@@ -29,7 +29,8 @@ rule targets:
            process = processes, depth = depths, approach = approaches),
     expand("data/simulation/overlap_raw.{depth}.{distance}.knn_{approach}.tsv",
            process = processes, depth = depths, distance = distances, approach = approaches),
-    "data/simulation/overlap_raw.count_test.tsv",
+    expand("data/simulation/overlap_raw.{depth}.dtest.tsv",
+           depth = depths),
     "figures/overlap_knn_analysis.png",
     "figures/overlap10000.pcoa.png"
 
@@ -75,7 +76,7 @@ rule calc_dist_rpca:
 rule create_design_simulation:
   input:
     csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
-    rscript="workflow/scripts/create_design_simulation.R"
+    rscript="workflow/scripts/create_design_overlap.R"
   output:
     "data/simulation/overlap.design.gz"
   shell:
@@ -99,16 +100,16 @@ rule calc_pcoa_coords:
 
 
 
-rule test_depths_overlap:
+rule test_depths:
   input:
-    csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
+    tsv="data/simulation/overlap_raw.{depth}.tsv.gz",
+    design="data/simulation/overlap.design.gz",
     rscript="workflow/scripts/test_depths.R"
   output:
-    "data/simulation/overlap_raw.count_test.tsv"
+    "data/simulation/overlap_raw.{depth}.dtest.tsv"
   shell:
     """
-    mkdir -p data/simulation/
-    {input.rscript} {input.csv} {output}
+    {input.rscript} {input.tsv} {input.design} {output}
     """
 
 rule test_permanova:
