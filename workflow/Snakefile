@@ -13,7 +13,7 @@
 depths = [500, 1000, 2000, 4000, 10000]
 distances = ["bray", "euclidean"]
 processes = ["optspace", "rpca"]
-approaches = ["cm", "pds"]
+approaches = ["cm", "pds", "cmgrid"]
 controls = ["positive", "negative"]
 
 rule targets:
@@ -218,6 +218,19 @@ rule test_knn_cm:
                                               k_grid = 13)'
     """
 
+rule test_knn_cmgrid:
+  input:
+    dmatrix = "data/simulation/{approach}_{process}.{depth}.{distance}.dist.gz",
+    design = "data/simulation/overlap.design.gz",
+    rscript = "workflow/scripts/test_train_knn.R"
+  output:
+    "data/simulation/{approach}_{process}.{depth}.{distance}.knn_cmgrid.tsv"
+  shell:
+    """
+    R -e 'source("{input.rscript}"); run_knn("{input.design}", "{input.dmatrix}", "{output}",
+                                              v_fraction = 0.6, t_fraction = 0.6,
+                                              n_iloops = 100, n_oloops = 100)'
+    """
 
 
 
