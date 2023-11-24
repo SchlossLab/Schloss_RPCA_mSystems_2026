@@ -2,7 +2,7 @@
 
 library(tidyverse)
 
-pooled_data <- list.files(path = "data/simulation", pattern = "knn_.*.tsv", full.names = TRUE) %>%
+pooled_data <- list.files(path = "data/simulation", pattern = "overlap.*knn_.*.tsv", full.names = TRUE) %>%
   read_tsv(col_types = cols(.default = col_double()),
            id = "file_name") %>%
   mutate(depth = str_replace(file_name,
@@ -46,12 +46,12 @@ pooled_data %>%
   scale_x_discrete(breaks = c("raw_euclidean", "optspace_euclidean",
                               "raw_bray", "rpca_euclidean"),
                    labels = c("Raw\nEuclidean", "Raw w/ OptSpace\nEuclidean",
-                              "Raw\nBray", "RCLR w/ OptSpace\nEuclidean")) +
+                              "Raw\nBray-Curtis", "RCLR w/ OptSpace\nEuclidean")) +
   scale_fill_manual(name = NULL,
-                    breaks = c("cm", "pds"),
-                    labels = c("Martino", "Current"),
-                    values = c("hotpink", "dodgerblue")) +
+                    breaks = c("cm", "cmgrid", "pds"),
+                    labels = c("Martino", "Martino+Grid", "Current"),
+                    values = c("tomato", "forestgreen", "dodgerblue")) +
   theme_classic() +
   theme(strip.background = element_rect(color = NA, fill = "lightgray"))
 
-ggsave("figures/overlap_knn_analysis.png", width = 5, height = 8)
+ggsave("figures/overlap_knn_analysis.png", width = 6, height = 8)

@@ -9,7 +9,7 @@ args <- commandArgs(trailingOnly = TRUE)
 pcoa_fnames <- c("data/simulation/overlap_raw.10000.bray.pcoa.axes",
                  "data/simulation/overlap_rpca.10000.euclidean.pcoa.axes")
 
-design_fname <- "data/simulation/overlap_raw.design.gz"
+design_fname <- "data/simulation/overlap.design.gz"
 output_fname <- "figures/overlap10000.pcoa.png"
 
 plot_pcoa <- function(fname, title) {
@@ -31,7 +31,7 @@ plot_pcoa <- function(fname, title) {
     geom_point(size = 2, show.legend = FALSE) +
     scale_color_manual(name = NULL,
                        breaks = c("A", "B"),
-                       values = c("red", "dodgerblue")) +
+                       values = c("tomato", "dodgerblue")) +
     labs(x = loadings[1],
          y = loadings[2],
          title = title) +
@@ -40,7 +40,7 @@ plot_pcoa <- function(fname, title) {
 
 }
 
-bray <- plot_pcoa(pcoa_fnames[1], "Bray-Curtis + PCoA")
+bray <- plot_pcoa(pcoa_fnames[1], "Bray-Curtis")
 rpca <- plot_pcoa(pcoa_fnames[2], "Robust PCA")
 
 bray + rpca +

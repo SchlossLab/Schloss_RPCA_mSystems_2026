@@ -31,3 +31,14 @@ df = pd.DataFrame(distance.cdist(U_,U_))
 df.columns = subtmp.index
 df.insert(0, 'sample', subtmp.index)
 df.to_csv(f'data/simulation/{control}_optspace.4000.euclidean.dist.gz', sep = '\t', index = False)
+
+
+# #RPCA on random
+# X_random_rclr = rclr().fit_transform(X_random.T)
+# opt_noise = OptSpace().fit(X_random_rclr)
+# U_random = pd.DataFrame(opt_noise.sample_weights,index=X_random.columns)
+# #RPCA on very clear signal
+# X_signal_rclr = rclr().fit_transform(X_signal.T)
+# opt_sig = OptSpace().fit(X_signal_rclr)
+# U_signal = pd.DataFrame(opt_sig.sample_weights,index=X_signal.columns)
+

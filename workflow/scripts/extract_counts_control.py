@@ -7,6 +7,8 @@ import numpy as np
 from sklearn.utils import shuffle
 from deicode_benchmarking.simulations.scripts.simulations import build_block_model
 
+np.random.default_rng(19760620)
+
 depth=2.5e3
 overlap_=0
 rank_=2
@@ -22,7 +24,7 @@ X_signal=pd.DataFrame(X_signal.T,
                       index=['sample_'+str(x) 
                                for x in range(X_signal.shape[1])])
 X_signal.insert(0, 'sample', X_signal.index)
-X_signal.to_csv(f'data/simulation/positive_raw.4000.tsv.gz', sep = '\t', index = False)
+X_signal.to_csv('data/simulation/positive_raw.4000.tsv.gz', sep = '\t', index = False)
 
 
 #run model with fit variables and new variants
@@ -40,4 +42,4 @@ X_random=X_random.T
 X_random.sort_index(inplace=True)
 X_random=X_random.T
 X_random.insert(0, 'sample', X_random.index)
-X_signal.to_csv(f'data/simulation/negative_raw.4000.tsv.gz', sep = '\t', index = False)
+X_random.to_csv('data/simulation/negative_raw.4000.tsv.gz', sep = '\t', index = False)

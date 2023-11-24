@@ -22,7 +22,10 @@ datasets = ["sponges", "sleep_apnea", "crc"]
 
 rule targets:
   input:
-    "figures/cs_seq_depth.png"
+    "figures/cs_seq_depth.png",
+    "figures/overlap_knn_analysis.png",
+    "figures/overlap10000.pcoa.png",
+    "figures/control4000.pcoa.png",
     # expand("data/simulation/overlap_raw.{depth}.oclr.gz",
     #        depth = depths),
     # expand("data/simulation/overlap_{process}.{depth}.euclidean.pcoa.axes",
@@ -57,8 +60,6 @@ rule targets:
     #        approach = approaches),
     # expand("data/simulation/{control}_raw.4000.dtest.tsv",
     #        control = controls),
-    # "figures/overlap_knn_analysis.png",
-    # "figures/overlap10000.pcoa.png",
 
 
 
@@ -321,6 +322,21 @@ rule plot_pcoa:
     rscript="workflow/scripts/plot_overlap10000_pcoa.R"
   output:
     "figures/overlap10000.pcoa.png"
+  shell:
+    """
+    {input.rscript}
+    """
+    
+rule plot_pcoa_control:
+  input:
+    bray_coords=expand("data/simulation/{control}_raw.4000.bray.pcoa.axes",
+                       control = ["positive", "negative"]),
+    rpca_coords=expand("data/simulation/{control}_rpca.4000.euclidean.pcoa.axes",
+                       control = ["positive", "negative"]),
+    design = "data/simulation/overlap.design.gz",
+    rscript="workflow/scripts/plot_control4000_pcoa.R"
+  output:
+    "figures/control4000.pcoa.png"
   shell:
     """
     {input.rscript}
