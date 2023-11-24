@@ -22,8 +22,7 @@ datasets = ["sponges", "sleep_apnea", "crc"]
 
 rule targets:
   input:
-    expand("data/{dataset}/data.dtest.tsv", 
-           dataset = datasets),
+    "figures/cs_seq_depth.png"
     # expand("data/simulation/overlap_raw.{depth}.oclr.gz",
     #        depth = depths),
     # expand("data/simulation/overlap_{process}.{depth}.euclidean.pcoa.axes",
@@ -327,3 +326,16 @@ rule plot_pcoa:
     {input.rscript}
     """
 
+rule plot_cs_seq_detph:
+  input:
+    tests=expand("data/{dataset}/data.dtest.tsv", 
+                 dataset = datasets),
+    tsvs=expand("data/{dataset}/data.depths.tsv.gz",
+                dataset = datasets),
+    rscript="workflow/scripts/plot_sequence_depths.R"
+  output:
+    "figures/cs_seq_depth.png"
+  shell:
+    """
+    {input.rscript}
+    """
