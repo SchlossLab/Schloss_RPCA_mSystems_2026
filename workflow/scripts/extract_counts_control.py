@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 # this was lifted from deicode_benchmarking/simulations/negative_control.ipynb
-
 import pandas as pd
 import numpy as np
 from sklearn.utils import shuffle
 from deicode_benchmarking.simulations.scripts.simulations import build_block_model
 
-np.random.default_rng(19760620)
 
 depth=2.5e3
 overlap_=0

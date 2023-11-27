@@ -9,17 +9,25 @@ dmatrix_file_name <- args[1]
 design_file_name <- args[2]
 output_file_name <- args[3]
 
-# dmatrix_file_name <- "data/simulation/overlap_raw.4000.braycurtis.dist.gz"
-# design_file_name <- "data/simulation/overlap_raw.design.gz"
+# dmatrix_file_name <- "data/simulation/negative_optspace.4000.euclidean.dist.gz"
+# design_file_name <- "data/simulation/overlap.design.gz"
 
-dmatrix <- read_tsv(dmatrix_file_name,
-                    col_types = cols(sample = col_character(),
-                                     .default = col_double())) %>%
+dmatrix_design <- inner_join(
+                    read_tsv(dmatrix_file_name,
+                             col_types = cols(sample = col_character(),
+                                              .default = col_double())),
+                    read_tsv(design_file_name,
+                            col_types = cols(.default = col_character())),
+                    by = "sample")
+
+
+dmatrix <- dmatrix_design %>%
+  select(starts_with("sample")) %>%
   column_to_rownames("sample") %>%
   as.dist()
 
-design <- read_tsv(design_file_name,
-                   col_types = cols(.default = col_character())) %>%
+design <- dmatrix_design %>%
+  select(sample, treatment) %>%
   column_to_rownames("sample")
 
 stopifnot(all(rownames(design) == labels(dmatrix)))
