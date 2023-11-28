@@ -11,7 +11,7 @@ import sys
 count_fname = sys.argv[1]
 counts = pd.read_csv(count_fname, index_col=0, sep = '\t')
 
-output_fname = re.sub("raw", "oclr", count_fname)
+output_fname = re.sub("raw.tsv", "oclr.tsv", count_fname)
 
 
 clr = pd.DataFrame(clr(counts+1),

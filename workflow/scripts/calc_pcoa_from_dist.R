@@ -5,13 +5,13 @@ library(glue)
 
 args <- commandArgs(trailingOnly = TRUE)
 
-dmatrix_file_name <- args[1]
-ordination_file_name <- args[2]
+dmatrix_fname <- args[1]
+ordination_fname <- args[2]
 
-# dmatrix_file_name <- "data/simulation/overlap_raw.4000.braycurtis.dist.gz"
-# ordination_file_name <- "data/simulation/overlap_raw.4000.braycurtis.pcoa.axes"
+# dmatrix_fname <- "data/simulation/overlap.4000.raw.braycurtis.dist.gz"
+# ordination_fname <- "data/simulation/overlap.4000.raw.braycurtis.pcoa.axes"
 
-pcoa <- read_tsv(dmatrix_file_name,
+pcoa <- read_tsv(dmatrix_fname,
                  col_types = cols(sample = col_character(),
                                   .default = col_double())) %>%
   column_to_rownames("sample") %>%
@@ -27,4 +27,4 @@ colnames(points) <- c(glue("axis1_{explained[1]}"),
                       glue("axis2_{explained[2]}"))
 
 as_tibble(points, rownames = "sample") %>%
-  write_tsv(ordination_file_name)
+  write_tsv(ordination_fname)

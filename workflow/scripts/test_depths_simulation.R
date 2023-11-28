@@ -7,10 +7,10 @@ args <-  commandArgs(trailingOnly = TRUE)
 
 tsv_fname <- args[1]
 design_fname <- args[2]
-output_file_name <- args[3]
+output_fname <- args[3]
 
-# tsv_fname <- "data/simulation/overlap_raw.10000.tsv.gz"
-# design_fname <- "data/simulation/overlap_raw.design.gz"
+# tsv_fname <- "data/simulation/overlap.10000.raw.tsv.gz"
+# design_fname <- "data/simulation/simulation.design"
 
 read_tsv(tsv_fname, col_types = cols(sample = col_character(),
                                      .default = col_double())) %>%
@@ -22,4 +22,4 @@ read_tsv(tsv_fname, col_types = cols(sample = col_character(),
   wilcox.test(n ~ treatment, data = .) %>%
   tidy() %>%
   rename(p_value = p.value) %>%
-  write_tsv(output_file_name)
+  write_tsv(output_fname)

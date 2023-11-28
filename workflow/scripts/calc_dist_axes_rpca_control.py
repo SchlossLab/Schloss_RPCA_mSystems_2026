@@ -17,7 +17,8 @@ import re
 
 count_file = sys.argv[1]
 counts = pd.read_csv(count_file, index_col=0, sep = '\t')
-control = re.sub("data/simulation/(.*)_raw.*", "\\1", count_file)
+
+base=re.sub("raw.tsv.gz", "", count_file)
 
 subtmp=counts.copy()
 subtmp_sub = subtmp.copy()
@@ -31,14 +32,14 @@ pcoa = pd.DataFrame(opt_sig.sample_weights)
 
 dist.columns = subtmp.index
 dist.insert(0, 'sample', subtmp.index)
-dist.to_csv(f'data/simulation/{control}_rpca.4000.euclidean.dist.gz', sep = '\t', index = False)
+dist.to_csv(f'{base}rpca.euclidean.dist.gz', sep = '\t', index = False)
 
 # deicode_benchmarking/simulations/negative_control.ipynb flips the axes
 # relative to the percent explained, see the plot_pcoa function
 pcoa.columns = [f"axis2_{round(100*explained[0], ndigits=2)}",
                 f"axis1_{round(100*explained[1], ndigits=2)}"]
 pcoa.insert(0, "sample", subtmp.index)
-pcoa.to_csv(f'data/simulation/{control}_rpca.4000.euclidean.pcoa.axes', sep = '\t', index = False)
+pcoa.to_csv(f'{base}rpca.euclidean.pcoa.axes', sep = '\t', index = False)
 
 
 
@@ -53,11 +54,11 @@ pcoa = pd.DataFrame(opt_rnd.sample_weights)
 
 dist.columns = subtmp.index
 dist.insert(0, 'sample', subtmp.index)
-dist.to_csv(f'data/simulation/{control}_optspace.4000.euclidean.dist.gz', sep = '\t', index = False)
+dist.to_csv(f'{base}optspace.euclidean.dist.gz', sep = '\t', index = False)
 
 # deicode_benchmarking/simulations/negative_control.ipynb flips the axes
 # relative to the percent explained, see the plot_pcoa function
 pcoa.columns = [f"axis2_{round(100*explained[0], ndigits=2)}",
                 f"axis1_{round(100*explained[1], ndigits=2)}"]
 pcoa.insert(0, "sample", subtmp.index)
-pcoa.to_csv(f'data/simulation/{control}_optspace.4000.euclidean.pcoa.axes', sep = '\t', index = False)
+dist.to_csv(f'{base}optspace.euclidean.pcoa.axes', sep = '\t', index = False)

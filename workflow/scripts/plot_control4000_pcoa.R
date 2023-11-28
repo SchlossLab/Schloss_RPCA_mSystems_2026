@@ -4,12 +4,12 @@ library(tidyverse)
 library(glue)
 library(patchwork)
 
-pcoa_fnames <- c("data/simulation/positive_raw.4000.bray.pcoa.axes",
-                 "data/simulation/positive_rpca.4000.euclidean.pcoa.axes",
-                 "data/simulation/negative_raw.4000.bray.pcoa.axes",
-                 "data/simulation/negative_rpca.4000.euclidean.pcoa.axes")
+pcoa_fnames <- c("data/simulation/positive.4000.raw.bray.pcoa.axes",
+                 "data/simulation/positive.4000.rpca.euclidean.pcoa.axes",
+                 "data/simulation/negative.4000.raw.bray.pcoa.axes",
+                 "data/simulation/negative.4000.rpca.euclidean.pcoa.axes")
 
-design_fname <- "data/simulation/overlap.design.gz"
+design_fname <- "data/simulation/simulation.design"
 output_fname <- "figures/control4000.pcoa.png"
 
 plot_pcoa <- function(fname, title) {
@@ -22,6 +22,7 @@ plot_pcoa <- function(fname, title) {
   loadings <- tibble(percent_exp = colnames(pcoa)[2:3],
                      axis = c(1, 2)) %>%
     mutate(percent_exp = str_replace(percent_exp, ".*_", ""),
+          percent_exp = round(as.numeric(percent_exp), digits = 0),
            stylized = glue("Axis {axis} ({percent_exp}%)")) %>%
     pull(stylized)
 
@@ -34,18 +35,23 @@ plot_pcoa <- function(fname, title) {
                        values = c("tomato", "dodgerblue")) +
     labs(x = loadings[1],
          y = loadings[2],
-         title = title) +
+         subtitle = title) +
     theme_classic() +
-    theme(plot.title = element_text(face = "bold"))
+    theme(plot.title = element_text(face = "bold"),
+          plot.title.position = "plot",
+          plot.subtitle = element_text(hjust = 0.5))
 
 }
 
-bray_positive <- plot_pcoa(pcoa_fnames[1], "Bray-Curtis")
+bray_positive <- plot_pcoa(pcoa_fnames[1], "Bray-Curtis") +
+  labs(title = "Positive control")
 rpca_positive <- plot_pcoa(pcoa_fnames[2], "Robust PCA")
-bray_negative <- plot_pcoa(pcoa_fnames[3], "Bray-Curtis")
+
+bray_negative <- plot_pcoa(pcoa_fnames[3], "Bray-Curtis") +
+  labs(title = "Negative control")
 rpca_negative <- plot_pcoa(pcoa_fnames[4], "Robust PCA")
 
 (bray_positive + rpca_positive) / (bray_negative + rpca_negative) +
   plot_layout(widths = 1, heights = 1)
 
-ggsave("figures/control4000.pcoa.png", width = 7, height = 7)
+ggsave(output_fname, width = 7, height = 7)

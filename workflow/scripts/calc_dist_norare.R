@@ -12,7 +12,7 @@ distance_method <- args[2]
 # count_table_name <- "data/simulation/overlap_raw.500.tsv.gz"
 # distance_method <- "bray"
 
-output_file_name <- str_replace(count_table_name,
+output_fname <- str_replace(count_table_name,
                                 "tsv.gz",
                                 glue("{distance_method}.dist.gz"))
 
@@ -22,4 +22,4 @@ read_tsv(count_table_name) %>%
   as.matrix() %>%
   as.data.frame() %>%
   as_tibble(rownames = "sample") %>%
-  write_tsv(output_file_name)
+  write_tsv(output_fname)

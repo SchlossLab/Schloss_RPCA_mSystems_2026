@@ -22,7 +22,7 @@ X_signal=pd.DataFrame(X_signal.T,
                       index=['sample_'+str(x) 
                                for x in range(X_signal.shape[1])])
 X_signal.insert(0, 'sample', X_signal.index)
-X_signal.to_csv('data/simulation/positive_raw.4000.tsv.gz', sep = '\t', index = False)
+X_signal.to_csv('data/simulation/positive.4000.raw.tsv.gz', sep = '\t', index = False)
 
 
 #run model with fit variables and new variants
@@ -40,4 +40,4 @@ X_random=X_random.T
 X_random.sort_index(inplace=True)
 X_random=X_random.T
 X_random.insert(0, 'sample', X_random.index)
-X_random.to_csv('data/simulation/negative_raw.4000.tsv.gz', sep = '\t', index = False)
+X_random.to_csv('data/simulation/negative.4000.raw.tsv.gz', sep = '\t', index = False)

@@ -4,17 +4,17 @@ library(tidyverse)
 
 pooled_data <- list.files(path = "data/simulation", pattern = "overlap.*knn_.*.tsv", full.names = TRUE) %>%
   read_tsv(col_types = cols(.default = col_double()),
-           id = "file_name") %>%
-  mutate(depth = str_replace(file_name,
+           id = "fname") %>%
+  mutate(depth = str_replace(fname,
                              ".*\\.(\\d*)\\..*",
                              "\\1"),
-         calculator = str_replace(file_name,
+         calculator = str_replace(fname,
                              ".*\\.\\d*\\.(.*)\\.knn.*",
                              "\\1"),
-         process = str_replace(file_name,
+         process = str_replace(fname,
                              "data/simulation/overlap_(.*)\\.\\d*\\..*",
                              "\\1"),
-         approach = str_replace(file_name,
+         approach = str_replace(fname,
                                 ".*knn_(.*)\\..*",
                               "\\1")
   ) %>%
