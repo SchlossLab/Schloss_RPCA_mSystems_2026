@@ -39,8 +39,12 @@ explained = sorted([s[0,0], s[1,1]], reverse=True)
 a1 = round(100 * explained[0]/sum(explained), ndigits = 2)
 a2 = round(100 * explained[1]/sum(explained), ndigits = 2)
 
+# deicode_benchmarking/simulations/negative_control.ipynb flips the axes
+# relative to the percent explained, see the plot_pcoa function; this makes
+# sense since the s matrix seems to be in the opposite order of what it should
+# be
 pcoa = pd.DataFrame(U)
-pcoa.columns = [f"axis1_{a1}", f"axis2_{a2}"]
+pcoa.columns = [f"axis2_{a1}", f"axis1_{a2}"]
 pcoa.insert(0, 'sample', subtmp.index)
 pcoa.to_csv(f'data/simulation/overlap_rpca.{depth_}.euclidean.pcoa.axes', sep = '\t', index = False)
 
@@ -58,7 +62,11 @@ explained = sorted([s_[0,0], s_[1,1]], reverse=True)
 a1 = round(100 * explained[0]/sum(explained), ndigits = 2)
 a2 = round(100 * explained[1]/sum(explained), ndigits = 2)
 
+# deicode_benchmarking/simulations/negative_control.ipynb flips the axes
+# relative to the percent explained, see the plot_pcoa function; this makes
+# sense since the s matrix seems to be in the opposite order of what it should
+# be
 pcoa = pd.DataFrame(U)
-pcoa.columns = [f"axis1_{a1}", f"axis2_{a2}"]
+pcoa.columns = [f"axis2_{a1}", f"axis1_{a2}"]
 pcoa.insert(0, 'sample', subtmp.index)
 pcoa.to_csv(f'data/simulation/overlap_optspace.{depth_}.euclidean.pcoa.axes', sep = '\t', index = False)

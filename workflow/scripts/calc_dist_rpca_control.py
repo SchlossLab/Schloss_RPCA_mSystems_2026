@@ -33,10 +33,12 @@ dist.columns = subtmp.index
 dist.insert(0, 'sample', subtmp.index)
 dist.to_csv(f'data/simulation/{control}_rpca.4000.euclidean.dist.gz', sep = '\t', index = False)
 
-pcoa.columns = [f"axis1_{round(100*explained[0], ndigits=2)}",
-                f"axis2_{round(100*explained[1], ndigits=2)}"]
+# deicode_benchmarking/simulations/negative_control.ipynb flips the axes
+# relative to the percent explained, see the plot_pcoa function
+pcoa.columns = [f"axis2_{round(100*explained[0], ndigits=2)}",
+                f"axis1_{round(100*explained[1], ndigits=2)}"]
 pcoa.insert(0, "sample", subtmp.index)
-dist.to_csv(f'data/simulation/{control}_rpca.4000.euclidean.pcoa.axes', sep = '\t', index = False)
+pcoa.to_csv(f'data/simulation/{control}_rpca.4000.euclidean.pcoa.axes', sep = '\t', index = False)
 
 
 
@@ -53,7 +55,9 @@ dist.columns = subtmp.index
 dist.insert(0, 'sample', subtmp.index)
 dist.to_csv(f'data/simulation/{control}_optspace.4000.euclidean.dist.gz', sep = '\t', index = False)
 
-pcoa.columns = [f"axis1_{round(100*explained[0], ndigits=2)}",
-                f"axis2_{round(100*explained[1], ndigits=2)}"]
+# deicode_benchmarking/simulations/negative_control.ipynb flips the axes
+# relative to the percent explained, see the plot_pcoa function
+pcoa.columns = [f"axis2_{round(100*explained[0], ndigits=2)}",
+                f"axis1_{round(100*explained[1], ndigits=2)}"]
 pcoa.insert(0, "sample", subtmp.index)
-dist.to_csv(f'data/simulation/{control}_optspace.4000.euclidean.pcoa.axes', sep = '\t', index = False)
+pcoa.to_csv(f'data/simulation/{control}_optspace.4000.euclidean.pcoa.axes', sep = '\t', index = False)
