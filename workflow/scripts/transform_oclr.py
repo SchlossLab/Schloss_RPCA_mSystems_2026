@@ -15,10 +15,8 @@ output_fname = re.sub("raw.tsv", "oclr.tsv", count_fname)
 
 
 clr = pd.DataFrame(clr(counts+1),
-             columns=['OTU_'+str(x)
-                      for x in range(counts.shape[1])],
-            index=['sample_'+str(x) 
-                      for x in range(counts.shape[0])])
+                  columns=counts.columns,
+                  index=counts.index)
 
 clr.insert(0, 'sample', clr.index)
 clr.to_csv(output_fname, sep = '\t', index = False)

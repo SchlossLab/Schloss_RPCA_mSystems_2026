@@ -2,7 +2,8 @@
 
 library(tidyverse)
 
-dir.create("data/process")
+
+dir.create("data/process", showWarnings = FALSE)
 
 list.files(path = "data/simulation", pattern = ".*knn_.*.tsv", full.names = TRUE) %>%
   read_tsv(col_types = cols(.default = col_double()),

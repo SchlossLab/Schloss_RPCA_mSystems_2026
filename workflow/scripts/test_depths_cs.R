@@ -4,11 +4,10 @@ library(tidyverse)
 library(broom)
 
 args <-  commandArgs(trailingOnly = TRUE)
-
 depth_fname <- args[1]
 output_fname <- args[2]
 
-# depth_fname <- "data/baxter/data.depths.tsv.gz"
+# depth_fname <- "data/sponges/data.depths.tsv.gz"
 # output_fname <- "data/sponges/data.dtest.tsv"
 
 get_p_value <- function(depth_treats, threshold){

@@ -86,6 +86,8 @@ run_knn <- function(design_fname, dmatrix_fname, output_fname,
 
   set.seed(1)
 
+  k_grid <- as.integer(k_grid)
+
   treatments <- read_tsv(design_fname,
                         col_types = cols(.default = col_character()))
   dmatrix <- read_tsv(dmatrix_fname,
@@ -103,17 +105,3 @@ run_knn <- function(design_fname, dmatrix_fname, output_fname,
     write_tsv(output_fname)
 
 }
-
-
-# design_fname <- "data/simulation/overlap_raw.design.gz"
-# dmatrix_fname <- "data/simulation/overlap_raw.500.euclidean.dist.gz"
-# output_fname <- "data/simulation/overlap_raw.500.euclidean.knn_pds.gz"
-# v_fraction <- 0.80
-# t_fraction <- 0.80
-# n_iloops <- 100
-# n_oloops <- 100
-# k_grid <- seq(1, 101, 10)
-
-# run_knn(design_fname, dmatrix_fname, output_fname,
-#         n_iloops = 4, n_oloops = 3)
-

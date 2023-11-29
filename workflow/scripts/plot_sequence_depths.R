@@ -15,7 +15,7 @@ n_sig_tests <- read_tsv(glue("data/{names(study_names)}/data.dtest.tsv")) %>%
 
 stopifnot(n_sig_tests == 0)
 
-depths <- read_tsv(glue("data/{names(study_names)}/data.depths.tsv.gz"),
+depths <- read_tsv(glue("data/{names(study_names)}/data.depths.tsv"),
                    id = "study",
                    col_types = cols(n_seqs = col_double(),
                                     .default = col_character())) %>%

@@ -23,7 +23,7 @@ dmatrix_design <- inner_join(
 
 
 dmatrix <- dmatrix_design %>%
-  select(starts_with("sample")) %>%
+  select(-treatment) %>%
   column_to_rownames("sample") %>%
   as.dist()
 

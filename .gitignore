@@ -5,7 +5,7 @@ notes.md
 .snakemake
 Rplots.pdf
 
-deicode_benchmarking/
+#deicode_benchmarking/
 scratch/
 
 data/*

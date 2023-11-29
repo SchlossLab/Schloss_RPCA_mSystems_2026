@@ -6,8 +6,8 @@ library(glue)
 
 args <- commandArgs(trailingOnly = TRUE)
 
-# biom_fname <- "deicode_benchmarking/case_studies/data/sponges/table.biom"
-# metadata_fname <- "deicode_benchmarking/case_studies/data/sponges/metadata.txt.gz"
+# biom_fname <- "data/sponges/table.biom"
+# metadata_fname <- "data/sponges/metadata.tsv"
 # column <- "health_status"
 
 biom_fname <- args[1]
@@ -16,7 +16,7 @@ column <- args[3]
 
 output_path <- tolower(
   str_replace(biom_fname,
-              "deicode_benchmarking/case_studies/(.*)/table.biom",
+              "data/(.*)/table.biom",
               "\\1")
 )
 
@@ -24,7 +24,7 @@ count_data <- read_hdf5_biom(biom_fname) %>%
   biom() %>%
   .[["data"]] %>%
   do.call(rbind, .) %>%
-  as_tibble() %>%  
+  as_tibble() %>%
   mutate(otu = glue("OTU_{1:nrow(.)}"), .before = everything()) %>%
   pivot_longer(cols = - otu, names_to = "sample", values_to = "count")
 
@@ -33,7 +33,7 @@ metadata <- read_tsv(metadata_fname) %>%
   mutate(treatment = tolower(treatment))
 
 
-count_metadata <- inner_join(count_data, metadata, by = "sample") %>%
+inner_join(count_data, metadata, by = "sample") %>%
   pivot_wider(id_cols = c(sample, treatment),
               names_from = otu, values_from = count) %>%
-  write_tsv(glue("{output_path}/data_treatment.tsv.gz"))
+  write_tsv(glue("data/{output_path}/data_treatment.tsv.gz"))

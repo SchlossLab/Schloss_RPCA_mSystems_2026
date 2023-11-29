@@ -21,7 +21,7 @@ pcoa <- read_tsv(dmatrix_fname,
 points <- pcoa$points
 
 explained <- format(round(100 * pcoa$eig[seq_len(ncol(points))] / sum(pcoa$eig),
-                          digits = 2), nsmall = 2L)
+                          digits = 2), nsmall = 2L, trim = TRUE)
 
 colnames(points) <- c(glue("axis1_{explained[1]}"),
                       glue("axis2_{explained[2]}"))
