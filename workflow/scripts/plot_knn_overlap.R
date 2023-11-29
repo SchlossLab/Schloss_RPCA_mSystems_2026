@@ -2,29 +2,13 @@
 
 library(tidyverse)
 
-pooled_data <- list.files(path = "data/simulation", pattern = "overlap.*knn_.*.tsv", full.names = TRUE) %>%
-  read_tsv(col_types = cols(.default = col_double()),
-           id = "fname") %>%
-  mutate(depth = str_replace(fname,
-                             ".*\\.(\\d*)\\..*",
-                             "\\1"),
-         calculator = str_replace(fname,
-                             ".*\\.\\d*\\.(.*)\\.knn.*",
-                             "\\1"),
-         process = str_replace(fname,
-                             "data/simulation/overlap_(.*)\\.\\d*\\..*",
-                             "\\1"),
-         approach = str_replace(fname,
-                                ".*knn_(.*)\\..*",
-                              "\\1")
-  ) %>%
-  select(process, approach, depth, calculator,
-         iteration, k_size, test, validate) %>%
-  mutate(process_calculator = paste(process, calculator, sep = "_")) %>%
+pooled_data <- read_tsv("data/process/simulation.knn.tsv") %>%
+  filter(simulation == "overlap") %>%
   mutate(depth = factor(depth, levels = c(500, 1000, 2000, 4000, 10000)),
          process_calculator = factor(process_calculator,
                                      levels = c("optspace_euclidean",
                                                 "raw_euclidean",
+                                                "oclr_euclidean",
                                                 "rpca_euclidean",
                                                 "raw_bray")))
 
@@ -43,10 +27,12 @@ pooled_data %>%
              labeller = labeller(depth = format_depth)) +
   labs(x = NULL,
        y = "Accuracy") +
-  scale_x_discrete(breaks = c("raw_euclidean", "optspace_euclidean",
+  scale_x_discrete(breaks = c("oclr_euclidean",
+                              "raw_euclidean", "optspace_euclidean",
                               "raw_bray", "rpca_euclidean"),
-                   labels = c("Raw\nEuclidean", "Raw w/ OptSpace\nEuclidean",
-                              "Raw\nBray-Curtis", "RCLR w/ OptSpace\nEuclidean")) +
+                   labels = c("Aitchison", "Raw\nEuclidean",
+                              "Raw w/ OptSpace\nEuclidean",
+                              "Bray-Curtis", "Robust\nAitchison")) +
   scale_fill_manual(name = NULL,
                     breaks = c("cm", "cmgrid", "pds"),
                     labels = c("Martino", "Martino+Grid", "Current"),
@@ -54,4 +40,4 @@ pooled_data %>%
   theme_classic() +
   theme(strip.background = element_rect(color = NA, fill = "lightgray"))
 
-ggsave("figures/overlap_knn_analysis.png", width = 6, height = 8)
+ggsave("figures/knn_overlap_comparison.png", width = 6, height = 8)

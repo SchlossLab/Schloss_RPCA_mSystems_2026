@@ -8,8 +8,8 @@ Rplots.pdf
 deicode_benchmarking/
 scratch/
 
-data/
-
+data/*
+!data/process/
 
 ## .gitignore contents from deicode-benchmarking repository
 

@@ -38,9 +38,31 @@ for key, values in processes.items():
 
 knn_approaches = ["cm", "pds", "cmgrid"]
 
+
 treatment_groups = {"sponges": "health_status",
                     "sleep_apnea": "exposure_type"}
-datasets = ["sponges", "sleep_apnea", "crc"]
+
+
+two_depths = {"sponges": [1000, 13755], 
+              "sleep_apnea": [1000, 11879],
+              "crc": [1000, 10439]}
+
+n_samples = {"sponges": [35, 45, 55, 65, 78], 
+             "sleep_apnea": [35, 48, 61, 74, 87],
+             "crc": [35, 50, 75, 150, 226]}
+
+
+sample_depths = []
+for key, values in two_depths.items():
+    for value in values:
+      sample_depths.append(f"{key}.{value}")
+
+samples_depths_nsamples_reps = []
+for key, values in n_samples.items():
+    for value in values:
+      for depth in two_depths[key]:
+        for rep in range(1,11):
+          samples_depths_nsamples_reps.append(f"data/{key}/data.{depth}.{value}_{rep}")
 
 rule targets:
   input:
@@ -64,9 +86,23 @@ rule targets:
            simulation_depth = simulations_depths,
            process_dist = processes_dists,
            approach = knn_approaches),
+    "data/process/simulation.knn.tsv",
     "figures/overlap10000.pcoa.png",
     "figures/control4000.pcoa.png",
-    # "figures/overlap_knn_analysis.png",
+    "figures/knn_control_comparison.png",
+    "figures/knn_overlap_comparison.png",
+    
+    # expand("deicode_benchmarking/case_studies/data/{dataset}/table.biom",
+    #       dataset = c["sponges", "sleep_apnea"]),
+    # expand("deicode_benchmarking/case_studies/data/{dataset}/table.biom",
+    #       dataset = c["sponges", "sleep_apnea"]),
+    # expand("{sample_depth_nsample_rep}.raw.tsv.gz",
+    #         sample_depth_nsample_rep = samples_depths_nsamples_reps)
+    # expand("{sample_depth_nsample_rep}.design",
+    #         sample_depth_nsample_rep = samples_depths_nsamples_reps)
+
+
+
     # "figures/cs_seq_depth.png",
 
 
@@ -261,6 +297,18 @@ rule test_knn_cmgrid:
                   n_iloops = 100, n_oloops = 100)'
     """
 
+rule pool_simulation_knn:
+  input:
+    tsv = expand("data/simulation/overlap.{depth}.{process_dist}.knn_{approach}.tsv",
+           process_dist = processes_dists, depth = depths, approach = knn_approaches),
+    rscript = "workflow/scripts/pool_simulation_knn.R"
+  output:
+    "data/process/simulation.knn.tsv"
+  shell:
+    """
+    {input.rscript}
+    """
+
 
 ##******************************************************************************
 ##
@@ -296,19 +344,154 @@ rule plot_pcoa_control:
     {input.rscript}
     """
 
-# rule plot_simulation_knn_analysis:
-#   input:
-#     rpca=expand("data/simulation/overlap_{process}.{depth}.euclidean.knn_{approach}.tsv",
-#            process = processes, depth = depths, approach = approaches),
-#     raw=expand("data/simulation/overlap_raw.{depth}.{distance}.knn_{approach}.tsv",
-#            process = processes, depth = depths, distance = distances, approach = approaches),
-#     rscript="workflow/scripts/plot_overlap_knn.R"
-#   output:
-#     "figures/overlap_knn_analysis.png"
-#   shell:
-#     """
-#     {input.rscript}
-#     """
+rule plot_knn_overlap:
+  input:
+    knn="data/process/simulation.knn.tsv",
+    rscript="workflow/scripts/plot_knn_overlap.R"
+  output:
+    "figures/knn_overlap_comparison.png"
+  shell:
+    """
+    {input.rscript}
+    """
+
+rule plot_knn_control:
+  input:
+    knn="data/process/simulation.knn.tsv",
+    rscript="workflow/scripts/plot_knn_control.R"
+  output:
+    "figures/knn_control_comparison.png"
+  shell:
+    """
+    {input.rscript}
+    """
+
+##******************************************************************************
+##
+## Obtain datasets used in case studies and the Schloss Lab's colorectal
+## cancer project. The latter is included because it does not have such an
+## extreme effect size as was observed in the sponge and sleep apnea studies.
+## Confirm that there is no confounding between treatment group and the number
+## of sequences in each sample.
+##
+##******************************************************************************
+
+rule decompress_biom_casestudy:
+  input:
+    biom_gz="deicode_benchmarking/case_studies/data/{dataset}/table.biom.gz",
+    metadata_gz="deicode_benchmarking/case_studies/data/{dataset}/metadata.txt.gz"
+  output:
+    biom="data/{dataset}/table.biom",
+    metadata="data/{dataset}/metadata.tsv"
+  shell:
+    """
+    mkdir -p data/{wildcards.dataset} &&
+      gunzip -c {input.biom_gz} > {output.biom} &&
+      gunzip -c {input.metadata_gz} > {output.metadata}
+    """
+
+rule collect_data_metadata_cs:
+  input:
+    biom="data/{dataset}/table.biom",
+    metadata="data/{dataset}/metadata.tsv",
+    rscript="workflow/scripts/collect_data_metadata_cs.R"
+  output:
+    "data/{dataset}/data_treatment.tsv.gz",
+  params:
+    column=lambda wcs: treatment_groups[wcs.dataset]
+  wildcard_constraints:
+    process="sponges|sleep_apnea"
+  shell:
+    """
+    {input.rscript} {input.biom} {input.metadata} {params.column}
+    """
+
+rule collect_data_metadata_crc:
+  input:
+    rscript="workflow/scripts/collect_data_metadata_crc.R"
+  output:
+    "data/crc/data_treatment.tsv.gz",
+  shell:
+    """
+    mkdir -p data/crc  
+    {input.rscript}
+    """
+
+##******************************************************************************
+##
+## Extract number of sequences per sample from each of the datasets and test
+## whether sequencing depth is confounded with treatment group
+##
+##******************************************************************************
+
+rule extract_depths_cs:
+  input: 
+    tsv="data/{dataset}/data_treatment.tsv.gz",
+    rscript="workflow/scripts/extract_depths_cs.R"
+  output:
+    "data/{dataset}/data.depths.tsv"
+  shell:
+    """
+    {input.rscript} {input.tsv} {output}
+    """
+
+rule test_depths_cs:
+  input:
+    tsv="data/{dataset}/data.depths.tsv",
+    rscript="workflow/scripts/test_depths_cs.R"
+  output:
+    "data/{dataset}/data.dtest.tsv"
+  shell:
+    """
+    {input.rscript} {input.tsv} {output}
+    """
+
+rule remove_bottom_samples:
+  input:
+    tsv="data/{dataset}/data_treatment.tsv.gz",
+    rscript="workflow/scripts/remove_rare_samples.R"
+  output:
+    "data/{dataset}/data.{depth}.raw_design.tsv.gz",
+  shell:
+    """
+    {input.rscript} {input.tsv} {wildcards.depth}
+    """
+
+##******************************************************************************
+##
+## Generate subsamples by sample numbers. Need 10 replicates for each number
+## of samples. Values of n samples selected to be similar to those found in 
+## Martino et al. so that there are n samples in each of the treatment groups.
+## Because the crc dataset has more samples per treatment group, I picked values
+## that overlap and go beyond those used for the other datasets. The replicate
+## number is used to set the seed in workflow/scripts/partition_by_nsamples.R
+##
+##******************************************************************************
+
+rule partition_by_nsamples:
+  input:
+    tsv="data/{dataset}/data.{depth}.raw_design.tsv.gz",
+    rscript="workflow/scripts/partition_by_nsamples.R"
+  output:
+    "data/{dataset}/data.{depth}.{nsamples_rep}.raw.tsv.gz",
+    "data/{dataset}/data.{depth}.{nsamples_rep}.design",
+  shell:
+    """
+    {input.rscript} {input.tsv} {wildcards.nsamples_rep}
+    """
+
+# Distances
+# * Subsample distances - euclidean, braycurtis
+# * Rarefaction distances - euclidean, braycurtis
+# * Raw distances - euclidean, braycurtis, rpca
+# * OCLR - euclidean
+
+# PCOA
+# * Direct from RPCA
+# * Use cmdscale for non RPCA distances
+
+# permanova
+# knn
 
 # rule plot_cs_seq_detph:
 #   input:
@@ -324,72 +507,4 @@ rule plot_pcoa_control:
 #     {input.rscript}
 #     """
 
-
-##******************************************************************************
-##
-## Lorem ipsum
-##
-##******************************************************************************
-
-
-
-# rule decompress_biom_casestudy:
-#   input:
-#     "{path_name}.biom.gz"
-#   output:
-#     "{path_name}.biom"
-#   shell:
-#     """
-#     gunzip -k {input}
-#     """
-    
-# rule collect_data_metadata_cs:
-#   input:
-#     biom="deicode_benchmarking/case_studies/data/{dataset}/table.biom",
-#     metadata="deicode_benchmarking/case_studies/data/{dataset}/metadata.txt.gz",
-#     rscript="workflow/scripts/collect_data_metadata_cs.R"
-#   output:
-#     "data/{dataset}/data_treatment.tsv.gz",
-#   params:
-#     column=lambda wcs: treatment_groups[wcs.dataset]
-#   shell:
-#     """
-#     mkdir -p data/{wildcards.dataset}
-#     {input.rscript} {input.biom} {input.metadata} {params.column}
-#     """
-  
-# rule collect_data_metadata_crc:
-#   input:
-#     rscript="workflow/scripts/collect_data_metadata_crc.R"
-#   output:
-#     "data/crc/data_treatment.tsv.gz",
-#   shell:
-#     """
-#     mkdir -p data/crc  
-#     {input.rscript}
-#     """
-
-
-# rule extract_depths_cs:
-#   input: 
-#     tsv="data/{dataset}/data_treatment.tsv.gz",
-#     rscript="workflow/scripts/extract_depths_cs.R"
-#   output:
-#     "data/{dataset}/data.depths.tsv.gz"
-#   shell:
-#     """
-#     {input.rscript} {input.tsv} {output}
-#     """
-
-
-# rule test_depths_cs:
-#   input:
-#     tsv="data/{dataset}/data.depths.tsv.gz",
-#     rscript="workflow/scripts/test_depths_cs.R"
-#   output:
-#     "data/{dataset}/data.dtest.tsv"
-#   shell:
-#     """
-#     {input.rscript} {input.tsv} {output}
-#     """
 
