@@ -20,6 +20,12 @@ Use Snakemake (installed in `martino` environment) to build project
 snakemake --use-conda --conda-frontend mamba -c10
 ```
 
+Alternatively, on a cluster with slurm you can run
+
+```bash
+sbatch slurm/default.slurm
+```
+
 
 ## Conda environments
 
@@ -29,10 +35,11 @@ snakemake --use-conda --conda-frontend mamba -c10
 
 ## Code modifications
 
-Python/Numpy was pitching a fit about the use of `np.int` in these files.
+Python/Numpy was pitching a fit about the use of `np.int` in these files. The `miniconda3` directory was in `~/opt/` on my Mac, but in `~/` on our linux cluster
 
   * `~/opt/miniconda3/envs/rpca/lib/python3.11/site-packages/deicode/_optspace.py`  
   * `~/opt/miniconda3/envs/rpca/lib/python3.11/site-packages/gemelli/optspace.py`
-  * `.snakemake/conda/*/lib/python3.11/site-packages/deicode/optspace.py`
-  
+  * `.snakemake/conda/*/lib/python3.11/site-packages/deicode/_optspace.py`
+  * `.snakemake/conda/*/lib/python3.11/site-packages/gemelli/optspace.py`
+
 I replaced `np.int` with `int` and everything seemed to work fine. The files in `.snakemake/` are for the local environment when running snakemake. 

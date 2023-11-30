@@ -244,6 +244,8 @@ rule transform_oclr:
     tsv="data/{dataset}/{control_depth}.oclr.tsv.gz",
   conda:
     "envs/rpca.yml"
+  group:
+    "transform_oclr"
   shell:
     """
     {input.pyscript} {input.tsv}
@@ -258,6 +260,8 @@ rule calc_dist_norare:
   wildcard_constraints:
     process="oclr|raw",
     distance="euclidean|bray"
+  group:
+    "calc_dist"
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance}
@@ -271,6 +275,8 @@ rule calc_pcoa_from_dist:
     "data/{dataset}/{approach}.{depth}.{process}.{distance}.pcoa.axes"
   wildcard_constraints:
     process="raw|oclr"
+  group:
+    "calc_pcoa_from_dist"
   shell:
     """
     {input.rscript} {input.dmatrix} {output}
@@ -292,6 +298,8 @@ rule test_permanova_simulation:
     rscript = "workflow/scripts/test_permanova.R"
   output:
     "data/simulation/{approach}.{depth}.{process}.{distance}.permanova.tsv"
+  group:
+    "test_permanova"
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -306,6 +314,8 @@ rule test_knn_pds_simulation:
     "data/simulation/{approach}.{depth}.{process}.{distance}.knn_pds.tsv"
   params:
     n_samples = 200
+  group:
+    "test_knn"
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -321,6 +331,8 @@ rule test_knn_cm_simulation:
     rscript = "workflow/scripts/test_train_knn.R"
   output:
     "data/simulation/{approach}.{depth}.{process}.{distance}.knn_cm.tsv"
+  group:
+    "test_knn"
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -339,6 +351,8 @@ rule test_knn_cmgrid_simulation:
     "data/simulation/{approach}.{depth}.{process}.{distance}.knn_cmgrid.tsv"
   params:
     n_samples = 200
+  group:
+    "test_knn"
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -553,6 +567,8 @@ rule partition_by_nsamples:
   output:
     "data/{dataset}/data.{depth}.{nsamples_rep}.raw.tsv.gz",
     "data/{dataset}/data.{depth}.{nsamples_rep}.design",
+  group:
+    "partition_by_nsamples"
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.nsamples_rep}
@@ -580,6 +596,8 @@ rule calc_dist_subsample:
     rscript="workflow/scripts/calc_dist_subsample.R"
   output:
     "data/{dataset}/data.{depth}.{iteration}.raw.sub_{distance}.dist.gz"
+  group:
+    "calc_dist"
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance} {wildcards.depth}
@@ -591,6 +609,8 @@ rule calc_dist_rarefaction:
     rscript="workflow/scripts/calc_dist_rarefaction.R"
   output:
     "data/{dataset}/data.{depth}.{iteration}.raw.rare_{distance}.dist.gz"
+  group:
+    "calc_dist"
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance} {wildcards.depth}
@@ -605,6 +625,8 @@ rule calc_dist_axes_gemelli:
     "data/{dataset}/data.{depth}.{iteration}.gemelli_{rank}.euclidean.pcoa.axes"
   conda:
     "envs/rpca.yml"
+  group:
+    "calc_dist_axes_gemelli"
   shell:
     """
     {input.bash} {input.tsv} {wildcards.rank}
@@ -625,6 +647,8 @@ rule test_permanova_cs:
     rscript = "workflow/scripts/test_permanova.R"
   output:
     "data/{dataset}/{approach}.{depth}.{iteration}.{process}.{distance}.permanova.tsv"
+  group:
+    "test_permanova"
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -635,6 +659,8 @@ rule test_knn_pds_cs:
     dmatrix = "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.dist.gz",
     design = "data/{dataset}/data.{depth}.{size}_{iteration}.design",
     rscript = "workflow/scripts/test_train_knn.R"
+  group:
+    "test_knn"
   output:
     "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_pds.tsv"
   shell:
@@ -652,6 +678,8 @@ rule test_knn_cm_cs:
     rscript = "workflow/scripts/test_train_knn.R"
   output:
     "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_cm.tsv"
+  group:
+    "test_knn"
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -668,6 +696,8 @@ rule test_knn_cmgrid_cs:
     rscript = "workflow/scripts/test_train_knn.R"
   output:
     "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_cmgrid.tsv"
+  group:
+    "test_knn"
   shell:
     """
     R -e 'source("{input.rscript}");

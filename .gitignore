@@ -10,6 +10,8 @@ scratch/
 
 data/*
 !data/process/
+logs/
+
 
 ## .gitignore contents from deicode-benchmarking repository
 
