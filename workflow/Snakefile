@@ -38,9 +38,9 @@ for key, values in control_processes.items():
 
 cs_processes = {
   "oclr": ["euclidean"],
-  "raw": ["bray", "euclidean",
-          "sub_bray", "sub_euclidean",
-          "rare_bray", "rare_euclidean",]
+  "raw": ["bray", "euclidean"],
+  "sub": ["bray", "euclidean"],
+  "rare": ["bray", "euclidean"]
 }
 
 gemelli = {"_2.euclidean", "_3.euclidean", "_4.euclidean", "_5.euclidean",
@@ -246,6 +246,8 @@ rule transform_oclr:
     "envs/rpca.yml"
   group:
     "transform_oclr"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.pyscript} {input.tsv}
@@ -262,6 +264,8 @@ rule calc_dist_norare:
     distance="euclidean|bray"
   group:
     "calc_dist"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance}
@@ -274,9 +278,11 @@ rule calc_pcoa_from_dist:
   output:
     "data/{dataset}/{approach}.{depth}.{process}.{distance}.pcoa.axes"
   wildcard_constraints:
-    process="raw|oclr"
+    process="raw|oclr|rare|sub"
   group:
     "calc_pcoa_from_dist"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.rscript} {input.dmatrix} {output}
@@ -300,6 +306,8 @@ rule test_permanova_simulation:
     "data/simulation/{approach}.{depth}.{process}.{distance}.permanova.tsv"
   group:
     "test_permanova"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -316,6 +324,8 @@ rule test_knn_pds_simulation:
     n_samples = 200
   group:
     "test_knn"
+  resources:
+    mem_mb=200
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -333,6 +343,8 @@ rule test_knn_cm_simulation:
     "data/simulation/{approach}.{depth}.{process}.{distance}.knn_cm.tsv"
   group:
     "test_knn"
+  resources:
+    mem_mb=200
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -353,6 +365,8 @@ rule test_knn_cmgrid_simulation:
     n_samples = 200
   group:
     "test_knn"
+  resources:
+    mem_mb=200
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -569,6 +583,8 @@ rule partition_by_nsamples:
     "data/{dataset}/data.{depth}.{nsamples_rep}.design",
   group:
     "partition_by_nsamples"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.nsamples_rep}
@@ -595,9 +611,11 @@ rule calc_dist_subsample:
     tsv="data/{dataset}/data.{depth}.{iteration}.raw.tsv.gz",
     rscript="workflow/scripts/calc_dist_subsample.R"
   output:
-    "data/{dataset}/data.{depth}.{iteration}.raw.sub_{distance}.dist.gz"
+    "data/{dataset}/data.{depth}.{iteration}.sub.{distance}.dist.gz"
   group:
     "calc_dist"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance} {wildcards.depth}
@@ -608,9 +626,11 @@ rule calc_dist_rarefaction:
     tsv="data/{dataset}/data.{depth}.{iteration}.raw.tsv.gz",
     rscript="workflow/scripts/calc_dist_rarefaction.R"
   output:
-    "data/{dataset}/data.{depth}.{iteration}.raw.rare_{distance}.dist.gz"
+    "data/{dataset}/data.{depth}.{iteration}.rare.{distance}.dist.gz"
   group:
     "calc_dist"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance} {wildcards.depth}
@@ -627,6 +647,8 @@ rule calc_dist_axes_gemelli:
     "envs/rpca.yml"
   group:
     "calc_dist_axes_gemelli"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.bash} {input.tsv} {wildcards.rank}
@@ -649,6 +671,8 @@ rule test_permanova_cs:
     "data/{dataset}/{approach}.{depth}.{iteration}.{process}.{distance}.permanova.tsv"
   group:
     "test_permanova"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -661,6 +685,8 @@ rule test_knn_pds_cs:
     rscript = "workflow/scripts/test_train_knn.R"
   group:
     "test_knn"
+  resources:
+    mem_mb=200
   output:
     "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_pds.tsv"
   shell:
@@ -680,6 +706,8 @@ rule test_knn_cm_cs:
     "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_cm.tsv"
   group:
     "test_knn"
+  resources:
+    mem_mb=200
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -698,6 +726,8 @@ rule test_knn_cmgrid_cs:
     "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_cmgrid.tsv"
   group:
     "test_knn"
+  resources:
+    mem_mb=200
   shell:
     """
     R -e 'source("{input.rscript}");

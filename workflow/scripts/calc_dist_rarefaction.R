@@ -17,8 +17,8 @@ seq_depth <- as.numeric(args[3])
 # seq_depth <- 1000
 
 output_fname <- str_replace(count_table_name,
-                            "tsv.gz",
-                            glue("rare_{distance_method}.dist.gz"))
+                            "raw.tsv.gz",
+                            glue("rare.{distance_method}.dist.gz"))
 
 read_tsv(count_table_name) %>%
   column_to_rownames("sample") %>%

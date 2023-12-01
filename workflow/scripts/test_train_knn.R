@@ -22,20 +22,20 @@ partition_samples <- function(m, frac = 0.8, label) {
 
 }
 
-get_validation_accuacy <- function(m, k, truth) {
+get_validation_accuacy <- function(m, k, truth, v_fraction) {
 
   m %>%
-    partition_samples(frac = 0.8, label = "validate") %>%
+    partition_samples(frac = v_fraction, label = "validate") %>%
     get_accuracy(k, "validate", truth)
 
 }
 
-get_optimal_ksize <- function(m, k_grid, truth, n_splits) {
+get_optimal_ksize <- function(m, k_grid, truth, n_splits, v_fraction) {
 
   expand_grid(replicate = 1:n_splits,
               k_size = k_grid) %>%
     mutate(accuracy = map_dfr(.data$k_size,
-                              ~get_validation_accuacy(m, .x, truth))) %>%
+                              ~get_validation_accuacy(m, .x, truth, v_fraction))) %>%
     unnest(accuracy) %>%
     group_by(k_size) %>%
     summarize(validate = mean(validate)) %>%
@@ -50,12 +50,12 @@ get_accuracy <- function(m, k, validate_test, truth) {
   m %>%
     filter(get(train_column) == "train") %>%
     select(-starts_with("train_"), -all_of(.[["sample"]])) %>%
-    pivot_longer(cols = starts_with("sample_"), names_to = validate_test) %>%
+    pivot_longer(cols = -c(treatment, sample), names_to = validate_test) %>%
     rename(train = sample) %>%
     group_by_at(validate_test) %>%
     slice_min(order_by = value, n = k, with_ties = FALSE) %>%
-    summarize(prop_a = sum(treatment == "A") / n()) %>%
-    mutate(classification = if_else(prop_a < 0.5, "B", "A")) %>%
+    summarize(prop_case = sum(treatment) / n()) %>%
+    mutate(classification = prop_case > 0.5) %>%
     inner_join(., truth, by = setNames("sample", validate_test)) %>%
     summarize("{validate_test}" := sum(classification == treatment) / n())
 
@@ -73,7 +73,7 @@ run_one_knn_loop <- function(m, k_grid, v_fraction, t_fraction, n_splits) {
     filter(train_test == "train") %>%
     select(treatment, sample, all_of(.[["sample"]]))
 
-  get_optimal_ksize(train, k_grid, truth, n_splits) %>%
+  get_optimal_ksize(train, k_grid, truth, n_splits, v_fraction) %>%
     mutate(test = get_accuracy(train_test, k = k_size, "test", truth)) %>%
     unnest(test)
 
@@ -90,11 +90,15 @@ run_knn <- function(design_fname, dmatrix_fname, output_fname,
 
   treatments <- read_tsv(design_fname,
                         col_types = cols(.default = col_character()))
+
+  case <- treatments[[1, "treatment"]]
+
   dmatrix <- read_tsv(dmatrix_fname,
                       col_types = cols(sample = col_character(),
                                       .default = col_double()))
 
-  treat_dmatrix <- inner_join(treatments, dmatrix, by = "sample")
+  treat_dmatrix <- inner_join(treatments, dmatrix, by = "sample") %>%
+                  mutate(treatment = treatment == case)
 
   tibble(iteration = 1:n_oloops) %>%
     mutate(knn_loops = map_dfr(.data$iteration,
