@@ -83,6 +83,11 @@ for key, values in n_samples.items():
         for rep in range(1,11):
           samples_depths_nsamples_reps.append(f"data/{key}/data.{depth}.{value}_{rep}")
 
+samples_depths_all = []
+for key, values in two_depths.items():
+  for depth in values:
+    samples_depths_all.append(f"data/{key}/data.{depth}.all")
+
 rule targets:
   input:
     expand("data/simulation/{simulation_depth}.raw.tsv.gz",
@@ -121,18 +126,18 @@ rule targets:
     expand("data/{sample_depth}.raw_design.tsv.gz",
           sample_depth = samples_depths),
     expand("{sample_depth_nsample_rep}.{transform}.tsv.gz",
-            sample_depth_nsample_rep = samples_depths_nsamples_reps,
+            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps,
             transform = ["raw", "oclr"]),
     expand("{sample_depth_nsample_rep}.design",
-            sample_depth_nsample_rep = samples_depths_nsamples_reps),
+            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps),
     expand("{sample_depth_nsample_rep}.{process_dist}.dist.gz",
-            sample_depth_nsample_rep = samples_depths_nsamples_reps,
+            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps,
             process_dist = cs_processes_dist),
     expand("{sample_depth_nsample_rep}.{process_dist}.pcoa.axes",
-            sample_depth_nsample_rep = samples_depths_nsamples_reps,
+            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps,
             process_dist = cs_processes_dist),
     expand("{sample_depth_nsample_rep}.{process_dist}.permanova.tsv",
-            sample_depth_nsample_rep = samples_depths_nsamples_reps,
+            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps,
             process_dist = cs_processes_dist),
     expand("{sample_depth_nsample_rep}.{process_dist}.knn_{approach}.tsv",
             sample_depth_nsample_rep = samples_depths_nsamples_reps,
@@ -574,6 +579,22 @@ rule remove_rare_samples:
 ##
 ##******************************************************************************
 
+rule no_partition_by_samples:
+  input:
+    tsv="data/{dataset}/data.{depth}.raw_design.tsv.gz",
+    rscript="workflow/scripts/no_partition_by_samples.R"
+  output:
+    "data/{dataset}/data.{depth}.all.raw.tsv.gz",
+    "data/{dataset}/data.{depth}.all.design",
+  group:
+    "partition_by_nsamples"
+  resources:
+    mem_mb=200
+  shell:
+    """
+    {input.rscript} {input.tsv}
+    """
+
 rule partition_by_nsamples:
   input:
     tsv="data/{dataset}/data.{depth}.raw_design.tsv.gz",
@@ -581,6 +602,8 @@ rule partition_by_nsamples:
   output:
     "data/{dataset}/data.{depth}.{nsamples_rep}.raw.tsv.gz",
     "data/{dataset}/data.{depth}.{nsamples_rep}.design",
+  wildcard_constraints:
+    nsamples_rep="!all"
   group:
     "partition_by_nsamples"
   resources:
@@ -589,6 +612,7 @@ rule partition_by_nsamples:
     """
     {input.rscript} {input.tsv} {wildcards.nsamples_rep}
     """
+
 
 ##******************************************************************************
 ##
