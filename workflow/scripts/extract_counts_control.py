@@ -5,11 +5,19 @@ import pandas as pd
 import numpy as np
 from sklearn.utils import shuffle
 from deicode_benchmarking.simulations.scripts.simulations import build_block_model
+import sys
 
+desired_depth = int(sys.argv[1])
 
-depth=2.5e3
-overlap_=0
-rank_=2
+seq_depth={500:3.05e2, 
+            1000:6.1e2, 
+            2000:1.25e3, 
+            4000:2.5e3, 
+            10000:6.05e3}
+
+depth = seq_depth[desired_depth]
+overlap_ = 0
+rank_ = 2
 
 #run model with fit variables and new variants
 _,X_signal=build_block_model(rank_,  depth/60, depth/60, 
@@ -22,7 +30,7 @@ X_signal=pd.DataFrame(X_signal.T,
                       index=['sample_'+str(x) 
                                for x in range(X_signal.shape[1])])
 X_signal.insert(0, 'sample', X_signal.index)
-X_signal.to_csv('data/simulation/positive.4000.raw.tsv.gz', sep = '\t', index = False)
+X_signal.to_csv(f'data/simulation/positive.{desired_depth}.raw.tsv.gz', sep = '\t', index = False)
 
 
 #run model with fit variables and new variants
@@ -40,4 +48,4 @@ X_random=X_random.T
 X_random.sort_index(inplace=True)
 X_random=X_random.T
 X_random.insert(0, 'sample', X_random.index)
-X_random.to_csv('data/simulation/negative.4000.raw.tsv.gz', sep = '\t', index = False)
+X_random.to_csv(f'data/simulation/negative.{desired_depth}.raw.tsv.gz', sep = '\t', index = False)
