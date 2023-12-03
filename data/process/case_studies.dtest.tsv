@@ -314,7 +314,7 @@ crc	20700	0.602227091067441	17540	Wilcoxon rank sum test with continuity correct
 crc	20713	0.5373222282556362	17340	Wilcoxon rank sum test with continuity correction	two.sided
 crc	20722	0.4756469671829274	17140	Wilcoxon rank sum test with continuity correction	two.sided
 crc	20756	0.4176110741258028	16940	Wilcoxon rank sum test with continuity correction	two.sided
-crc	20830	0.36354425374800536	16740	Wilcoxon rank sum test with continuity correction	two.sided
+crc	20830	0.36354425374800525	16740	Wilcoxon rank sum test with continuity correction	two.sided
 crc	20967	0.4076762302054358	16740	Wilcoxon rank sum test with continuity correction	two.sided
 crc	21005	0.4552283033627482	16740	Wilcoxon rank sum test with continuity correction	two.sided
 crc	21054	0.3982718614572311	16542	Wilcoxon rank sum test with continuity correction	two.sided
@@ -420,7 +420,7 @@ crc	29580	0.15501026984087565	8472	Wilcoxon rank sum test with continuity correc
 crc	29585	0.12292632524488932	8325	Wilcoxon rank sum test with continuity correction	two.sided
 crc	29695	0.14619294840274946	8325	Wilcoxon rank sum test with continuity correction	two.sided
 crc	29742	0.17298503047077288	8325	Wilcoxon rank sum test with continuity correction	two.sided
-crc	30038	0.20362829492957196	8325	Wilcoxon rank sum test with continuity correction	two.sided
+crc	30038	0.2036282949295719	8325	Wilcoxon rank sum test with continuity correction	two.sided
 crc	30202	0.16418031334549635	8181	Wilcoxon rank sum test with continuity correction	two.sided
 crc	30258	0.193723784766691	8181	Wilcoxon rank sum test with continuity correction	two.sided
 crc	30289	0.15554770837645815	8038	Wilcoxon rank sum test with continuity correction	two.sided

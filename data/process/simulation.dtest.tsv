@@ -1,8 +1,8 @@
 simulation	depth	p_value	statistic	method	alternative
-negative	4000	0.46278384578212334	5301	Wilcoxon rank sum test with continuity correction	two.sided
+negative	4000	0.14837355386704193	5592	Wilcoxon rank sum test with continuity correction	two.sided
 overlap	1000	0.7646894134264719	4877	Wilcoxon rank sum test with continuity correction	two.sided
 overlap	10000	0.14941357437757327	5590.5	Wilcoxon rank sum test with continuity correction	two.sided
 overlap	2000	0.5674769736569044	5234.5	Wilcoxon rank sum test with continuity correction	two.sided
 overlap	4000	0.7862236846626967	4888.5	Wilcoxon rank sum test with continuity correction	two.sided
 overlap	500	0.3951101188272925	5348.5	Wilcoxon rank sum test with continuity correction	two.sided
-positive	4000	0.9824553494266272	4990.5	Wilcoxon rank sum test with continuity correction	two.sided
+positive	4000	0.03163599588012987	4120	Wilcoxon rank sum test with continuity correction	two.sided
