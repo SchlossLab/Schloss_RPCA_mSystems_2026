@@ -2,25 +2,29 @@
 
 library(tidyverse)
 
-pooled_data <- read_tsv("data/process/simulation.knn.tsv") %>%
-  filter(simulation == "overlap") %>%
-  mutate(depth = factor(depth, levels = c(500, 1000, 2000, 4000, 10000)),
-         process_calculator = factor(process_calculator,
+pooled_data <- read_tsv("data/pooled_data/knn_results.tsv.gz") %>%
+  filter(dataset == "overlap") %>%
+  mutate(depth = factor(depth, levels = c(1000, 2000, 4000, 10000)),
+        process_calculator = paste(process, distance, sep = "_")) %>%
+  filter(process_calculator %in% c("gemelli_2_euclidean", "oclr_euclidean",
+                                  "optspace_euclidean", "raw_bray",
+                                  "raw_euclidean")) %>%
+  filter(rep == 1) %>% #needs to change...
+  mutate(process_calculator = factor(process_calculator,
                                      levels = c("optspace_euclidean",
                                                 "raw_euclidean",
                                                 "oclr_euclidean",
-                                                "rpca_euclidean",
+                                                "gemelli_2_euclidean",
                                                 "raw_bray")))
 
 format_depth <- c(
-  "500" = "500 sequences", 
   "1000" = "1,000 sequences",
-  "2000" = "2,000 sequences", 
+  "2000" = "2,000 sequences",
   "4000" = "4,000 sequences",
   "10000" = "10,000 sequences")
 
 pooled_data %>%
-  ggplot(aes(x = process_calculator, y = test, fill = approach)) +
+  ggplot(aes(x = process_calculator, y = test, fill = knn_approach)) +
   geom_hline(yintercept = 0.5, color = "gray") +
   geom_boxplot() +
   facet_wrap(~depth, ncol = 1,
@@ -29,12 +33,12 @@ pooled_data %>%
        y = "Accuracy") +
   scale_x_discrete(breaks = c("oclr_euclidean",
                               "raw_euclidean", "optspace_euclidean",
-                              "raw_bray", "rpca_euclidean"),
+                              "raw_bray", "gemelli_2_euclidean"),
                    labels = c("Aitchison", "Raw\nEuclidean",
                               "Raw w/ OptSpace\nEuclidean",
                               "Bray-Curtis", "Robust\nAitchison")) +
   scale_fill_manual(name = NULL,
-                    breaks = c("cm", "cmgrid", "pds"),
+                    breaks = c("knn_cmfixed", "knn_cmgrid", "knn_pdsgrid"),
                     labels = c("Martino", "Martino+Grid", "Current"),
                     values = c("tomato", "forestgreen", "dodgerblue")) +
   theme_classic() +

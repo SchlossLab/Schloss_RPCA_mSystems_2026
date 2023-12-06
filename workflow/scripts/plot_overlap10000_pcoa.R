@@ -6,11 +6,16 @@ library(patchwork)
 
 args <- commandArgs(trailingOnly = TRUE)
 
-pcoa_fnames <- c("data/simulation/overlap.10000.raw.bray.pcoa.axes",
-                 "data/simulation/overlap.10000.oclr.euclidean.pcoa.axes",
-                 "data/simulation/overlap.10000.rpca.euclidean.pcoa.axes")
+pcoa_fnames <- args[1:3]
+design_fname <- args[4]
 
-design_fname <- "data/simulation/simulation.design"
+# pcoa_fnames <- c("data/overlap/data.10000.100_1.raw.bray.pcoa.axes",
+#     "data/overlap/data.10000.100_1.oclr.euclidean.pcoa.axes",
+#     "data/overlap/data.10000.100_1.gemelli_2.euclidean.pcoa.axes"
+# )
+
+# design_fname <- "data/overlap/data.10000.100_1.design"
+
 output_fname <- "figures/overlap10000.pcoa.png"
 
 plot_pcoa <- function(fname, title, invert_x = FALSE, invert_y = FALSE) {
@@ -53,7 +58,7 @@ plot_pcoa <- function(fname, title, invert_x = FALSE, invert_y = FALSE) {
 }
 
 bray <- plot_pcoa(pcoa_fnames[1], "Bray-Curtis")
-oclr <- plot_pcoa(pcoa_fnames[2], "Aitchison", invert_x = TRUE)
+oclr <- plot_pcoa(pcoa_fnames[2], "Aitchison")
 rpca <- plot_pcoa(pcoa_fnames[3], "Robust PCA")
 
 bray + oclr + rpca +

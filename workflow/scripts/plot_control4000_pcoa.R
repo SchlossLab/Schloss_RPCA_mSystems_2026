@@ -4,17 +4,19 @@ library(tidyverse)
 library(glue)
 library(patchwork)
 
-pcoa_fnames <- c("data/simulation/positive.4000.raw.bray.pcoa.axes",
-                 "data/simulation/positive.4000.rpca.euclidean.pcoa.axes",
-                 "data/simulation/negative.4000.raw.bray.pcoa.axes",
-                 "data/simulation/negative.4000.rpca.euclidean.pcoa.axes")
+pcoa_fnames <- c("data/positive/data.4000.100_1.raw.bray.pcoa.axes",
+                 "data/positive/data.4000.100_1.gemelli_2.euclidean.pcoa.axes",
+                 "data/negative/data.4000.100_1.raw.bray.pcoa.axes",
+                 "data/negative/data.4000.100_1.gemelli_2.euclidean.pcoa.axes")
 
-design_fname <- "data/simulation/simulation.design"
+design_fnames <- c("data/positive/data.4000.100_1.design",
+                  "data/negative/data.4000.100_1.design")
+
 output_fname <- "figures/control4000.pcoa.png"
 
-plot_pcoa <- function(fname, title) {
+plot_pcoa <- function(axes_fname, design_fname, title) {
 
-  pcoa <- read_tsv(fname, col_types = cols(.default = col_double(),
+  pcoa <- read_tsv(axes_fname, col_types = cols(.default = col_double(),
                                            sample = col_character()))
 
   design <- read_tsv(design_fname, col_types = cols(.default = col_character()))
@@ -38,18 +40,19 @@ plot_pcoa <- function(fname, title) {
          subtitle = title) +
     theme_classic() +
     theme(plot.title = element_text(face = "bold"),
-          plot.title.position = "plot",
-          plot.subtitle = element_text(hjust = 0.5))
+          plot.subtitle = element_text(face = "bold"),
+          plot.title.position = "plot"
+          )
 
 }
 
-bray_positive <- plot_pcoa(pcoa_fnames[1], "Bray-Curtis") +
+bray_positive <- plot_pcoa(pcoa_fnames[1], design_fnames[1], "Bray-Curtis") +
   labs(title = "Positive control")
-rpca_positive <- plot_pcoa(pcoa_fnames[2], "Robust PCA")
+rpca_positive <- plot_pcoa(pcoa_fnames[2], design_fnames[1], "Robust PCA")
 
-bray_negative <- plot_pcoa(pcoa_fnames[3], "Bray-Curtis") +
+bray_negative <- plot_pcoa(pcoa_fnames[3], design_fnames[2], "Bray-Curtis") +
   labs(title = "Negative control")
-rpca_negative <- plot_pcoa(pcoa_fnames[4], "Robust PCA")
+rpca_negative <- plot_pcoa(pcoa_fnames[4], design_fnames[2], "Robust PCA")
 
 (bray_positive + rpca_positive) / (bray_negative + rpca_negative) +
   plot_layout(widths = 1, heights = 1)

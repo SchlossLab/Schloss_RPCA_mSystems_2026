@@ -5,37 +5,43 @@ library(data.table)
 library(glue)
 
 args <-  commandArgs(trailingOnly = TRUE)
-count_meta_fname <- args[1]
-nsamples_rep <- args[2]
+count_in_fname <- args[1]
+design_in_fname <- args[2]
+nsamples <- as.integer(args[3])
+rep <- as.integer(args[4])
 
-# count_meta_fname <- "data/sponges/data.13755.raw_design.tsv.gz"
-# nsamples_rep <- "55_2"
-
-nsamples_rep_parse <- as.numeric(unlist(str_split(nsamples_rep, pattern = "_")))
-n_samples <- nsamples_rep_parse[1]
-rep <- nsamples_rep_parse[2]
-
-count_fname <- str_replace(count_meta_fname,
-                          "raw_design.tsv.gz",
-                          glue("{nsamples_rep}.raw.tsv.gz"))
-
-design_fname <- str_replace(count_meta_fname,
-                            "raw_design.tsv.gz",
-                            glue("{nsamples_rep}.design"))
-
+# count_in_fname <- "data/crc/data.1000.all_1.raw.tsv.gz"
+# design_in_fname <- "data/crc/data.1000.all_1.design"
+# nsamples <- 35
+# rep <- 1
 
 set.seed(rep)
 
-count_design <- fread(count_meta_fname) %>%
-  slice_sample(n = n_samples, by = treatment) %>%
+count_out_fname <- str_replace(count_in_fname,
+                               "all_1.raw.tsv.gz",
+                               glue("{nsamples}_{rep}.raw.tsv.gz"))
+
+design_out_fname <- str_replace(count_in_fname,
+                                "all_1.raw.tsv.gz",
+                                glue("{nsamples}_{rep}.design"))
+
+count_data <- fread(count_in_fname,
+                    colClasses = c("sample" = "character"))
+
+design_data <- read_tsv(design_in_fname,
+                        col_types = cols(sample = col_character(),
+                                        treatment = col_character()))
+
+count_design <- inner_join(design_data, count_data, by = "sample") %>%
+  slice_sample(n = nsamples, by = treatment) %>%
   pivot_longer(cols = starts_with("OTU")) %>%
   filter(value > 0) %>%
   pivot_wider(id_cols  = c(sample, treatment), values_fill = 0)
 
 count_design %>%
   select(sample, starts_with("OTU")) %>%
-  write_tsv(count_fname)
+  write_tsv(count_out_fname)
 
 count_design %>%
   select(sample, treatment) %>%
-  write_tsv(design_fname)
+  write_tsv(design_out_fname)

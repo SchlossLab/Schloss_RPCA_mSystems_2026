@@ -10,460 +10,129 @@
 #
 #*******************************************************************************
 
+import re
+
+n_iters = 10
+
+treatment_groups = {
+  'crc' : 'treatment',
+  'sleep_apnea': 'exposure_type',
+  'sponges': 'health_status'
+}
+
 simulations = {
-  "positive": [500, 1000, 2000, 4000, 10000],
-  "negative": [1000, 2000, 4000, 10000], #500 produces a table of zeroes
-  "overlap": [500, 1000, 2000, 4000, 10000]
+  'positive': 'treatment',
+  'negative': 'treatment',
+  'overlap': 'treatment'
 }
 
-simulations_depths = []
-for key, values in simulations.items():
-    for value in values:
-      simulations_depths.append(f"{key}.{value}")
-
-
-simulations_depths_size = []
-for key, values in simulations.items():
-  for rep in range(1, 11):
-    simulations_depths_size.append(f"{key}.5000.size_{rep}")
-
-
-control_processes = {
-  "optspace": ["euclidean"],
-  "rpca": ["euclidean"],
-  "oclr": ["euclidean"],
-  "raw": ["bray", "euclidean"]
+seq_depths = {
+  "sponges": [1000, 13755], 
+  "sleep_apnea": [1000, 11879],
+  "crc": [1000, 10439],
+  "positive": [1000, 2000, 4000, 10000],
+  "negative": [1000, 2000, 4000, 10000],
+  "overlap": [1000, 2000, 4000, 10000]
 }
 
-control_processes_dists = []
-for key, values in control_processes.items():
-    for value in values:
-      control_processes_dists.append(f"{key}.{value}")
+paritions_reps = {
+  'crc' : {'all': 1, '35':n_iters, '83':n_iters, '130':n_iters, '178':n_iters, '226':n_iters},
+  'sleep_apnea': {'all': 1, '35':n_iters, '48':n_iters, '61':n_iters, '74':n_iters, '87':n_iters},
+  'sponges': {'all': 1, '35':n_iters, '45':n_iters, '55':n_iters, '61':n_iters, '78':n_iters},
+  'positive': {100: n_iters},
+  'negative': {100: n_iters},
+  'overlap': {100: n_iters}
+  }
 
-control_processs_extra = {
-  "rare": ["bray", "euclidean"],
-  "sub": ["bray", "euclidean"]
+processes_dists = {
+  'raw':        {'euclidean', 'bray'},
+  'rare':       {'euclidean', 'bray'},
+  'sub':        {'euclidean', 'bray'},
+  'oclr':       {'euclidean'},
+  'gemelli_2':  {'euclidean'},
+  'gemelli_3':  {'euclidean'},
+  'gemelli_5':  {'euclidean'},
+  'gemelli_9':  {'euclidean'},
+  'gemelli_auto': {'euclidean'},
+  'optspace':   {'euclidean'}
 }
 
-control_processs_dists_extra = []
-for key, values in control_processs_extra.items():
-    for value in values:
-      control_processs_dists_extra.append(f"{key}.{value}")
+knn_analyses = ["knn_cmfixed.tsv", "knn_cmgrid.tsv", "knn_pdsgrid.tsv"]
 
 
+pcoa_axes_files = []
+permanova_treatment_files = []
+knn_results_files = []
 
+for ds,depths in seq_depths.items():
+  for part,iters in paritions_reps[ds].items():
+    for d in depths:
+      for i in range(iters):
+        for proc, dists in processes_dists.items():
+          for dist in dists:
+            pcoa_axes_files.append(f'data/{ds}/data.{d}.{part}_{i+1}.{proc}.{dist}.pcoa.axes')
+            permanova_treatment_files.append(f'data/{ds}/data.{d}.{part}_{i+1}.{proc}.{dist}.permanova.tsv')
+            if part != "all":
+              for ka in knn_analyses:
+                knn_results_files.append(f'data/{ds}/data.{d}.{part}_{i+1}.{proc}.{dist}.{ka}')
 
-cs_processes = {
-  "oclr": ["euclidean"],
-  "raw": ["bray", "euclidean"],
-  "sub": ["bray", "euclidean"],
-  "rare": ["bray", "euclidean"]
-}
+gemelli_auto_files = [s for s in pcoa_axes_files if 'auto' in s]
 
-gemelli = {"_2.euclidean", "_3.euclidean", "_4.euclidean", "_5.euclidean",
-             "_9.euclidean", "_auto.euclidean"}
+permanova_size_files = []
+for ds in seq_depths.keys():
+  for proc, dists in processes_dists.items():
+    for dist in dists:
+      for i in range(n_iters):
+        pcoa_axes_files.append(f'data/{ds}/data.5000.size_{i+1}.{proc}.{dist}.pcoa.axes')
+        permanova_size_files.append(f'data/{ds}/data.5000.size_{i+1}.{proc}.{dist}.permanova.tsv')
 
-cs_processes_dist = []
-for key, values in cs_processes.items():
-  for value in values:
-    cs_processes_dist.append(f"{key}.{value}")
-
-for g in gemelli:
-  cs_processes_dist.append(f"gemelli{g}")
-
-
-knn_approaches = ["cm", "pds", "cmgrid"]
-
-
-treatment_groups = {"sponges": "health_status",
-                    "sleep_apnea": "exposure_type"}
-
-
-two_depths = {"sponges": [1000, 13755], 
-              "sleep_apnea": [1000, 11879],
-              "crc": [1000, 10439]}
-
-n_samples = {"sponges": [35, 45, 55, 65, 78], 
-             "sleep_apnea": [35, 48, 61, 74, 87],
-             "crc": [35, 83, 130, 178, 226]}
-
-
-samples_depths = []
-for key, values in two_depths.items():
-    for value in values:
-      samples_depths.append(f"{key}/data.{value}")
-
-samples_depths_nsamples_reps = []
-for key, values in n_samples.items():
-    for value in values:
-      for depth in two_depths[key]:
-        for rep in range(1,11):
-          samples_depths_nsamples_reps.append(f"data/{key}/data.{depth}.{value}_{rep}")
-
-samples_depths_all = []
-for key, values in two_depths.items():
-  for depth in values:
-    samples_depths_all.append(f"data/{key}/data.{depth}.all")
-
-samples_depths_size = []
-for key, values in two_depths.items():
-  for rep in range(1, 11):
-    samples_depths_size.append(f"data/{key}/data.5000.size_{rep}")
 
 rule targets:
   input:
-    "data/simulation/simulation.design",
-    expand("data/simulation/{simulation_depth}.raw.tsv.gz",
-           simulation_depth = simulations_depths + simulations_depths_size),
-    expand("data/simulation/{simulation_depth_size}.design",
-           simulation_depth_size = simulations_depths_size),
-    expand("data/simulation/{simulation_depth}.oclr.tsv.gz",
-           simulation_depth = simulations_depths + simulations_depths_size),
-    expand("data/simulation/{simulation_depth}.raw.dtest.tsv",
-           simulation_depth = simulations_depths),
-    expand("data/simulation/{simulation_depth}.{process_dist}.dist.gz",
-           simulation_depth = simulations_depths + simulations_depths_size,
-           process_dist = control_processes_dists),
-    expand("data/simulation/{simulation_depth}.{process_dist}.pcoa.axes",
-           simulation_depth = simulations_depths + simulations_depths_size,
-           process_dist = control_processes_dists),
-    expand("data/simulation/{simulation_depth}.{process_dist}.permanova.tsv",
-           simulation_depth = simulations_depths,
-           process_dist = control_processes_dists),
-    expand("data/simulation/{simulation_depth}.{process_dist}.knn_{approach}.tsv",
-           simulation_depth = simulations_depths,
-           process_dist = control_processes_dists,
-           approach = knn_approaches),
-    expand("data/simulation/{control}.5000.size_{iteration}.{process_dist}.permanova.tsv",
-            control = simulations.keys(),
-            iteration = range(1,11),
-            process_dist = control_processes_dists + control_processs_dists_extra),
-    #
-    expand("data/{dataset}/table.biom",
-          dataset = ["sponges", "sleep_apnea"]),
-    expand("data/{dataset}/data_treatment.tsv.gz",
-          dataset = list(two_depths.keys())),
-    expand("data/{dataset}/data.depths.tsv",
-          dataset = list(two_depths.keys())),
-    expand("data/{dataset}/data.dtest.tsv",
-          dataset = list(two_depths.keys())),
-    expand("data/{sample_depth}.raw_design.tsv.gz",
-          sample_depth = samples_depths),
-    expand("{sample_depth_nsample_rep}.{transform}.tsv.gz",
-            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps + samples_depths_size,
-            transform = ["raw", "oclr"]),
-    expand("{sample_depth_nsample_rep}.design",
-            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps + samples_depths_size),
-    expand("{sample_depth_nsample_rep}.{process_dist}.dist.gz",
-            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps + samples_depths_size,
-            process_dist = cs_processes_dist),
-    expand("{sample_depth_nsample_rep}.{process_dist}.pcoa.axes",
-            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps + samples_depths_size,
-            process_dist = cs_processes_dist),
-    expand("{sample_depth_nsample_rep}.{process_dist}.permanova.tsv",
-            sample_depth_nsample_rep = samples_depths_all + samples_depths_nsamples_reps,
-            process_dist = cs_processes_dist),
-    expand("{sample_depth_nsample_rep}.{process_dist}.knn_{approach}.tsv",
-            sample_depth_nsample_rep = samples_depths_nsamples_reps,
-            process_dist = cs_processes_dist,
-            approach = knn_approaches),
-    expand("data/{dataset}/data.5000.size_{iteration}.{process_dist}.permanova.tsv",
-            dataset = two_depths.keys(),
-            iteration = range(1,11),
-            process_dist = cs_processes_dist),
-#            
-    "data/process/simulation.dtest.tsv",
-    "data/process/simulation.knn.tsv.gz",
-    "data/process/simulation.permanova.tsv",
-    "data/process/case_studies.dtest.tsv",
-    "data/process/case_studies.knn.tsv.gz",
-    "data/process/case_studies.permanova.tsv",
- #
+    pcoa_axes_files,
+    "data/pooled_data/depth_confounding.tsv",
+    "data/pooled_data/gemelli_auto_naxes.tsv",
+    "data/pooled_data/permanova_treatment.tsv",
+    "data/pooled_data/permanova_size.tsv",
+    "data/pooled_data/knn_results.tsv.gz",
+  # figures
     "figures/overlap10000.pcoa.png",
     "figures/control4000.pcoa.png",
-    "figures/knn_control_comparison.png",
+    "figures/cs_seq_depth.png",
+    #
     "figures/knn_overlap_comparison.png",
-    "figures/cs_seq_depth.png"
+    "figures/knn_control_comparison.png",
 
-##******************************************************************************
-##
-## Generate raw count tables. The overlap files have some overlap between the
-## treatment groups. The negative completely overlap and the positive do not
-## overlap at all. Confirm that there is no confounding between treatment group
-## and the number of sequences in each sample.
-##
-## My naming scheme: simulation = control + overlap
-##
-##******************************************************************************
-
-rule extract_counts_overlap:
-  input:
-    csv="deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz",
-    rscript="workflow/scripts/extract_counts_overlap.R"
-  output:
-    "data/simulation/overlap.{depth}.raw.tsv.gz"
-  wildcard_constraints:
-    depth="\\d*"
-  shell:
-    """
-    mkdir -p data/simulation/
-    {input.rscript} {input.csv} {wildcards.depth}
-    """
-
-rule extract_counts_simulation:
-  input:
-    pyscript="workflow/scripts/extract_counts_control.py",
-    deicode="deicode_benchmarking/simulations/scripts/simulations.py"
-  output:
-    expand("data/simulation/{control}.{depth}.raw.tsv.gz",
-           control = ["positive", "negative"], 
-           allow_missing = True)
-  wildcard_constraints:
-    depth="\\d*"
-  conda:
-    "envs/rpca.yml"
-  shell:
-    """
-    mkdir -p data/simulation/
-    PYTHONPATH='.' {input.pyscript} {wildcards.depth}
-    """
-
-rule create_design_simulation:
-  input:
-    rscript="workflow/scripts/create_design_simulation.R"
-  output:
-    "data/simulation/simulation.design"
-  shell:
-    """
-    {input.rscript} 100 100 {output}
-    """
-
-rule partition_by_size_control:
-  input:
-    counts="data/simulation/{control}.10000.raw.tsv.gz",
-    design="data/simulation/simulation.design",
-    rscript="workflow/scripts/partition_by_size_control.R"
-  output:
-    "data/simulation/{control}.5000.size_{seed}.raw.tsv.gz",
-    "data/simulation/{control}.5000.size_{seed}.design",
-  shell:
-    """
-    {input.rscript} {input.counts} {input.design} {wildcards.seed}
-    """
-
-rule test_depths_simulation:
-  input:
-    tsv="data/simulation/{control_depth}.raw.tsv.gz",
-    design="data/simulation/simulation.design",
-    rscript="workflow/scripts/test_depths_simulation.R"
-  output:
-    "data/simulation/{control_depth}.raw.dtest.tsv"
-  shell:
-    """
-    {input.rscript} {input.tsv} {input.design} {output}
-    """
 
 
 ##******************************************************************************
 ##
-## Calculate distances and ordinations. Am using the ipynb code for the RPCA
-## calculations because need the OptSpace data, which doesn't appear available
-## in gemelli
+## Generate raw count tables from simulations and case studies.
 ##
-##******************************************************************************
-
-rule calc_dist_axes_rpca_control:
-  input:
-    tsv="data/simulation/{simulation}.{depth}.raw.tsv.gz",
-    pyscript="workflow/scripts/calc_dist_axes_rpca_control.py"
-  output:
-    "data/simulation/{simulation}.{depth}.optspace.euclidean.dist.gz",
-    "data/simulation/{simulation}.{depth}.rpca.euclidean.dist.gz",
-    "data/simulation/{simulation}.{depth}.optspace.euclidean.pcoa.axes",
-    "data/simulation/{simulation}.{depth}.rpca.euclidean.pcoa.axes"
-  conda:
-    "envs/rpca.yml"
-  wildcard_constraints:
-    simulation="positive|negative|overlap"
-  shell:
-    """
-    {input.pyscript} {input.tsv}
-    """
-
-rule transform_oclr:
-  input:
-    tsv="data/{dataset}/{control_depth}.raw.tsv.gz",
-    pyscript="workflow/scripts/transform_oclr.py"
-  output:
-    tsv="data/{dataset}/{control_depth}.oclr.tsv.gz",
-  conda:
-    "envs/rpca.yml"
-  group:
-    "transform_oclr"
-  resources:
-    mem_mb=200
-  shell:
-    """
-    {input.pyscript} {input.tsv}
-    """
-
-rule calc_dist_norare:
-  input:
-    tsv="data/{dataset}/{simulation_depth}.{process}.tsv.gz",
-    rscript="workflow/scripts/calc_dist_norare.R"
-  output:
-    "data/{dataset}/{simulation_depth}.{process}.{distance}.dist.gz"
-  wildcard_constraints:
-    process="oclr|raw",
-    distance="euclidean|bray"
-  group:
-    "calc_dist"
-  resources:
-    mem_mb=200
-  shell:
-    """
-    {input.rscript} {input.tsv} {wildcards.distance}
-    """
-
-rule calc_pcoa_from_dist:
-  input:
-    dmatrix = "data/{dataset}/{approach}.{depth}.{process}.{distance}.dist.gz",
-    rscript = "workflow/scripts/calc_pcoa_from_dist.R"
-  output:
-    "data/{dataset}/{approach}.{depth}.{process}.{distance}.pcoa.axes"
-  wildcard_constraints:
-    process="raw|oclr|rare|sub"
-  group:
-    "calc_pcoa_from_dist"
-  resources:
-    mem_mb=200
-  shell:
-    """
-    {input.rscript} {input.dmatrix} {output}
-    """
-
-  
-##******************************************************************************
+## For the simulations, overlap files have some overlap between the
+## treatment groups, the negative completely overlap, and the positive do not
+## overlap at all. I have rerun the original code from deicode_benchmarking
+## in my own script to (i) generate 10 replicates of each set of conditions, 
+## (ii) insure that each sample only has the specified number of sequences
+## rather than an average across samples, and (iii) to generate negative and
+## positive control samples that have the same depths as the overlaps samples
 ##
-## Carry out PERMANOVA and KNN tests on distance matrices. Not using the PCoA
-## for KNN as was done in the original Martino et al paper for the Bray-Curtis
-## distances
+## For the sponges and sleep_apnea, I am modifying the original code to (i) use
+## more sensible sequencing depths and (ii) make it easier to have 10 replicates
+## of each partition (original only had 9).
 ##
-##******************************************************************************
-
-rule test_permanova_simulation:
-  input:
-    dmatrix = "data/simulation/{control}.{depth}.{process}.{distance}.dist.gz",
-    design = "data/simulation/simulation.design",
-    rscript = "workflow/scripts/test_permanova.R"
-  output:
-    "data/simulation/{control,[A-Za-z0-9]+}.{depth,[0-9]+}.{process,[A-Za-z0-9]+}.{distance}.permanova.tsv"
-  group:
-    "test_permanova"
-  resources:
-    mem_mb=200
-  shell:
-    """
-    {input.rscript} {input.dmatrix} {input.design} {output}
-    """
-
-rule test_permanova_size_simulation:
-  input:
-    dmatrix = "data/simulation/{control}.5000.size_{iteration}.{process}.{distance}.dist.gz",
-    design = "data/simulation/{control}.5000.size_{iteration}.design",
-    rscript = "workflow/scripts/test_permanova_size.R"
-  output:
-    "data/simulation/{control}.5000.size_{iteration}.{process}.{distance}.permanova.tsv"
-  group:
-    "test_permanova"
-  resources:
-    mem_mb=200
-  shell:
-    """
-    {input.rscript} {input.dmatrix} {input.design} {output}
-    """
-
-rule test_knn_pds_simulation:
-  input:
-    dmatrix = "data/simulation/{approach}.{depth}.{process}.{distance}.dist.gz",
-    design = "data/simulation/simulation.design",
-    rscript = "workflow/scripts/test_train_knn.R"
-  output:
-    "data/simulation/{approach}.{depth}.{process}.{distance}.knn_pds.tsv"
-  params:
-    n_samples = 200
-  group:
-    "test_knn"
-  resources:
-    mem_mb=200
-  shell:
-    """
-    R -e 'source("{input.rscript}");
-          run_knn("{input.design}", "{input.dmatrix}", "{output}",
-                  v_fraction = 0.8, t_fraction = 0.8,
-                  k_grid = seq(3, {params.n_samples} * 0.8 * 0.8, length.out = 10))'
-    """
-
-rule test_knn_cm_simulation:
-  input:
-    dmatrix = "data/simulation/{approach}.{depth}.{process}.{distance}.dist.gz",
-    design = "data/simulation/simulation.design",
-    rscript = "workflow/scripts/test_train_knn.R"
-  output:
-    "data/simulation/{approach}.{depth}.{process}.{distance}.knn_cm.tsv"
-  group:
-    "test_knn"
-  resources:
-    mem_mb=200
-  shell:
-    """
-    R -e 'source("{input.rscript}");
-          run_knn("{input.design}", "{input.dmatrix}", "{output}",
-                  v_fraction = 0.6, t_fraction = 0.6,
-                  n_iloops = 100, n_oloops = 100,
-                  k_grid = 13)'
-    """
-
-rule test_knn_cmgrid_simulation:
-  input:
-    dmatrix = "data/simulation/{approach}.{depth}.{process}.{distance}.dist.gz",
-    design = "data/simulation/simulation.design",
-    rscript = "workflow/scripts/test_train_knn.R"
-  output:
-    "data/simulation/{approach}.{depth}.{process}.{distance}.knn_cmgrid.tsv"
-  params:
-    n_samples = 200
-  group:
-    "test_knn"
-  resources:
-    mem_mb=200
-  shell:
-    """
-    R -e 'source("{input.rscript}");
-          run_knn("{input.design}", "{input.dmatrix}", "{output}",
-                  v_fraction = 0.6, t_fraction = 0.6,
-                  n_iloops = 100, n_oloops = 100,
-                  k_grid = seq(3, {params.n_samples} * 0.6 * 0.6, length.out = 10))'
-    """
-
-
-##******************************************************************************
-##
-## Obtain datasets used in case studies and the Schloss Lab's colorectal
-## cancer project. The latter is included because it does not have such an
-## extreme effect size as was observed in the sponge and sleep apnea studies.
-## Confirm that there is no confounding between treatment group and the number
-## of sequences in each sample.
+## I have added a CRC dataset that doesn't have as large a treatment effect as
+## was seen in the simulations and sponges and sleep_apnea case studies. 
 ##
 ##******************************************************************************
 
 rule decompress_biom_casestudy:
   input:
-    biom_gz="deicode_benchmarking/case_studies/data/{dataset}/table.biom.gz",
-    metadata_gz="deicode_benchmarking/case_studies/data/{dataset}/metadata.txt.gz"
+    biom_gz="deicode_benchmarking/case_studies/data/{case_study}/table.biom.gz",
+    metadata_gz="deicode_benchmarking/case_studies/data/{case_study}/metadata.txt.gz"
   output:
-    biom="data/{dataset}/table.biom",
-    metadata="data/{dataset}/metadata.tsv"
+    biom="data/{case_study}/table.biom",
+    metadata="data/{case_study}/metadata.tsv"
   shell:
     """
     mkdir -p data/{wildcards.dataset} &&
@@ -473,15 +142,17 @@ rule decompress_biom_casestudy:
 
 rule collect_data_metadata_cs:
   input:
-    biom="data/{dataset}/table.biom",
-    metadata="data/{dataset}/metadata.tsv",
+    biom="data/{case_study}/table.biom",
+    metadata="data/{case_study}/metadata.tsv",
     rscript="workflow/scripts/collect_data_metadata_cs.R"
   output:
-    "data/{dataset}/data_treatment.tsv.gz",
+    "data/{case_study}/data_treatment.tsv.gz",
   params:
-    column=lambda wcs: treatment_groups[wcs.dataset]
+    column=lambda wcs: treatment_groups[wcs.case_study]
+  resources:
+    mem_mb=12000
   wildcard_constraints:
-    process="sponges|sleep_apnea"
+    case_study="sponges|sleep_apnea"
   shell:
     """
     {input.rscript} {input.biom} {input.metadata} {params.column}
@@ -491,48 +162,40 @@ rule collect_data_metadata_crc:
   input:
     rscript="workflow/scripts/collect_data_metadata_crc.R"
   output:
-    "data/crc/data_treatment.tsv.gz",
+    "data/crc/data.{depth, \\d+}.raw.tsv.gz",
+    "data/crc/data.{depth, \\d+}.design",
   shell:
     """
     mkdir -p data/crc  
     {input.rscript}
     """
 
-##******************************************************************************
-##
-## Extract number of sequences per sample from each of the datasets and test
-## whether sequencing depth is confounded with treatment group
-##
-##******************************************************************************
-
-rule extract_depths_cs:
-  input: 
-    tsv="data/{dataset}/data_treatment.tsv.gz",
-    rscript="workflow/scripts/extract_depths_cs.R"
-  output:
-    "data/{dataset}/data.depths.tsv"
-  shell:
-    """
-    {input.rscript} {input.tsv} {output}
-    """
-
-rule test_depths_cs:
+rule collect_data_metadata_sim:
   input:
-    tsv="data/{dataset}/data.depths.tsv",
-    rscript="workflow/scripts/test_depths_cs.R"
+    deicode="deicode_benchmarking/simulations/scripts/simulations.py",
+    pyscript="workflow/scripts/collect_data_metadata_sim.py"
   output:
-    "data/{dataset}/data.dtest.tsv"
+    expand("data/{simulation}/data.{depth}.100_{rep}.raw.tsv.gz",
+          simulation = simulations.keys(), allow_missing = True),
+    expand("data/{simulation}/data.{depth}.100_{rep}.design",
+          simulation = simulations.keys(), allow_missing = True)
+  conda:
+    "envs/rpca.yml"
   shell:
     """
-    {input.rscript} {input.tsv} {output}
+    mkdir -p data/positive data/negative data/overlap
+    PYTHONPATH='.' {input.pyscript} {wildcards.depth} {wildcards.rep}
     """
 
 rule remove_rare_samples:
   input:
-    tsv="data/{dataset}/data_treatment.tsv.gz",
-    rscript="workflow/scripts/remove_rare_samples.R"
+    tsv="data/{case_study}/data_treatment.tsv.gz",
+    rscript = "workflow/scripts/remove_rare_samples.R"
   output:
-    "data/{dataset}/data.{depth}.raw_design.tsv.gz",
+    counts = "data/{case_study}/data.{depth}.all_1.raw.tsv.gz",
+    design = "data/{case_study}/data.{depth}.all_1.design",
+  wildcard_constraints:
+      case_study="sponges|sleep_apnea|crc"
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.depth}
@@ -551,69 +214,111 @@ rule remove_rare_samples:
 
 rule partition_by_nsamples:
   input:
-    tsv="data/{dataset}/data.{depth}.raw_design.tsv.gz",
-    rscript="workflow/scripts/partition_by_nsamples.R"
+    all =     "data/{case_study}/data.{depth}.all_1.raw.tsv.gz",
+    design =  "data/{case_study}/data.{depth}.all_1.design",
+    rscript = "workflow/scripts/partition_by_nsamples.R"
   output:
-    "data/{dataset}/data.{depth}.{nsamples_rep}.raw.tsv.gz",
-    "data/{dataset}/data.{depth}.{nsamples_rep}.design",
-  wildcard_constraints:
-    nsamples_rep="!all|!size"
+    "data/{case_study}/data.{depth, \\d+}.{partition, \\d+}_{rep, \\d+}.raw.tsv.gz",
+    "data/{case_study}/data.{depth, \\d+}.{partition, \\d+}_{rep, \\d+}.design",
   group:
     "partition_by_nsamples"
   resources:
     mem_mb=200
+  wildcard_constraints:
+      case_study="sponges|sleep_apnea|crc"
   shell:
     """
-    {input.rscript} {input.tsv} {wildcards.nsamples_rep}
+    {input.rscript} {input.all} {input.design} {wildcards.partition} {wildcards.rep}
     """
 
-rule no_partition_by_samples:
+rule partition_by_sizes_cs:
   input:
-    tsv="data/{dataset}/data.{depth}.raw_design.tsv.gz",
-    rscript="workflow/scripts/no_partition_by_samples.R"
+    all =     "data/{case_study}/data.10000.all_1.raw.tsv.gz",
+    design =  "data/{case_study}/data.10000.all_1.design",
+    rscript = "workflow/scripts/partition_by_size.R"
   output:
-    "data/{dataset}/data.{depth}.all.raw.tsv.gz",
-    "data/{dataset}/data.{depth}.all.design",
+    "data/{case_study}/data.5000.size_{rep, \\d+}.raw.tsv.gz",
+    "data/{case_study}/data.5000.size_{rep, \\d+}.design",
+  wildcard_constraints:
+    case_study = "crc|sleep_apnea|sponges"
+  group:
+    "partition_by_size"
+  resources:
+    mem_mb=500
   shell:
     """
-    {input.rscript} {input.tsv}
+    {input.rscript} {input.all} {input.design} {wildcards.rep}
     """
 
-rule partition_by_size_cs:
+rule partition_by_sizes_sim:
   input:
-    tsv="data/{dataset}/data.10000.raw_design.tsv.gz",
-    rscript="workflow/scripts/partition_by_size.R"
+    all =     "data/{simulation}/data.10000.100_{rep}.raw.tsv.gz",
+    design =  "data/{simulation}/data.10000.100_{rep}.design",
+    rscript = "workflow/scripts/partition_by_size.R"
   output:
-    "data/{dataset}/data.5000.size_{seed}.raw.tsv.gz",
-    "data/{dataset}/data.5000.size_{seed}.design",
+    "data/{simulation}/data.5000.size_{rep, \\d+}.raw.tsv.gz",
+    "data/{simulation}/data.5000.size_{rep, \\d+}.design",
+  wildcard_constraints:
+    simulation = "positive|negative|overlap"
+  group:
+    "partition_by_size"
+  resources:
+    mem_mb=500
   shell:
     """
-    {input.rscript} {input.tsv} {wildcards.seed}
+    {input.rscript} {input.all} {input.design} {wildcards.rep}
     """
 
 
-##******************************************************************************
-##
-## Calculate distances and PCoA
-##
-##    * Aitchison distances
-##      see: rule transform_oclr - for CLR transformation
-##      see: rule calc_dist_norare - for euclidean distance
-##
-##    * Raw distances - euclidean, braycurtis
-##      see: rule calc_dist_norare
-##
-##    * PCoA for Euclidean and Bray-Curtis
-##      see: rule calc_pcoa_from_dist:
-##
-##******************************************************************************
+# ******************************************************************************
+#
+# Calculate distances and ordinations. Am using the ipynb code for the RPCA
+# calculations because need the OptSpace data, which doesn't appear available
+# in gemelli
+#
+# ******************************************************************************
+
+rule transform_oclr:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
+    pyscript="workflow/scripts/transform_oclr.py"
+  output:
+    tsv="data/{dataset}/data.{other_stuff}.oclr.tsv.gz",
+  conda:
+    "envs/rpca.yml"
+  group:
+    "transform_oclr"
+  resources:
+    mem_mb=200
+  shell:
+    """
+    {input.pyscript} {input.tsv}
+    """
+
+rule calc_dist_norare:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.{process}.tsv.gz",
+    rscript="workflow/scripts/calc_dist_norare.R"
+  output:
+    "data/{dataset}/data.{other_stuff}.{process}.{distance}.dist.gz"
+  wildcard_constraints:
+    process="oclr|raw",
+    distance="euclidean|bray"
+  group:
+    "calc_dist"
+  resources:
+    mem_mb=200
+  shell:
+    """
+    {input.rscript} {input.tsv} {wildcards.distance}
+    """
 
 rule calc_dist_subsample:
   input:
-    tsv="data/{dataset}/{data}.{depth}.{iteration}.raw.tsv.gz",
+    tsv="data/{dataset}/data.{depth}.{other_stuff}.raw.tsv.gz",
     rscript="workflow/scripts/calc_dist_subsample.R"
   output:
-    "data/{dataset}/{data, [a-z]+}.{depth, [0-9]+}.{iteration}.sub.{distance}.dist.gz"
+    "data/{dataset}/{data, [a-z]+}.{depth, [0-9]+}.{other_stuff}.sub.{distance}.dist.gz"
   group:
     "calc_dist"
   resources:
@@ -625,10 +330,10 @@ rule calc_dist_subsample:
 
 rule calc_dist_rarefaction:
   input:
-    tsv="data/{dataset}/{data}.{depth}.{iteration}.raw.tsv.gz",
+    tsv="data/{dataset}/data.{depth}.{other_stuff}.raw.tsv.gz",
     rscript="workflow/scripts/calc_dist_rarefaction.R"
   output:
-    "data/{dataset}/{data, [a-z]+}.{depth, [0-9]+}.{iteration}.rare.{distance}.dist.gz"
+    "data/{dataset}/{data, [a-z]+}.{depth, [0-9]+}.{other_stuff}.rare.{distance}.dist.gz"
   group:
     "calc_dist"
   resources:
@@ -640,11 +345,11 @@ rule calc_dist_rarefaction:
 
 rule calc_dist_axes_gemelli:
   input:
-    tsv="data/{dataset}/data.{depth}.{iteration}.raw.tsv.gz",
+    tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
     bash="workflow/scripts/calc_dist_axes_gemelli.py"
   output:
-    "data/{dataset}/data.{depth}.{iteration}.gemelli_{rank}.euclidean.dist.gz",
-    "data/{dataset}/data.{depth}.{iteration}.gemelli_{rank}.euclidean.pcoa.axes"
+    "data/{dataset}/data.{other_stuff}.gemelli_{rank}.euclidean.dist.gz",
+    "data/{dataset}/data.{other_stuff}.gemelli_{rank}.euclidean.pcoa.axes"
   conda:
     "envs/rpca.yml"
   group:
@@ -656,6 +361,21 @@ rule calc_dist_axes_gemelli:
     {input.bash} {input.tsv} {wildcards.rank}
     """
 
+rule calc_dist_axes_optspace:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
+    pyscript="workflow/scripts/calc_dist_axes_optspace.py"
+  output:
+    "data/{dataset}/data.{other_stuff}.optspace.euclidean.dist.gz",
+    "data/{dataset}/data.{other_stuff}.optspace.euclidean.pcoa.axes",
+  conda:
+    "envs/rpca.yml"
+  shell:
+    """
+    {input.pyscript} {input.tsv}
+    """
+
+
 ##******************************************************************************
 ##
 ## Carry out PERMANOVA and KNN tests on distance matrices. Not using the PCoA
@@ -664,17 +384,35 @@ rule calc_dist_axes_gemelli:
 ##
 ##******************************************************************************
 
-rule test_permanova_cs:
+rule calc_pcoa_from_dist:
   input:
-    dmatrix = "data/{dataset}/{approach}.{depth}.{iteration}.{process}.{distance}.dist.gz",
-    design = "data/{dataset}/{approach}.{depth}.{iteration}.design",
-    rscript = "workflow/scripts/test_permanova.R"
+    dmatrix = "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.dist.gz",
+    rscript = "workflow/scripts/calc_pcoa_from_dist.R"
   output:
-    "data/{dataset}/{approach}.{depth}.{iteration}.{process}.{distance}.permanova.tsv"
+    "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.pcoa.axes",
+  wildcard_constraints:
+    process="raw|oclr|rare|sub"
+  group:
+    "calc_pcoa_from_dist"
+  resources:
+    mem_mb=200
+  shell:
+    """
+    {input.rscript} {input.dmatrix} {output}
+    """
+
+
+rule test_permanova_treatment:
+  input:
+    dmatrix = "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.dist.gz",
+    design = "data/{dataset}/data.{depth}.{partition}_{iter}.design",
+    rscript = "workflow/scripts/test_permanova_treatment.R"
+  output:
+    "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.permanova.tsv",
+  wildcard_constraints:
+    depth = "!5000"
   group:
     "test_permanova"
-  wildcard_constraints:
-    depth="!5000"
   resources:
     mem_mb=200
   shell:
@@ -682,13 +420,13 @@ rule test_permanova_cs:
     {input.rscript} {input.dmatrix} {input.design} {output}
     """
 
-rule test_permanova_size_cs:
+rule test_permanova_size:
   input:
-    dmatrix = "data/{dataset}/data.5000.size_{iteration}.{process}.{distance}.dist.gz",
-    design = "data/{dataset}/data.5000.size_{iteration}.design",
+    dmatrix = "data/{dataset}/data.5000.size_{iter}.{process}.{dist}.dist.gz",
+    design = "data/{dataset}/data.5000.size_{iter}.design",
     rscript = "workflow/scripts/test_permanova_size.R"
   output:
-    "data/{dataset}/data.5000.size_{iteration}.{process}.{distance}.permanova.tsv"
+    "data/{dataset}/data.5000.size_{iter}.{process}.{dist}.permanova.tsv",
   group:
     "test_permanova"
   resources:
@@ -698,7 +436,28 @@ rule test_permanova_size_cs:
     {input.rscript} {input.dmatrix} {input.design} {output}
     """
 
-rule test_knn_pds_cs:
+
+rule test_knn_fixed:
+  input:
+    dmatrix = "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.dist.gz",
+    design = "data/{dataset}/data.{depth}.{size}_{iteration}.design",
+    rscript = "workflow/scripts/test_train_knn.R"
+  output:
+    "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_cmfixed.tsv"
+  group:
+    "test_knn"
+  resources:
+    mem_mb=400
+  shell:
+    """
+    R -e 'source("{input.rscript}");
+          run_knn("{input.design}", "{input.dmatrix}", "{output}",
+                  v_fraction = 0.6, t_fraction = 0.6,
+                  n_iloops = 100, n_oloops = 100,
+                  k_grid = round(2 * {wildcards.size} * 13 / 200))'
+    """
+
+rule test_knn_80_20:
   input:
     dmatrix = "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.dist.gz",
     design = "data/{dataset}/data.{depth}.{size}_{iteration}.design",
@@ -706,9 +465,9 @@ rule test_knn_pds_cs:
   group:
     "test_knn"
   resources:
-    mem_mb=200
+    mem_mb=400
   output:
-    "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_pds.tsv"
+    "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_pdsgrid.tsv"
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -717,27 +476,7 @@ rule test_knn_pds_cs:
                   k_grid = seq(3, 2 * {wildcards.size} * 0.8 * 0.8, length.out = 10))'
     """
 
-rule test_knn_cm_cs:
-  input:
-    dmatrix = "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.dist.gz",
-    design = "data/{dataset}/data.{depth}.{size}_{iteration}.design",
-    rscript = "workflow/scripts/test_train_knn.R"
-  output:
-    "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_cm.tsv"
-  group:
-    "test_knn"
-  resources:
-    mem_mb=200
-  shell:
-    """
-    R -e 'source("{input.rscript}");
-          run_knn("{input.design}", "{input.dmatrix}", "{output}",
-                  v_fraction = 0.6, t_fraction = 0.6,
-                  n_iloops = 100, n_oloops = 100,
-                  k_grid = 2 * {wildcards.size} * 0.6 / 1.4)'
-    """
-
-rule test_knn_cmgrid_cs:
+rule test_knn_60_40:
   input:
     dmatrix = "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.dist.gz",
     design = "data/{dataset}/data.{depth}.{size}_{iteration}.design",
@@ -747,7 +486,7 @@ rule test_knn_cmgrid_cs:
   group:
     "test_knn"
   resources:
-    mem_mb=200
+    mem_mb=400
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -760,127 +499,126 @@ rule test_knn_cmgrid_cs:
 
 ##******************************************************************************
 ##
-## Pool dtest, knn, and permanova results
+## Confirm that there is no confounding between treatment group and the number
+## of sequences in each sample.
 ##
 ##******************************************************************************
 
-rule pool_dtest_simulation:
-  input:
-    tsv = expand("data/simulation/{simulation_depth}.raw.dtest.tsv",
-           simulation_depth = simulations_depths),
-    rscript = "workflow/scripts/pool_dtest_simulation.R"
+rule extract_depths_cs:
+  input: 
+    tsv="data/{case_study}/data_treatment.tsv.gz",
+    rscript="workflow/scripts/extract_depths.R"
   output:
-    "data/process/simulation.dtest.tsv"
+    "data/{case_study}/data.depths.tsv"
   shell:
     """
-    {input.rscript}
+    {input.rscript} {input.tsv} {output}
     """
 
-rule pool_dtest_cs:
+rule test_depth_confounding:
   input:
-    tsv = expand("data/{dataset}/data.dtest.tsv",
-           dataset = list(two_depths.keys())),
-    rscript = "workflow/scripts/pool_dtest_cs.R"
+    tsv="data/{dataset}/data.depths.tsv",
+    rscript="workflow/scripts/test_depth_confounding.R"
   output:
-    "data/process/case_studies.dtest.tsv"
+    "data/{dataset}/data.depth_confounding.tsv"
+  shell:
+    """
+    {input.rscript} {input.tsv} {output}
+    """
+
+
+##******************************************************************************
+##
+## Pool analyses
+##
+##******************************************************************************
+
+rule pool_depth_confounding:
+  input:
+    tsv = expand("data/{dataset}/data.depth_confounding.tsv",
+           dataset = list(treatment_groups.keys())),
+    rscript = "workflow/scripts/pool_depth_confounding.R"
+  output:
+    "data/pooled_data/depth_confounding.tsv"
   shell:
     """
     {input.rscript} {input.tsv}
     """
 
-rule pool_permanova_simulation:
+rule pool_permanova_treatment:
   input:
-    depths = expand("data/simulation/{simulation_depth}.{process_dist}.permanova.tsv",
-           simulation_depth = simulations_depths,
-           process_dist = control_processes_dists),
-    sizes = expand("data/simulation/{control}.5000.size_{iteration}.{process_dist}.permanova.tsv",
-            control = simulations.keys(),
-            iteration = range(1,11),
-            process_dist = control_processes_dists + control_processs_dists_extra),
-    rscript = "workflow/scripts/pool_permanova_simulation.R"
+    tsvs = permanova_treatment_files,
+    rscript = "workflow/scripts/pool_permanova_treatment.R"
   output:
-    "data/process/simulation.permanova.tsv"
+    "data/pooled_data/permanova_treatment.tsv"
   shell:
     """
-    {input.rscript}
+    {input.rscript} {input.tsvs}
     """
 
-rule pool_permanova_cs:
+rule pool_permanova_size:
   input:
-    all_samples =  expand("{sample_depth_nsample_rep}.{process_dist}.permanova.tsv",
-            sample_depth_nsample_rep = samples_depths_all,
-            process_dist = cs_processes_dist),
-    samples_depths =  expand("{sample_depth_nsample_rep}.{process_dist}.permanova.tsv",
-            sample_depth_nsample_rep = samples_depths_nsamples_reps,
-            process_dist = cs_processes_dist),
-    size_samples = expand("data/{dataset}/data.5000.size_{iteration}.{process_dist}.permanova.tsv",
-            dataset = two_depths.keys(),
-            iteration = range(1,11),
-            process_dist = cs_processes_dist),
-    rscript = "workflow/scripts/pool_permanova_cs.R"
+    tsvs = permanova_size_files,
+    rscript = "workflow/scripts/pool_permanova_size.R"
   output:
-    "data/process/case_studies.permanova.tsv"
+    "data/pooled_data/permanova_size.tsv"
   shell:
     """
-    {input.rscript}
+    {input.rscript} {input.tsvs}
     """
 
-rule pool_knn_simulation:
+rule pool_knn_results:
   input:
-    tsv = expand("data/simulation/{simulation_depth}.{process_dist}.knn_{approach}.tsv",
-                simulation_depth = simulations_depths,
-                process_dist = control_processes_dists,
-                approach = knn_approaches),
-    rscript = "workflow/scripts/pool_knn_simulation.R"
+    tsvs = knn_results_files,
+    rscript = "workflow/scripts/pool_knn_results.R"
   output:
-    "data/process/simulation.knn.tsv.gz"
+    "data/pooled_data/knn_results.tsv.gz"
   shell:
     """
-    {input.rscript}
+    {input.rscript} {input.tsvs}
     """
 
-rule pool_knn_cs:
+rule pool_gemelli_auto_count_axes:
   input:
-    tsv = expand("{sample_depth_nsample_rep}.{process_dist}.knn_{approach}.tsv",
-                  sample_depth_nsample_rep = samples_depths_nsamples_reps,
-                  process_dist = cs_processes_dist,
-                  approach = knn_approaches),
-    rscript = "workflow/scripts/pool_knn_cs.R"
+    tsvs = gemelli_auto_files,
+    rscript = "workflow/scripts/count_gemelli_auto_axes.R"
   output:
-    "data/process/case_studies.knn.tsv.gz"
+    "data/pooled_data/gemelli_auto_naxes.tsv"
   shell:
     """
-    {input.rscript}
+    {input.rscript} {input.tsvs}
     """
-
-
 
 ##******************************************************************************
 ##
-## Plotting results
+## To do...
+##
+## 3. port in rules and scripts to build plots
 ##
 ##******************************************************************************
 
 rule plot_pcoa_overlap:
   input:
-    bray_coords="data/simulation/overlap.10000.raw.bray.pcoa.axes",
-    rpca_coords="data/simulation/overlap.10000.raw.euclidean.pcoa.axes",
-    design = "data/simulation/simulation.design",
+    bray="data/overlap/data.10000.100_1.raw.bray.pcoa.axes",
+    aitchison="data/overlap/data.10000.100_1.oclr.euclidean.pcoa.axes",
+    rpca="data/overlap/data.10000.100_1.gemelli_2.euclidean.pcoa.axes",
+    design = "data/overlap/data.10000.100_1.design",
     rscript="workflow/scripts/plot_overlap10000_pcoa.R"
   output:
     "figures/overlap10000.pcoa.png"
   shell:
     """
-    {input.rscript}
+    {input.rscript} {input.bray} {input.aitchison} {input.rpca} {input.design}
     """
     
 rule plot_pcoa_control:
   input:
-    bray_coords=expand("data/simulation/{control}.4000.raw.bray.pcoa.axes",
+    bray=expand("data/{control}/data.4000.100_1.raw.bray.pcoa.axes",
                        control = ["positive", "negative"]),
-    rpca_coords=expand("data/simulation/{control}.4000.rpca.euclidean.pcoa.axes",
+    gemelli=expand("data/{control}/data.4000.100_1.gemelli_2.euclidean.pcoa.axes",
                        control = ["positive", "negative"]),
-    design = "data/simulation/simulation.design",
+    design=expand("data/{control}/data.4000.100_1.design",
+                       control = ["positive", "negative"]),
     rscript="workflow/scripts/plot_control4000_pcoa.R"
   output:
     "figures/control4000.pcoa.png"
@@ -891,7 +629,7 @@ rule plot_pcoa_control:
 
 rule plot_knn_overlap:
   input:
-    knn="data/process/simulation.knn.tsv",
+    knn="data/pooled_data/knn_results.tsv.gz",
     rscript="workflow/scripts/plot_knn_overlap.R"
   output:
     "figures/knn_overlap_comparison.png"
@@ -902,7 +640,7 @@ rule plot_knn_overlap:
 
 rule plot_knn_control:
   input:
-    knn="data/process/simulation.knn.tsv",
+    knn="data/pooled_data/knn_results.tsv.gz",
     rscript="workflow/scripts/plot_knn_control.R"
   output:
     "figures/knn_control_comparison.png"
@@ -913,10 +651,8 @@ rule plot_knn_control:
 
 rule plot_cs_seq_depth:
   input:
-    tests=expand("data/{dataset}/data.dtest.tsv", 
-                 dataset = list(two_depths.keys())),
     tsvs=expand("data/{dataset}/data.depths.tsv",
-                dataset = list(two_depths.keys())),
+                dataset = list(treatment_groups.keys())),
     rscript="workflow/scripts/plot_sequence_depths.R"
   output:
     "figures/cs_seq_depth.png"
@@ -924,6 +660,3 @@ rule plot_cs_seq_depth:
     """
     {input.rscript}
     """
-
-# need to do rare and subsample for bray and euclidean on positive and negative
-# controls for 5000

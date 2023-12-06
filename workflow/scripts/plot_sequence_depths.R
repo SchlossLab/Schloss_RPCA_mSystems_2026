@@ -8,13 +8,6 @@ study_names <- c("sponges" = "Sponges",
                  "sleep_apnea" = "Sleep Apnea",
                  "crc" = "Colorectal Cancer")
 
-
-n_sig_tests <- read_tsv(glue("data/{names(study_names)}/data.dtest.tsv")) %>%
-  filter(p_value < 0.05) %>%
-  nrow()
-
-stopifnot(n_sig_tests == 0)
-
 depths <- read_tsv(glue("data/{names(study_names)}/data.depths.tsv"),
                    id = "study",
                    col_types = cols(n_seqs = col_double(),

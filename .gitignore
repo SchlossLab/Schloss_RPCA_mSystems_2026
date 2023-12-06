@@ -9,9 +9,9 @@ Rplots.pdf
 scratch/
 
 data/*
-!data/process/
+!data/pooled_data/
 logs/
-
+.nfs*
 
 ## .gitignore contents from deicode-benchmarking repository
 
