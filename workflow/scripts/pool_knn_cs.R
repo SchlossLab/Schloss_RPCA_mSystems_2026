@@ -15,4 +15,4 @@ list.files(path = c("data/sponges", "data/crc", "data/sleep_apnea"),
   separate(size_rep, into = c("nsamples", "rep")) %>%
   select(dataset, depth, nsamples, rep, process, distance, knn_approach,
          iteration, k_size, test, validate) %>%
-  write_tsv("data/process/case_studies.knn.tsv")
+  write_tsv("data/process/case_studies.knn.tsv.gz")

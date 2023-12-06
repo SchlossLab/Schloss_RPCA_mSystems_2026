@@ -173,10 +173,10 @@ rule targets:
             process_dist = cs_processes_dist),
 #            
     "data/process/simulation.dtest.tsv",
-    "data/process/simulation.knn.tsv",
+    "data/process/simulation.knn.tsv.gz",
     "data/process/simulation.permanova.tsv",
     "data/process/case_studies.dtest.tsv",
-    "data/process/case_studies.knn.tsv",
+    "data/process/case_studies.knn.tsv.gz",
     "data/process/case_studies.permanova.tsv",
  #
     "figures/overlap10000.pcoa.png",
@@ -833,7 +833,7 @@ rule pool_knn_simulation:
                 approach = knn_approaches),
     rscript = "workflow/scripts/pool_knn_simulation.R"
   output:
-    "data/process/simulation.knn.tsv"
+    "data/process/simulation.knn.tsv.gz"
   shell:
     """
     {input.rscript}
@@ -847,7 +847,7 @@ rule pool_knn_cs:
                   approach = knn_approaches),
     rscript = "workflow/scripts/pool_knn_cs.R"
   output:
-    "data/process/case_studies.knn.tsv"
+    "data/process/case_studies.knn.tsv.gz"
   shell:
     """
     {input.rscript}

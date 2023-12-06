@@ -26,4 +26,4 @@ list.files(path = "data/simulation", pattern = ".*knn_.*.tsv", full.names = TRUE
          process_calculator = paste(process, calculator, sep = "_") ) %>%
   select(simulation, process_calculator, approach, depth,
          iteration, k_size, test, validate) %>%
-  write_tsv("data/process/simulation.knn.tsv")
+  write_tsv("data/process/simulation.knn.tsv.gz")
