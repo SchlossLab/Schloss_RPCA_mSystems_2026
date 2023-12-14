@@ -1,0 +1,167 @@
+---
+format:
+  pdf:
+    documentclass: article
+    keep-tex: true
+    keep-md: true
+    lof: false
+    toc: false
+    number-sections: false
+  docx: default
+bibliography: references.bib
+csl: asm.csl
+geometry: margin=1.0in
+fontsize: 11pt
+linestretch: 1.75
+header-includes:
+ - \usepackage[left]{lineno}
+ - \linenumbers
+ - \modulolinenumbers
+ - \usepackage{helvet}
+ - \renewcommand*\familydefault{\sfdefault}
+ - \usepackage[T1]{fontenc}
+execute:
+  echo: FALSE
+  tidy: TRUE
+  eval: TRUE
+  warning: FALSE
+  message: FALSE
+  cache: FALSE
+---
+
+<!-- \raggedright -->
+
+```{r}
+options(tidyverse.quiet = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(knitr))
+# suppressPackageStartupMessages(library(here))
+# suppressPackageStartupMessages(library(kableExtra))
+suppressPackageStartupMessages(library(glue))
+
+inline_hook <- function(x, digits=2){
+
+  if(is.list(x)){
+    x <- unlist(x)
+  }
+  if(is.numeric(x)){
+      paste(format(x,big.mark=',', digits=digits, nsmall=digits, scientific=FALSE))
+  } else {
+      paste(x)
+  }
+}
+knitr::knit_hooks$set(inline=inline_hook)
+
+package_version <- function(package){
+
+  paste(unlist(packageVersion(package)), collapse='.')
+
+}
+
+
+oxford_comma <- function(x, digits=2) {
+
+  x <- map_chr(x, inline_hook, digits=digits)
+
+  if(length(x) < 2){
+    x
+  } else if(length(x) == 2){
+    paste(x, collapse = " and ")
+  } else {
+    paste(paste(x[-length(x)], collapse=", "), x[length(x)], sep=", and ")
+  }
+}
+
+
+datasets <- c("postitive", "negative", "overlap",
+              "crc", "sleep_apnea", "sponges")
+
+pretty_datasets <- tibble(
+  plain = datasets,
+  pretty = c("Postitive", "Negative", "Overlap",
+             "CRC", "Sleep apnea", "Sponges")
+)
+
+```
+
+# Lorem ipsum
+
+\vspace{20mm}
+
+**Running title:** Hipster ipsum is better
+
+\vspace{20mm}
+
+Patrick D. Schloss${^\dagger}$
+
+\vspace{40mm}
+
+${\dagger}$ To whom correspondence should be addressed:
+
+
+\href{mailto:pschloss@umich.edu}{pschloss@umich.edu}
+
+Department of Microbiology & Immunology
+
+University of Michigan
+
+Ann Arbor, MI 48109
+
+\vspace{20mm}
+
+**Research article**
+
+\newpage
+
+```{r datasets}
+```
+
+## Abstract
+
+
+Sus umami skateboard activated charcoal XOXO cornhole, thundercats pitchfork. Succulents street art semiotics, artisan lo-fi same food truck forage aesthetic plaid drinking vinegar ugh slow-carb. Sustainable vexillologist ramps cold-pressed, selfies pop-up microdosing messenger bag slow-carb. Lo-fi fingerstache cred, copper mug chicharrones DSA chambray. Craft beer meditation shabby chic, put a bird on it tonx ramps tumeric palo santo etsy dreamcatcher chartreuse snackwave. Fashion axe kogi sus, migas etsy gluten-free semiotics hammock chartreuse cardigan.
+
+
+## Importance
+
+Taiyaki hoodie letterpress, franzen man braid bushwick food truck humblebrag chia palo santo vinyl keffiyeh. IPhone ugh kitsch tousled tumblr messenger bag, kogi actually taiyaki. Austin taiyaki succulents vaporware letterpress bruh. Wayfarers listicle lyft beard tousled keffiyeh fingerstache neutral milk hotel ramps prism. Tote bag vape gentrify, fingerstache fixie marxism enamel pin pork belly cardigan microdosing hoodie. Freegan Brooklyn biodiesel, fanny pack actually kombucha organic whatever literally crucifix. Fingerstache kombucha subway tile squid, marxism kogi VHS ethical distillery fanny pack jean shorts.
+
+
+\newpage
+
+## Introduction
+
+Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+
+## Results
+
+Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+
+## Discussion
+
+Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+
+## Materials & Methods
+
+Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+
+## Acknowledgements
+
+Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+
+\newpage
+
+## References {.unnumbered}
+
+::: {#refs}
+:::
+
+\newpage
+
+## Figures
+
+
+\newpage
+
+## Supplemental Figures
+

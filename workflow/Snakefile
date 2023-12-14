@@ -660,3 +660,18 @@ rule plot_cs_seq_depth:
     """
     {input.rscript}
     """
+
+
+
+rule make_paper:
+  input:
+    "submission/manuscript.qmd",
+    "submission/references.bib",
+    "submission/asm.csl"
+  output:
+    expand("submission/manuscript.{format}",
+          format = ["pdf", "md", "tex", "docx"])
+  shell:
+    """
+    quarto render submission/manuscript.qmd
+    """

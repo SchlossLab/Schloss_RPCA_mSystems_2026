@@ -43,3 +43,12 @@ Python/Numpy was pitching a fit about the use of `np.int` in these files. The `m
   * `.snakemake/conda/*/lib/python3.11/site-packages/gemelli/optspace.py`
 
 I replaced `np.int` with `int` and everything seemed to work fine. The files in `.snakemake/` are for the local environment when running snakemake. 
+
+
+## Other installations...
+
+Worth updating `tinytex` (mine updated to v2023.12) for work with `quarto`
+
+```
+quarto install tools tinytex
+```
