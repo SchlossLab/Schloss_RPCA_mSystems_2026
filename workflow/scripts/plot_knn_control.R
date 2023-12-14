@@ -41,7 +41,7 @@ pooled_data %>%
                               "Bray-Curtis", "Robust\nAitchison")) +
   scale_fill_manual(name = NULL,
                     breaks = c("knn_cmfixed", "knn_cmgrid", "knn_pdsgrid"),
-                    labels = c("Martino", "Martino+Grid", "Current"),
+                    labels = c("60/40 Fixed", "60/40 Grid", "80/20 Grid"),
                     values = c("tomato", "forestgreen", "dodgerblue")) +
   theme_classic() +
   theme(strip.background = element_rect(color = NA, fill = "lightgray"))
