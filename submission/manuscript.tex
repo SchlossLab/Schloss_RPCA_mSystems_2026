@@ -179,9 +179,11 @@
 \date{}
 
 \begin{document}
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, sharp corners, enhanced, frame hidden, interior hidden, breakable]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, breakable, sharp corners, enhanced, frame hidden, borderline west={3pt}{0pt}{shadecolor}, interior hidden]}{\end{tcolorbox}}\fi
 
 \setstretch{1.75}
+\raggedright
+
 \hypertarget{lorem-ipsum}{%
 \section{Lorem ipsum}\label{lorem-ipsum}}
 
@@ -191,11 +193,11 @@
 
 \vspace{20mm}
 
-Patrick D. Schloss\({^\dagger}\)
+Patrick D. Schloss \textsuperscript{\textdagger}
 
 \vspace{40mm}
 
-\({\dagger}\) To whom correspondence should be addressed:
+\textdagger To whom correspondence should be addressed:
 
 \href{mailto:pschloss@umich.edu}{pschloss@umich.edu}
 
@@ -210,8 +212,6 @@ Ann Arbor, MI 48109
 \textbf{Research article}
 
 \newpage
-
-\hypertarget{datasets}{}
 
 \hypertarget{abstract}{%
 \subsection{Abstract}\label{abstract}}
@@ -244,26 +244,163 @@ shorts.
 \hypertarget{introduction}{%
 \subsection{Introduction}\label{introduction}}
 
-Viral glossier taxidermy keytar celiac ethical. Next level knausgaard
-tousled palo santo photo booth kogi brunch wayfarers vice tilde squid.
-Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom
-kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green
-juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog,
-pork belly microdosing tumblr cardigan shaman before they sold out hell
-of la croix grailed intelligentsia activated charcoal tumeric. Copper
-mug bicycle rights scenester 3 wolf moon whatever schlitz.
+\begin{itemize}
+\tightlist
+\item
+  AND - Problem of uneven sampling effort and how to control for the
+  effects
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Previous work from me has show rarefaction controls for sampling
+    effort better than other methods
+  \item
+    BUT - Confusion over difference between rarefaction and rarefying
+  \item
+    THEREFORE - Define rarefaction
+  \end{itemize}
+\item
+  AND - Critiques against rarefaction include
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Compresses the alpha and beta diversity metrics
+  \item
+    Perceived as ``throwing away'' data
+  \item
+    Arbitrary choice for rarefaction threshold
+  \item
+    BUT - these really aren't problems; largely unavoidable
+  \item
+    THEREFORE - Use rarefaction
+  \end{itemize}
+\item
+  AND - Additional problem with 16S rRNA gene sequencing is that the
+  data are compositional
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Define compositionality
+  \item
+    Solutions to problem of compositionality
+  \item
+    BUT - Still have sensitivity to uneven sampling effort
+  \item
+    THEREFORE - Question of why I found different results from
+    proponents of CLR-based methods
+  \end{itemize}
+\item
+  AND - RPCA as a solution
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Describe RPCA
+  \item
+    Claims made by Martino
+  \item
+    Methods used in Martino
+  \item
+    BUT - Problems with analysis including not using rarefaction,
+    arbitrary threshold selection, not using other CLR-based methods
+  \item
+    THEREFORE - The goal of this study was to reassess RPCA using the
+    framework and methods used by Martino et al.~alongside other methods
+    commonly used by microbial ecologists
+  \end{itemize}
+\item
+  Other\ldots{}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    RPCA -\textgreater{} deicode -\textgreater{} gemelli
+  \item
+    Benchmarking data and code forked from deicode
+  \end{itemize}
+\item
+  Problems with original analysis
+
+  \begin{itemize}
+  \item
+    Simulation design
+
+    \begin{itemize}
+    \tightlist
+    \item
+      1 seed to generate simulated communities
+    \item
+      Null model had no skew to it
+    \item
+      Simulated communities had uneven sampling effort
+    \end{itemize}
+  \item
+    Choice of distance metrics for comparison
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Compared RPCA to MatrixCompletion without using RCLR. Who would do
+      this? Why not at least also compare to CLR w/ a pseudocount?
+    \end{itemize}
+  \item
+    kNN
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Used 1st 2 axes of PCoA of Bray-Curtis distances to calcualte
+      euclidean distances, which were then fed into kNN. Why not use the
+      original Bray-Curtis distance matrix?
+    \item
+      1 60:40 split (said 10-fold, but only repeated knn 10 times, not
+      parititioning), did not fit hyperparameter; choice for case
+      studies was messed up
+    \end{itemize}
+  \item
+    Comparison of PERMANOVA Fst values misleading since they removed all
+    of the noise by only considering first two axes from RPCA and
+    comparing to PERMANOVA on original Bray-Curtis distances
+  \item
+    Case study analysis
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Picked case studies with large effect sizes that are easily seen
+      on PCoA/PCA; most microbiome studies are not so easy to
+      differentiate
+    \item
+      Thresholds for subsampling case study datasets are arbitrary
+    \end{itemize}
+  \item
+    Overall method problems
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Choice of number of partitions/axes seems arbitrary/no guidance.
+      Controls and sponges used 2, sleep apnea used 3. Default is 3,
+      also auto\_rpca available within recent implementation
+    \end{itemize}
+  \item
+    Analysis of sequencing depth sensitivity was qualitative when
+    quantitative methods are available
+  \end{itemize}
+\end{itemize}
 
 \hypertarget{results}{%
 \subsection{Results}\label{results}}
 
-Viral glossier taxidermy keytar celiac ethical. Next level knausgaard
-tousled palo santo photo booth kogi brunch wayfarers vice tilde squid.
-Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom
-kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green
-juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog,
-pork belly microdosing tumblr cardigan shaman before they sold out hell
-of la croix grailed intelligentsia activated charcoal tumeric. Copper
-mug bicycle rights scenester 3 wolf moon whatever schlitz.
+\begin{itemize}
+\item
+  Simulation
+\item
+  Compositionality
+\end{itemize}
 
 \hypertarget{discussion}{%
 \subsection{Discussion}\label{discussion}}

@@ -29,15 +29,17 @@ execute:
   cache: FALSE
 ---
 
-<!-- \raggedright -->
+\raggedright
 
 ```{r}
 options(tidyverse.quiet = TRUE)
 suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(glue))
 # suppressPackageStartupMessages(library(here))
 # suppressPackageStartupMessages(library(kableExtra))
-suppressPackageStartupMessages(library(glue))
+
+# probably don't need ----------------------------------------------------------
+# suppressPackageStartupMessages(library(knitr))
 
 inline_hook <- function(x, digits=2){
 
@@ -45,7 +47,8 @@ inline_hook <- function(x, digits=2){
     x <- unlist(x)
   }
   if(is.numeric(x)){
-      paste(format(x,big.mark=',', digits=digits, nsmall=digits, scientific=FALSE))
+      paste(format(x,big.mark=',',
+                   digits=digits, nsmall=digits, scientific=FALSE))
   } else {
       paste(x)
   }
@@ -92,11 +95,11 @@ pretty_datasets <- tibble(
 
 \vspace{20mm}
 
-Patrick D. Schloss${^\dagger}$
+Patrick D. Schloss ^\textdagger^
 
 \vspace{40mm}
 
-${\dagger}$ To whom correspondence should be addressed:
+ \textdagger To whom correspondence should be addressed:
 
 
 \href{mailto:pschloss@umich.edu}{pschloss@umich.edu}
@@ -131,11 +134,69 @@ Taiyaki hoodie letterpress, franzen man braid bushwick food truck humblebrag chi
 
 ## Introduction
 
-Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+* AND - Problem of uneven sampling effort and how to control for the effects
+  * Previous work from me has show rarefaction controls for sampling effort 
+  better than other methods
+  * BUT - Confusion over difference between rarefaction and rarefying
+  * THEREFORE - Define rarefaction
+
+* AND - Critiques against rarefaction include
+  * Compresses the alpha and beta diversity metrics
+  * Perceived as "throwing away" data
+  * Arbitrary choice for rarefaction threshold
+  * BUT - these really aren't problems; largely unavoidable
+  * THEREFORE - Use rarefaction
+
+* AND - Additional problem with 16S rRNA gene sequencing is that the data are compositional
+  * Define compositionality
+  * Solutions to problem of compositionality
+  * BUT - Still have sensitivity to uneven sampling effort
+  * THEREFORE - Question of why I found different results from proponents of CLR-based methods
+
+* AND - RPCA as a solution
+  * Describe RPCA
+  * Claims made by Martino
+  * Methods used in Martino
+  * BUT - Problems with analysis including not using rarefaction, arbitrary threshold selection, not using other CLR-based methods
+  * THEREFORE - The goal of this study was to reassess RPCA using the framework and methods used by Martino et al. alongside other methods commonly used by microbial ecologists
+
+* Other...
+  * RPCA -> deicode -> gemelli
+  * Benchmarking data and code forked from deicode
+
+
+
+
+* Problems with original analysis
+  * Simulation design
+    * 1 seed to generate simulated communities
+    * Null model had no skew to it
+    * Simulated communities had uneven sampling effort
+
+  * Choice of distance metrics for comparison
+    * Compared RPCA to MatrixCompletion without using RCLR. Who would do this? Why not at least also compare to CLR w/ a pseudocount?
+
+  * kNN
+    * Used 1st 2 axes of PCoA of Bray-Curtis distances to calcualte euclidean distances, which were then fed into kNN. Why not use the original Bray-Curtis distance matrix?
+    * 1 60:40 split (said 10-fold, but only repeated knn 10 times, not parititioning), did not fit hyperparameter; choice for case studies was messed up
+
+  * Comparison of PERMANOVA Fst values misleading since they removed all of the noise by only considering first two axes from RPCA and comparing to PERMANOVA on original Bray-Curtis distances
+
+  * Case study analysis
+    * Picked case studies with large effect sizes that are easily seen on PCoA/PCA; most microbiome studies are not so easy to differentiate
+    * Thresholds for subsampling case study datasets are arbitrary
+
+  * Overall method problems
+    * Choice of number of partitions/axes seems arbitrary/no guidance. Controls and sponges used 2, sleep apnea used 3. Default is 3, also auto_rpca available within recent implementation
+  
+  * Analysis of sequencing depth sensitivity was qualitative when quantitative methods are available
 
 ## Results
 
-Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+* Simulation
+
+* Compositionality
+
 
 ## Discussion
 
