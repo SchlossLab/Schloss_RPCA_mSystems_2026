@@ -401,6 +401,7 @@ rule calc_pcoa_from_dist:
     {input.rscript} {input.dmatrix} {output}
     """
 
+ruleorder: test_permanova_size > test_permanova_treatment
 
 rule test_permanova_treatment:
   input:
@@ -409,8 +410,6 @@ rule test_permanova_treatment:
     rscript = "workflow/scripts/test_permanova_treatment.R"
   output:
     "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.permanova.tsv",
-  wildcard_constraints:
-    depth = "!5000"
   group:
     "test_permanova"
   resources:
