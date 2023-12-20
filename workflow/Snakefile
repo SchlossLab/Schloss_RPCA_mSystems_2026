@@ -96,13 +96,13 @@ rule targets:
     "data/pooled_data/permanova_size.tsv",
     "data/pooled_data/knn_results.tsv.gz",
   # figures
-    "figures/overlap10000.pcoa.png",
-    "figures/control4000.pcoa.png",
     "figures/cs_seq_depth.png",
+    expand("figures/pcoa/{depth}_{seed}.png",
+          depth = seq_depths["positive"],
+          seed = range(1, (n_iters+1)))
     #
-    "figures/knn_overlap_comparison.png",
-    "figures/knn_control_comparison.png",
-
+    # "figures/knn_overlap_comparison.png",
+    # "figures/knn_control_comparison.png",
 
 
 ##******************************************************************************
@@ -597,34 +597,25 @@ rule pool_gemelli_auto_count_axes:
 ##
 ##******************************************************************************
 
-rule plot_pcoa_overlap:
+rule plot_pcoa_simulation:
   input:
-    bray="data/overlap/data.10000.100_1.raw.bray.pcoa.axes",
-    aitchison="data/overlap/data.10000.100_1.oclr.euclidean.pcoa.axes",
-    rpca="data/overlap/data.10000.100_1.gemelli_2.euclidean.pcoa.axes",
-    design = "data/overlap/data.10000.100_1.design",
-    rscript="workflow/scripts/plot_overlap10000_pcoa.R"
+    axes=expand(
+      "data/{simulation}/data.{depth}.100_{seed}.{process_dist}.pcoa.axes",
+      simulation = ["negative", "overlap", "positive"],
+      process_dist = ["raw.euclidean", "raw.bray", "oclr.euclidean",
+                      "optspace.euclidean", "gemelli_2.euclidean"],
+      allow_missing = True),
+    design = expand(
+      "data/{simulation}/data.{depth}.100_{seed}.design",
+      simulation = ["negative", "overlap", "positive"],
+      allow_missing = True
+    ),
+    rscript="workflow/scripts/plot_pcoa_simulation.R"
   output:
-    "figures/overlap10000.pcoa.png"
+    "figures/pcoa/{depth}_{seed}.png"
   shell:
     """
-    {input.rscript} {input.bray} {input.aitchison} {input.rpca} {input.design}
-    """
-    
-rule plot_pcoa_control:
-  input:
-    bray=expand("data/{control}/data.4000.100_1.raw.bray.pcoa.axes",
-                       control = ["positive", "negative"]),
-    gemelli=expand("data/{control}/data.4000.100_1.gemelli_2.euclidean.pcoa.axes",
-                       control = ["positive", "negative"]),
-    design=expand("data/{control}/data.4000.100_1.design",
-                       control = ["positive", "negative"]),
-    rscript="workflow/scripts/plot_control4000_pcoa.R"
-  output:
-    "figures/control4000.pcoa.png"
-  shell:
-    """
-    {input.rscript}
+    {input.rscript} {wildcards.depth} {wildcards.seed}
     """
 
 rule plot_knn_overlap:
