@@ -97,7 +97,7 @@ rule targets:
     "data/pooled_data/knn_results.tsv.gz",
   # figures
     "figures/cs_seq_depth.png",
-    expand("figures/pcoa/{depth}_{seed}.png",
+    expand("figures/pcoa/{depth}_{seed}.tiff",
           depth = seq_depths["positive"],
           seed = range(1, (n_iters+1)))
     #
@@ -612,7 +612,7 @@ rule plot_pcoa_simulation:
     ),
     rscript="workflow/scripts/plot_pcoa_simulation.R"
   output:
-    "figures/pcoa/{depth}_{seed}.png"
+    "figures/pcoa/{depth}_{seed}.tiff"
   shell:
     """
     {input.rscript} {wildcards.depth} {wildcards.seed}
