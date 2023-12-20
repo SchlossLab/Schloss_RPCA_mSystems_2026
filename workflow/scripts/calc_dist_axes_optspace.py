@@ -39,4 +39,4 @@ dist.to_csv(f'{base}optspace.euclidean.dist.gz', sep = '\t', index = False)
 pcoa.columns = [f"axis2_{round(100*explained[0], ndigits=2)}",
                 f"axis1_{round(100*explained[1], ndigits=2)}"]
 pcoa.insert(0, "sample", subtmp.index)
-dist.to_csv(f'{base}optspace.euclidean.pcoa.axes', sep = '\t', index = False)
+pcoa.to_csv(f'{base}optspace.euclidean.pcoa.axes', sep = '\t', index = False)
