@@ -19,7 +19,9 @@ output_fname <- glue("figures/pcoa/{depth}_{seed}.tiff")
 process_distance <- c("optspace.euclidean" = "OptSpace",
                       "raw.euclidean" = "Euclidean",
                       "raw.bray" = "Bray-Curtis",
-                      "oclr.euclidean" = "Aitchison",
+                      "oclr.euclidean" = "One CLR",
+                      "nclr.euclidean" = "Nudge CLR",
+                      "zclr.euclidean" = "Zero CLR",
                       "gemelli_2.euclidean" = "RPCA")
 
 simulations <- c("negative" = "Negative",
@@ -85,7 +87,7 @@ plot_pcoa <- function(fname) {
         labs(tag = tag) +
         theme(plot.tag = element_text(angle = 90, hjust = 0.5,
                                       face = "bold",
-                                      margin = margin(b = -145, l = 0, r = 10)
+                                      margin = margin(b = -125, l = 0, r = 10)
                                       )
               )
   } else if (!is.na(tag)) {
@@ -93,7 +95,7 @@ plot_pcoa <- function(fname) {
         labs(tag = tag) +
         theme(plot.tag = element_text(angle = 90, hjust = 0.5,
                                       face = "bold",
-                                      margin = margin(b = -105, l = 0, r = 10)
+                                      margin = margin(b = -85, l = 0, r = 10)
                                       )
               )
   }
@@ -116,9 +118,11 @@ grid_plots <- expand_grid(sim = names(simulations),
 (grid_plots$plots[[4]]  + grid_plots$plots[[5]]  + grid_plots$plots[[6]])  /
 (grid_plots$plots[[7]]  + grid_plots$plots[[8]]  + grid_plots$plots[[9]])  /
 (grid_plots$plots[[10]] + grid_plots$plots[[11]] + grid_plots$plots[[12]]) /
-(grid_plots$plots[[13]] + grid_plots$plots[[14]] + grid_plots$plots[[15]]) +
+(grid_plots$plots[[13]] + grid_plots$plots[[14]] + grid_plots$plots[[15]]) /
+(grid_plots$plots[[16]] + grid_plots$plots[[17]] + grid_plots$plots[[18]]) /
+(grid_plots$plots[[19]] + grid_plots$plots[[20]] + grid_plots$plots[[21]]) +
   plot_layout(widths = 1, heights = 1)
 
 ggsave(output_fname,
-      width = 7.5, height = 10,
+      width = 7.5, height = 12,
       compression = "lzw+p")

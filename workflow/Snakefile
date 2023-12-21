@@ -36,25 +36,27 @@ seq_depths = {
 }
 
 paritions_reps = {
-  'crc' : {'all': 1, '35':n_iters, '83':n_iters, '130':n_iters, '178':n_iters, '226':n_iters},
+  'crc' :        {'all': 1, '35':n_iters, '83':n_iters, '130':n_iters, '178':n_iters, '226':n_iters},
   'sleep_apnea': {'all': 1, '35':n_iters, '48':n_iters, '61':n_iters, '74':n_iters, '87':n_iters},
-  'sponges': {'all': 1, '35':n_iters, '45':n_iters, '55':n_iters, '61':n_iters, '78':n_iters},
-  'positive': {100: n_iters},
-  'negative': {100: n_iters},
-  'overlap': {100: n_iters}
+  'sponges':     {'all': 1, '35':n_iters, '45':n_iters, '55':n_iters, '61':n_iters, '78':n_iters},
+  'positive':    {100: n_iters},
+  'negative':    {100: n_iters},
+  'overlap':     {100: n_iters}
   }
 
 processes_dists = {
-  'raw':        {'euclidean', 'bray'},
-  'rare':       {'euclidean', 'bray'},
-  'sub':        {'euclidean', 'bray'},
-  'oclr':       {'euclidean'},
-  'gemelli_2':  {'euclidean'},
-  'gemelli_3':  {'euclidean'},
-  'gemelli_5':  {'euclidean'},
-  'gemelli_9':  {'euclidean'},
+  'raw':          {'euclidean', 'bray'},
+  'rare':         {'euclidean', 'bray'},
+  'sub':          {'euclidean', 'bray'},
+  'oclr':         {'euclidean'},
+  'nclr':         {'euclidean'},
+  'zclr':         {'euclidean'},
+  'gemelli_2':    {'euclidean'},
+  'gemelli_3':    {'euclidean'},
+  'gemelli_5':    {'euclidean'},
+  'gemelli_9':    {'euclidean'},
   'gemelli_auto': {'euclidean'},
-  'optspace':   {'euclidean'}
+  'optspace':     {'euclidean'}
 }
 
 knn_analyses = ["knn_cmfixed.tsv", "knn_cmgrid.tsv", "knn_pdsgrid.tsv"]
@@ -287,12 +289,29 @@ rule transform_oclr:
   conda:
     "envs/rpca.yml"
   group:
-    "transform_oclr"
+    "transform_clr"
   resources:
     mem_mb=200
   shell:
     """
     {input.pyscript} {input.tsv}
+    """
+
+rule transform_clr:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
+    rscript="workflow/scripts/transform_{trans}clr.R"
+  output:
+    tsv="data/{dataset}/data.{other_stuff}.{trans}clr.tsv.gz",
+  group:
+    "transform_clr"
+  wildcard_constraints:
+    trans="n|z"
+  resources:
+    mem_mb=200
+  shell:
+    """
+    {input.rscript} {input.tsv}
     """
 
 rule calc_dist_norare:
@@ -302,7 +321,7 @@ rule calc_dist_norare:
   output:
     "data/{dataset}/data.{other_stuff}.{process}.{distance}.dist.gz"
   wildcard_constraints:
-    process="oclr|raw",
+    process="oclr|nclr|zclr|raw",
     distance="euclidean|bray"
   group:
     "calc_dist"
@@ -391,7 +410,7 @@ rule calc_pcoa_from_dist:
   output:
     "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.pcoa.axes",
   wildcard_constraints:
-    process="raw|oclr|rare|sub"
+    process="raw|oclr|nclr|zclr|rare|sub"
   group:
     "calc_pcoa_from_dist"
   resources:

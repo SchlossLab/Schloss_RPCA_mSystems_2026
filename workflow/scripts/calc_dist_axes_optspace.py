@@ -3,9 +3,11 @@
 # much of this adopted from deicode_benchmarking/simulations/scripts/cluster_results.py
 # and deicode_benchmarking/simulations/negative_control.ipynb
 #
-# pegged iterations=5 and rand=2 to avoid overfitting. In deicode_benchmarking/simulations/scripts/cluster_results.py
+# In deicode_benchmarking/simulations/scripts/cluster_results.py they used
 # iteration=1000, which would seem to be prone to overfitting consdiering
-# default is 5 and max recommended is 100
+# default is 5 and max recommended is 100. Using 1000 here since 5 give gave
+# results that were larger than those reported in the paper (e.g. the Fst values
+# were larger by OptSpace than by RPCA)
 
 import pandas as pd
 import numpy as np
@@ -23,7 +25,7 @@ subtmp=counts.copy()
 
 X_spn = np.array(subtmp.copy()).astype(float)
 X_spn[X_spn==0] = np.nan
-opt_rnd=OptSpace(iteration=5, rank = 2).fit(X_spn)
+opt_rnd=OptSpace(iteration=1000, rank = 2).fit(X_spn)
 
 explained = opt_rnd.explained_variance_ratio
 dist = pd.DataFrame(distance.cdist(opt_rnd.sample_weights, opt_rnd.sample_weights))

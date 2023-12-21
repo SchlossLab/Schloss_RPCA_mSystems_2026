@@ -34,7 +34,7 @@ conda-create-envs-only: false
 group-components:
   - partition_by_nsamples=30
   - partition_by_size=10
-  - transform_oclr=30
+  - transform_clr=30
   - calc_dist_axes_gemelli=50
   - calc_dist=50
   - calc_pcoa_from_dist=50
