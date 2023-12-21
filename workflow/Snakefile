@@ -36,9 +36,12 @@ seq_depths = {
 }
 
 paritions_reps = {
-  'crc' :        {'all': 1, '35':n_iters, '83':n_iters, '130':n_iters, '178':n_iters, '226':n_iters},
-  'sleep_apnea': {'all': 1, '35':n_iters, '48':n_iters, '61':n_iters, '74':n_iters, '87':n_iters},
-  'sponges':     {'all': 1, '35':n_iters, '45':n_iters, '55':n_iters, '61':n_iters, '78':n_iters},
+  'crc' :        {'all': 1, '35':n_iters, '83':n_iters, '132':n_iters,
+                  '181':n_iters, '229':n_iters},
+  'sleep_apnea': {'all': 1, '35':n_iters, '48':n_iters, '61':n_iters,
+                  '74':n_iters, '87':n_iters},
+  'sponges':     {'all': 1, '35':n_iters, '46':n_iters, '56':n_iters,
+                  '67':n_iters, '78':n_iters},
   'positive':    {100: n_iters},
   'negative':    {100: n_iters},
   'overlap':     {100: n_iters}
@@ -462,10 +465,6 @@ rule test_knn_fixed:
     rscript = "workflow/scripts/test_train_knn.R"
   output:
     "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_cmfixed.tsv"
-  group:
-    "test_knn"
-  resources:
-    mem_mb=400
   shell:
     """
     R -e 'source("{input.rscript}");
@@ -480,10 +479,6 @@ rule test_knn_80_20:
     dmatrix = "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.dist.gz",
     design = "data/{dataset}/data.{depth}.{size}_{iteration}.design",
     rscript = "workflow/scripts/test_train_knn.R"
-  group:
-    "test_knn"
-  resources:
-    mem_mb=400
   output:
     "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_pdsgrid.tsv"
   shell:
@@ -501,10 +496,6 @@ rule test_knn_60_40:
     rscript = "workflow/scripts/test_train_knn.R"
   output:
     "data/{dataset}/data.{depth}.{size}_{iteration}.{process}.{distance}.knn_cmgrid.tsv"
-  group:
-    "test_knn"
-  resources:
-    mem_mb=400
   shell:
     """
     R -e 'source("{input.rscript}");

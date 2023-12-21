@@ -39,4 +39,3 @@ group-components:
   - calc_dist=50
   - calc_pcoa_from_dist=50
   - test_permanova=35
-  - test_knn=5
