@@ -14,3 +14,4 @@ dependencies:
   - bioconductor-phyloseq=1.44.0 #for reading biom files
   - quarto=1.3.450
   - r-zcompositions=1.4.0
+  - r-ggh4x=0.2.6
