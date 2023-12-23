@@ -104,10 +104,13 @@ rule targets:
     "figures/cs_seq_depth.png",
     expand("figures/pcoa/{depth}_{seed}.tiff",
           depth = seq_depths["positive"],
-          seed = range(1, (n_iters+1)))
-    #
-    # "figures/knn_overlap_comparison.png",
-    # "figures/knn_control_comparison.png",
+          seed = range(1, (n_iters+1))),
+    "figures/knn_pdsgrid_sim.tiff",
+    "figures/knn_cmgrid_sim.tiff",
+    "figures/knn_cmfixed_sim.tiff",
+    "figures/knn_pdsgrid_cs.tiff",
+    "figures/knn_cmgrid_cs.tiff",
+    "figures/knn_cmfixed_cs.tiff",
 
 
 ##******************************************************************************
@@ -600,9 +603,7 @@ rule pool_gemelli_auto_count_axes:
 
 ##******************************************************************************
 ##
-## To do...
-##
-## 3. port in rules and scripts to build plots
+## Generate figures
 ##
 ##******************************************************************************
 
@@ -627,26 +628,26 @@ rule plot_pcoa_simulation:
     {input.rscript} {wildcards.depth} {wildcards.seed}
     """
 
-rule plot_knn_overlap:
+rule plot_knn_simulation:
   input:
-    knn="data/pooled_data/knn_results.tsv.gz",
-    rscript="workflow/scripts/plot_knn_overlap.R"
+    tsv = "data/pooled_data/knn_results.tsv.gz",
+    rscript = "workflow/scripts/plot_knn_simulation.R"
   output:
-    "figures/knn_overlap_comparison.png"
+    "figures/{method}_sim.tiff"
   shell:
     """
-    {input.rscript}
+    {input.rscript} {wildcards.method}
     """
 
-rule plot_knn_control:
+rule plot_knn_cs:
   input:
-    knn="data/pooled_data/knn_results.tsv.gz",
-    rscript="workflow/scripts/plot_knn_control.R"
+    tsv = "data/pooled_data/knn_results.tsv.gz",
+    rscript = "workflow/scripts/plot_knn_cs.R"
   output:
-    "figures/knn_control_comparison.png"
+    "figures/{method}_cs.tiff"
   shell:
     """
-    {input.rscript}
+    {input.rscript} {wildcards.method}
     """
 
 rule plot_cs_seq_depth:
@@ -661,7 +662,11 @@ rule plot_cs_seq_depth:
     {input.rscript}
     """
 
-
+##******************************************************************************
+##
+## Write paper
+##
+##******************************************************************************
 
 rule make_paper:
   input:
