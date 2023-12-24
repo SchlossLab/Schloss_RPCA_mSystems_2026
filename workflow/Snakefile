@@ -59,7 +59,8 @@ processes_dists = {
   'gemelli_5':    {'euclidean'},
   'gemelli_9':    {'euclidean'},
   'gemelli_auto': {'euclidean'},
-  'optspace':     {'euclidean'}
+  'optspace':     {'euclidean'},
+  'bray_pcoa':    {'euclidean'}
 }
 
 knn_analyses = ["knn_cmfixed.tsv", "knn_cmgrid.tsv", "knn_pdsgrid.tsv"]
@@ -400,6 +401,21 @@ rule calc_dist_axes_optspace:
     {input.pyscript} {input.tsv}
     """
 
+rule calc_dist_frompcoa:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.rare.bray.pcoa.axes",
+    rscript="workflow/scripts/calc_dist_frompcoa.R"
+  output:
+    "data/{dataset}/data.{other_stuff}.bray_pcoa.euclidean.dist.gz"
+  group:
+    "calc_dist"
+  resources:
+    mem_mb=200
+  shell:
+    """
+    {input.rscript} {input.tsv}
+    """
+
 
 ##******************************************************************************
 ##
@@ -416,7 +432,7 @@ rule calc_pcoa_from_dist:
   output:
     "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.pcoa.axes",
   wildcard_constraints:
-    process="raw|oclr|nclr|zclr|rare|sub"
+    process="raw|oclr|nclr|zclr|rare|sub|bray_pcoa"
   group:
     "calc_pcoa_from_dist"
   resources:
@@ -613,7 +629,8 @@ rule plot_pcoa_simulation:
       "data/{simulation}/data.{depth}.100_{seed}.{process_dist}.pcoa.axes",
       simulation = ["negative", "overlap", "positive"],
       process_dist = ["raw.euclidean", "raw.bray", "oclr.euclidean",
-                      "optspace.euclidean", "gemelli_2.euclidean"],
+                      "optspace.euclidean", "gemelli_2.euclidean",
+                      "bray_pcoa.euclidean"],
       allow_missing = True),
     design = expand(
       "data/{simulation}/data.{depth}.100_{seed}.design",
