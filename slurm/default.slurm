@@ -24,6 +24,6 @@ echo "Changing directory to $SLURM_SUBMIT_DIR"
 cd $SLURM_SUBMIT_DIR
 
 ### Run script
-snakemake --profile config_files/slurm/ #--dry-run
+snakemake --profile config_files/slurm/  #--dry-run
 
 echo "done."

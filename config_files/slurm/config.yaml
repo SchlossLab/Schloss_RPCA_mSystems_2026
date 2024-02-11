@@ -31,11 +31,16 @@ latency-wait: 120
 touch: false
 conda-cleanup-envs: false
 conda-create-envs-only: false
-group-components:
-  - partition_by_nsamples=30
-  - partition_by_size=10
-  - transform_clr=30
-  - calc_dist_axes_gemelli=50
-  - calc_dist=50
-  - calc_pcoa_from_dist=50
-  - test_permanova=35
+# group-components:
+#   - partition_by_nsamples=30
+#   - partition_by_size=10
+#   - transform_oclr=10
+#   - transform_clr=10
+#   - calc_dist_axes_gemelli=50
+#   - calc_dist_norare=10
+#   - calc_dist_sub=10
+#   - calc_dist_rare=5
+#   - calc_dist_from_pcoa=10
+#   - calc_pcoa_from_dist=50
+#   - test_permanova_treatment=5
+#   - test_permanova_size=5

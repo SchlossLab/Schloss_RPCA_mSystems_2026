@@ -20,19 +20,16 @@ treatment_groups = {
   'sponges': 'health_status'
 }
 
-simulations = {
-  'positive': 'treatment',
-  'negative': 'treatment',
-  'overlap': 'treatment'
-}
-
 seq_depths = {
   "sponges": [1000, 13755], 
   "sleep_apnea": [1000, 11879],
   "crc": [1000, 10439],
   "positive": [1000, 2000, 4000, 10000],
   "negative": [1000, 2000, 4000, 10000],
-  "overlap": [1000, 2000, 4000, 10000]
+  "overlap": [1000, 2000, 4000, 10000],
+  "positive_pds": [1000, 2000, 4000, 10000],
+  "negative_pds": [1000, 2000, 4000, 10000],
+  "overlap_pds": [1000, 2000, 4000, 10000]
 }
 
 paritions_reps = {
@@ -44,8 +41,11 @@ paritions_reps = {
                   '67':n_iters, '78':n_iters},
   'positive':    {100: n_iters},
   'negative':    {100: n_iters},
-  'overlap':     {100: n_iters}
-  }
+  'overlap':     {100: n_iters},
+  'positive_pds':{100: n_iters},
+  'negative_pds':{100: n_iters},
+  'overlap_pds': {100: n_iters}
+}
 
 processes_dists = {
   'raw':          {'euclidean', 'bray'},
@@ -53,7 +53,7 @@ processes_dists = {
   'sub':          {'euclidean', 'bray'},
   'oclr':         {'euclidean'},
   'nclr':         {'euclidean'},
-  'zclr':         {'euclidean'},
+#  'zclr':         {'euclidean'},
   'gemelli_2':    {'euclidean'},
   'gemelli_3':    {'euclidean'},
   'gemelli_5':    {'euclidean'},
@@ -82,6 +82,17 @@ for ds,depths in seq_depths.items():
               for ka in knn_analyses:
                 knn_results_files.append(f'data/{ds}/data.{d}.{part}_{i+1}.{proc}.{dist}.{ka}')
 
+# these will get 90 additional iterations for permanova to quantify the fraction
+# of significant tests by permanova. primarily intended for the overlap
+# condition but will also get the positive and negative conditions usig the pds
+# simulation framework
+for pds in {'overlap_pds', 'positive_pds', 'negative_pds'}:
+  for d in seq_depths[pds]:
+      for i in range(iters, 100):
+        for proc, dists in processes_dists.items():
+          for dist in dists:
+            permanova_treatment_files.append(f'data/{pds}/data.{d}.100_{i+1}.{proc}.{dist}.permanova.tsv')
+
 gemelli_auto_files = [s for s in pcoa_axes_files if 'auto' in s]
 
 permanova_size_files = []
@@ -95,23 +106,23 @@ for ds in seq_depths.keys():
 
 rule targets:
   input:
-    pcoa_axes_files,
-    "data/pooled_data/depth_confounding.tsv",
-    "data/pooled_data/gemelli_auto_naxes.tsv",
     "data/pooled_data/permanova_treatment.tsv",
     "data/pooled_data/permanova_size.tsv",
+    "data/pooled_data/depth_confounding.tsv",
+    "data/pooled_data/gemelli_auto_naxes.tsv",
+    pcoa_axes_files,
     "data/pooled_data/knn_results.tsv.gz",
-  # figures
-    "figures/cs_seq_depth.png",
-    expand("figures/pcoa/{depth}_{seed}.tiff",
-          depth = seq_depths["positive"],
-          seed = range(1, (n_iters+1))),
-    "figures/knn_pdsgrid_sim.tiff",
-    "figures/knn_cmgrid_sim.tiff",
-    "figures/knn_cmfixed_sim.tiff",
-    "figures/knn_pdsgrid_cs.tiff",
-    "figures/knn_cmgrid_cs.tiff",
-    "figures/knn_cmfixed_cs.tiff",
+  # # figures
+  #   "figures/cs_seq_depth.png",
+  #   expand("figures/pcoa/{depth}_{seed}.tiff",
+  #         depth = seq_depths["positive"],
+  #         seed = range(1, (n_iters+1))),
+  #   "figures/knn_pdsgrid_sim.tiff",
+  #   "figures/knn_cmgrid_sim.tiff",
+  #   "figures/knn_cmfixed_sim.tiff",
+  #   "figures/knn_pdsgrid_cs.tiff",
+  #   "figures/knn_cmgrid_cs.tiff",
+  #   "figures/knn_cmfixed_cs.tiff",
 
 
 ##******************************************************************************
@@ -185,9 +196,9 @@ rule collect_data_metadata_sim:
     pyscript="workflow/scripts/collect_data_metadata_sim.py"
   output:
     expand("data/{simulation}/data.{depth}.100_{rep}.raw.tsv.gz",
-          simulation = simulations.keys(), allow_missing = True),
+          simulation = ["positive", "negative", "overlap"], allow_missing = True),
     expand("data/{simulation}/data.{depth}.100_{rep}.design",
-          simulation = simulations.keys(), allow_missing = True)
+          simulation = ["positive", "negative", "overlap"], allow_missing = True)
   conda:
     "envs/rpca.yml"
   shell:
@@ -195,6 +206,24 @@ rule collect_data_metadata_sim:
     mkdir -p data/positive data/negative data/overlap
     PYTHONPATH='.' {input.pyscript} {wildcards.depth} {wildcards.rep}
     """
+
+rule collect_data_metadata_pds:
+  input:
+    simulations_r="workflow/scripts/simulations.R",
+    rscript="workflow/scripts/collect_data_metadata_sim_pds.R"
+  output:
+    expand("data/{simulation}/data.{depth}.100_{rep}.raw.tsv.gz",
+          simulation = ["positive_pds", "negative_pds", "overlap_pds"], allow_missing = True),
+    expand("data/{simulation}/data.{depth}.100_{rep}.design",
+          simulation = ["positive_pds", "negative_pds", "overlap_pds"], allow_missing = True)
+  resources:
+    mem_mb=12000
+  shell:
+    """
+    mkdir -p data/positive_pds data/negative_pds data/overlap_pds
+    {input.rscript} {wildcards.depth} {wildcards.rep}
+    """
+
 
 rule remove_rare_samples:
   input:
@@ -229,10 +258,10 @@ rule partition_by_nsamples:
   output:
     "data/{case_study}/data.{depth, \\d+}.{partition, \\d+}_{rep, \\d+}.raw.tsv.gz",
     "data/{case_study}/data.{depth, \\d+}.{partition, \\d+}_{rep, \\d+}.design",
-  group:
-    "partition_by_nsamples"
-  resources:
-    mem_mb=200
+  # group:
+  #   "partition_by_nsamples"
+  # resources:
+  #   mem_mb=200
   wildcard_constraints:
       case_study="sponges|sleep_apnea|crc"
   shell:
@@ -250,10 +279,10 @@ rule partition_by_sizes_cs:
     "data/{case_study}/data.5000.size_{rep, \\d+}.design",
   wildcard_constraints:
     case_study = "crc|sleep_apnea|sponges"
-  group:
-    "partition_by_size"
-  resources:
-    mem_mb=500
+  # group:
+  #   "partition_by_size"
+  # resources:
+  #   mem_mb=500
   shell:
     """
     {input.rscript} {input.all} {input.design} {wildcards.rep}
@@ -268,11 +297,11 @@ rule partition_by_sizes_sim:
     "data/{simulation}/data.5000.size_{rep, \\d+}.raw.tsv.gz",
     "data/{simulation}/data.5000.size_{rep, \\d+}.design",
   wildcard_constraints:
-    simulation = "positive|negative|overlap"
-  group:
-    "partition_by_size"
-  resources:
-    mem_mb=500
+    simulation = "positive|negative|overlap|positive_pds|negative_pds|overlap_pds"
+  # group:
+  #   "partition_by_size"
+  # resources:
+  #   mem_mb=500
   shell:
     """
     {input.rscript} {input.all} {input.design} {wildcards.rep}
@@ -295,10 +324,10 @@ rule transform_oclr:
     tsv="data/{dataset}/data.{other_stuff}.oclr.tsv.gz",
   conda:
     "envs/rpca.yml"
-  group:
-    "transform_clr"
-  resources:
-    mem_mb=200
+  # group:
+  #   "transform_oclr"
+  # resources:
+  #   mem_mb=600
   shell:
     """
     {input.pyscript} {input.tsv}
@@ -310,12 +339,12 @@ rule transform_clr:
     rscript="workflow/scripts/transform_{trans}clr.R"
   output:
     tsv="data/{dataset}/data.{other_stuff}.{trans}clr.tsv.gz",
-  group:
-    "transform_clr"
   wildcard_constraints:
     trans="n|z"
-  resources:
-    mem_mb=200
+  # group:
+  #   "transform_clr"
+  # resources:
+  #   mem_mb=600
   shell:
     """
     {input.rscript} {input.tsv}
@@ -330,10 +359,10 @@ rule calc_dist_norare:
   wildcard_constraints:
     process="oclr|nclr|zclr|raw",
     distance="euclidean|bray"
-  group:
-    "calc_dist"
-  resources:
-    mem_mb=200
+  # group:
+  #   "calc_dist_norare"
+  # resources:
+  #   mem_mb=1000
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance}
@@ -345,10 +374,10 @@ rule calc_dist_subsample:
     rscript="workflow/scripts/calc_dist_subsample.R"
   output:
     "data/{dataset}/{data, [a-z]+}.{depth, [0-9]+}.{other_stuff}.sub.{distance}.dist.gz"
-  group:
-    "calc_dist"
-  resources:
-    mem_mb=200
+  # group:
+  #   "calc_dist_sub"
+  # resources:
+  #   mem_mb=1000
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance} {wildcards.depth}
@@ -360,10 +389,10 @@ rule calc_dist_rarefaction:
     rscript="workflow/scripts/calc_dist_rarefaction.R"
   output:
     "data/{dataset}/{data, [a-z]+}.{depth, [0-9]+}.{other_stuff}.rare.{distance}.dist.gz"
-  group:
-    "calc_dist"
-  resources:
-    mem_mb=200
+  # group:
+  #   "calc_dist_rare"
+  # resources:
+  #   mem_mb=2000
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance} {wildcards.depth}
@@ -378,10 +407,10 @@ rule calc_dist_axes_gemelli:
     "data/{dataset}/data.{other_stuff}.gemelli_{rank}.euclidean.pcoa.axes"
   conda:
     "envs/rpca.yml"
-  group:
-    "calc_dist_axes_gemelli"
-  resources:
-    mem_mb=200
+  # group:
+  #   "calc_dist_axes_gemelli"
+  # resources:
+  #   mem_mb=200
   shell:
     """
     {input.bash} {input.tsv} {wildcards.rank}
@@ -401,16 +430,16 @@ rule calc_dist_axes_optspace:
     {input.pyscript} {input.tsv}
     """
 
-rule calc_dist_frompcoa:
+rule calc_dist_from_pcoa:
   input:
     tsv="data/{dataset}/data.{other_stuff}.rare.bray.pcoa.axes",
     rscript="workflow/scripts/calc_dist_frompcoa.R"
   output:
     "data/{dataset}/data.{other_stuff}.bray_pcoa.euclidean.dist.gz"
-  group:
-    "calc_dist"
-  resources:
-    mem_mb=200
+  # group:
+  #   "calc_dist_from_pcoa"
+  # resources:
+  #   mem_mb=1000
   shell:
     """
     {input.rscript} {input.tsv}
@@ -433,10 +462,10 @@ rule calc_pcoa_from_dist:
     "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.pcoa.axes",
   wildcard_constraints:
     process="raw|oclr|nclr|zclr|rare|sub|bray_pcoa"
-  group:
-    "calc_pcoa_from_dist"
-  resources:
-    mem_mb=200
+  # group:
+  #   "calc_pcoa_from_dist"
+  # resources:
+  #   mem_mb=200
   shell:
     """
     {input.rscript} {input.dmatrix} {output}
@@ -451,10 +480,10 @@ rule test_permanova_treatment:
     rscript = "workflow/scripts/test_permanova_treatment.R"
   output:
     "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.permanova.tsv",
-  group:
-    "test_permanova"
-  resources:
-    mem_mb=200
+  # group:
+  #   "test_permanova_treatment"
+  # resources:
+  #   mem_mb=1000
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -467,10 +496,10 @@ rule test_permanova_size:
     rscript = "workflow/scripts/test_permanova_size.R"
   output:
     "data/{dataset}/data.5000.size_{iter}.{process}.{dist}.permanova.tsv",
-  group:
-    "test_permanova"
-  resources:
-    mem_mb=200
+  # group:
+  #   "test_permanova_size"
+  # resources:
+  #   mem_mb=1000
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -627,14 +656,16 @@ rule plot_pcoa_simulation:
   input:
     axes=expand(
       "data/{simulation}/data.{depth}.100_{seed}.{process_dist}.pcoa.axes",
-      simulation = ["negative", "overlap", "positive"],
+      simulation = ["negative", "overlap", "positive",
+                    "negative_pds", "overlap_pds", "positive_pds"],
       process_dist = ["raw.euclidean", "raw.bray", "oclr.euclidean",
                       "optspace.euclidean", "gemelli_2.euclidean",
                       "bray_pcoa.euclidean"],
       allow_missing = True),
     design = expand(
       "data/{simulation}/data.{depth}.100_{seed}.design",
-      simulation = ["negative", "overlap", "positive"],
+      simulation = ["negative", "overlap", "positive",
+                    "negative_pds", "overlap_pds", "positive_pds"],
       allow_missing = True
     ),
     rscript="workflow/scripts/plot_pcoa_simulation.R"
