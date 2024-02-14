@@ -53,7 +53,7 @@ processes_dists = {
   'sub':          {'euclidean', 'bray'},
   'oclr':         {'euclidean'},
   'nclr':         {'euclidean'},
-#  'zclr':         {'euclidean'},
+  'zclr':         {'euclidean'},
   'gemelli_2':    {'euclidean'},
   'gemelli_3':    {'euclidean'},
   'gemelli_5':    {'euclidean'},
@@ -93,8 +93,6 @@ for pds in {'overlap_pds', 'positive_pds', 'negative_pds'}:
           for dist in dists:
             permanova_treatment_files.append(f'data/{pds}/data.{d}.100_{i+1}.{proc}.{dist}.permanova.tsv')
 
-gemelli_auto_files = [s for s in pcoa_axes_files if 'auto' in s]
-
 permanova_size_files = []
 for ds in seq_depths.keys():
   for proc, dists in processes_dists.items():
@@ -103,6 +101,14 @@ for ds in seq_depths.keys():
         pcoa_axes_files.append(f'data/{ds}/data.5000.size_{i+1}.{proc}.{dist}.pcoa.axes')
         permanova_size_files.append(f'data/{ds}/data.5000.size_{i+1}.{proc}.{dist}.permanova.tsv')
 
+# remove 1000 and 2000 zclr *_pds simulation files since they produced NaNs due
+# to excessive sparsity
+regex = re.compile(r'pds/data.[12]000\..*zclr')
+pcoa_axes_files = [i for i in pcoa_axes_files if not regex.search(i)]
+permanova_treatment_files = [i for i in permanova_treatment_files if not regex.search(i)]
+knn_results_files = [i for i in knn_results_files if not regex.search(i)]
+
+gemelli_auto_files = [s for s in pcoa_axes_files if 'auto' in s]
 
 rule targets:
   input:
