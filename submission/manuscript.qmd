@@ -134,81 +134,133 @@ Taiyaki hoodie letterpress, franzen man braid bushwick food truck humblebrag chi
 
 ## Introduction
 
-* AND - Problem of uneven sampling effort and how to control for the effects
-  * Previous work from me has show rarefaction controls for sampling effort 
-  better than other methods
-  * BUT - Confusion over difference between rarefaction and rarefying
-  * THEREFORE - Define rarefaction
+A persistent challenge in amplicon and shotgun metagenomic sequencing of microbial communities is the variation in the number of reads obtained across samples [**XXXXX**]. The variation in the number of reads generally occurs because of an accumulation of sampling errors during library generation that includes attempts to pool equimolar amounts of DNA for subsequent sequencing. It is not uncommon to observe as much as 100-fold variation in sequencing depth [**XXXXX**]. This challenge is not unique to microbial ecologiests and has long plagued landscape and animal ecologists [**XXXXX**]. The classical approach to control for uneven sampling has been rarefaction [**XXXXX**]. In rarefaction, a consistent number of individuals are randomly sampled from each sample. An alpha or beta diversity metric is then calculated from the sampling. The random subsampling and diversity measurement steps are repeated a large number of times (e.g., 100 or 1,000) and the measurements are averaged over the subsamples [**XXXXX**]. Unfortunately, the term "rarefying" and occasionally rarefaction have been misdefined as a single subsampling step [**XXXXX**]. Regardless, over the past 10 years, the process of rarefaction has become controversial because some view the choice of the sampling depth as arbitrary, the metrics can become more similar than they truly are, and because the practice of downsampling to a common number of sequences leaves the impression that good data are being unnecessarily discarded [**XXXXX**]. Numerous alternatives have been proposed including calcuting the relative abundance of each taxon in in a community so that they sum to 1 within a sample [**XXXXX**], normalization of counts so that the total number of individuals sums to a user defined value [**XXXXX**], use of estimators of diversity that can extrapolate beyond the number of observed individuals [**XXXXX**], and the use of compositional statistics, which are based on a log ratio of taxon counts to a reference value [**XXXXX**].
 
-* AND - Critiques against rarefaction include
-  * Compresses the alpha and beta diversity metrics
-  * Perceived as "throwing away" data
-  * Arbitrary choice for rarefaction threshold
-  * BUT - these really aren't problems; largely unavoidable
-  * THEREFORE - Use rarefaction
+Researchers have adopted compositional methods because the number of sequences obtained per sample is typically independent of the true number of individuals in a community and so the number of times each taxon is observed is not independent of the other taxa [**XXXXX**]. The general approach is to calculate a centralized log ratio (i.e., CLR) where the abundance of each taxon within a sample is divided by the geometric mean abundance within the sample, which is then used as the argument for the natural logrithm. These values are then used to calculate pairwise euclidean distances between samples resulting in so-called Aitchison distances [**XXXXX**]. Aside from controlling for the compositional nature of sequence data, proponents of the Aitchison distance claim that the distances are insensitive to differences in sampling effort [**XXXXX**]. A challenge of Aitchison distances is that because microbial communities are patchy a large number of features will have a frquency of zero in each sample. This will cause the geometric mean to be undefined. To overcome this challenge, factors are added to the data. Three approaches have been proposed: adding a pseudocount of 1 all frequency data (i.e., Nudge CLR), adding a pseudocount of 1 divided by the total number of individuals in the sample (i.e., Nudge CLR), and imputing zero values to be a random small value (i.e. Zero CLR) [**XXXXX**]. As an alternative to these transformations, Martino et al. [**XXXXX**] (i.e., Martino) proposed calculating CLR values for each sample after ignoring zero values followed by matrix completion or robust Principal Components Analysis (i.e., RPCA). The authors claim that the advantages of RPCA over the other CLR-based approaches is that it does not require imputing zero values and that the method is less sensitive to uneven sampling effort.
 
-* AND - Additional problem with 16S rRNA gene sequencing is that the data are compositional
-  * Define compositionality
-  * Solutions to problem of compositionality
-  * BUT - Still have sensitivity to uneven sampling effort
-  * THEREFORE - Question of why I found different results from proponents of CLR-based methods
+In contrast to these claims, I have shown that the output of RPCA and other alternatives to rarefaction are more sensitive to uneven sampling than rarefaction [**XXXXX**]. Futhermore, use of these methods can inflate the false detection rate and decrease the statistical power to detect differences in alpha and beta diversity metrics. Given the near unanimous agreement over the past decade that rarefaction is "inadmissible" and the development of alternatives to rarefaction, one might question why my results disagree so markedly with those of others. There are several possible reasons. First, researchers often propose new methods by demonstrating their method reveals new insights over old methods without actually benchmarking the method [**XXXXX**]. Because one cannot know the true difference between samples, a positive or negative result with experimental data cannot be interpreted. Second, when bencharking tests are developed, researchers may inadvertantly select tests that favor the method they are developing. This was the case in my recent re-analysis of the original paper that called rarefaction into question [**XXXXX**]. Therefore, it is necessary to use a comprehensive benchmarking test suite that allows one to compare diverse methods using inference methods that are commonly used by researchers. Third, the choice of how to simulate community data can indadvertantly favor the method being developed. A popular cliche states that "all models are wrong, some are useful" [**XXXXX**]. Similar to one's choice of benchmarking tests, the modelling approach may favor some methods over others. For instance, I have critiqued how others have accounted for variation in sampling depth as being unlike what we see in experimental data.
 
-* AND - RPCA as a solution
-  * Describe RPCA
-  * Claims made by Martino
-  * Methods used in Martino
-  * BUT - Problems with analysis including not using rarefaction, arbitrary threshold selection, not using other CLR-based methods
-  * THEREFORE - The goal of this study was to reassess RPCA using the framework and methods used by Martino et al. alongside other methods commonly used by microbial ecologists
+In my previous analyses advocating for rarefaction, I generated null community models and treatment groups with known effect sizes by creating taxon abundance distributions and sampling depths based on 12 published datasets [**XXXXX**]. Alternatively, Martino modelled communites with known effect sizes using a statistical model that sought to mimic the diversity of communities described in a study comparing the microbial communities found on people's fingertips and their computer keyboards [**XXXXX**]. This difference in modelling strategy has created an interesting opportunity to reframe the question of whether to use rarefaction and to reassess the performance of RPCA and other CLR-based approaches. Although Martino used an interesing modelling approach, they did not compare RPCA to other CLR-based approaches or to rarefaction. Furthermore, they used benchmarking tests that did not reflect how researchers typically analyze microbial community data. Therefore, the goal of the current study was to benchmark RPCA and other CLR-based methods relative to rarefaction using the modelling framework used by Martino.
 
-* Other...
-  * RPCA -> deicode -> gemelli
-  * Benchmarking data and code forked from deicode
-
-
-
-
-* Problems with original analysis
-  * Simulation design
-    * 1 seed to generate simulated communities
-    * Null model had no skew to it
-    * Simulated communities had uneven sampling effort
-
-  * Choice of distance metrics for comparison
-    * Compared RPCA to MatrixCompletion without using RCLR. Who would do this? Why not at least also compare to CLR w/ a pseudocount?
-
-  * kNN
-    * Used 1st 2 axes of PCoA of Bray-Curtis distances to calcualte euclidean distances, which were then fed into kNN. Why not use the original Bray-Curtis distance matrix?
-    * 1 60:40 split (said 10-fold, but only repeated knn 10 times, not parititioning), did not fit hyperparameter; choice for case studies was messed up
-
-  * Comparison of PERMANOVA Fst values misleading since they removed all of the noise by only considering first two axes from RPCA and comparing to PERMANOVA on original Bray-Curtis distances
-
-  * Case study analysis
-    * Picked case studies with large effect sizes that are easily seen on PCoA/PCA; most microbiome studies are not so easy to differentiate
-    * Thresholds for subsampling case study datasets are arbitrary
-
-  * Overall method problems
-    * Choice of number of partitions/axes seems arbitrary/no guidance. Controls and sponges used 2, sleep apnea used 3. Default is 3, also auto_rpca available within recent implementation
-  
-  * Analysis of sequencing depth sensitivity was qualitative when quantitative methods are available
 
 ## Results
 
-* Simulation
+### Description of simulated communities
 
-* Compositionality
+Martino used a statistical approach to simulate microbial communities that resembled 16S rRNA gene sequence data generated in a study that compared the communities found on people's fingertips and their computer keyboards [**XXXXX**]. As described in Martino, the overall simulation framework involved simulating two treatment groups each represented by 100 communities for a total of 200 communities. Each community contained as many as 1,000 taxa, which they refered to as features. For each treatment group they fit a normal distribution to the relative abundnces of taxa from two individuals' samples to obtain a mean and standard deviation for each taxon. The fraction of taxa that overlapped between treatment groups was also selected to mimic the overlap observed btween the two individuals. The expected taxon relative abundances for each sample were the same across each sample within the same treatment group. Next, a common normal distribution with a single mean and standard deviation was used to generate noise that added to each relative abundance value to add variation across samples and features. Next, a random subset of sample-taxa combinations were selected for incoroporation of additional noise. Finally, the sample-taxa combinations were randomly sampled using a Poisson-lognormal distribution to generate the simulated number of sequences for each sample-taxa combination so that the total number of sequences within a sample contained 1,000, 2,000, 4,000, or 10,0000 sequences per simulation. One set of 200 samples were simulated for each sequencing depth. In addition to the simulation where a subset of taxa were shared in both treatment groups, Martino created positive and negative control simulations. In the positive control simulation, there were no overlapping taxa resulting in two clearly defined groups of samples. In the negative control simulation all of the taxa overlapped so that the groups of samples could not be distinguished.
+
+Martino also made available a git-based repository on GitHub that includes the actual benchmarking code written in Python and the data used in their analysis (https://github.com/cameronmartino/deicode-benchmarking); the code and data from that repository are included in the repository for the current analysis (https://github.com/schlosslab/Schloss_RPCA_XXXXXX_2024). When describing the code used to generate simulations, I will provide file paths from the root of my repository directory. I was able to reuse their code to generate ten replicate simulations to minimize the impact of the choice of the random number generator seed and to draw additional sequences from each sample so that the minimum number of sequences in each sample was 1,000, 2,000, 4,000, or 10,0000 sequences per simulation. Because the question of uneven sampling effort is central to the current analysis, I added a step to the simulation where the desired number of sequences was drawn from each sample giving every sample in each simulation the same number of sequences. My code successfully recreated the biclustering heatmaps for the positive and negative controls shown in their Figure 3DE and for the overlap simulation (Figure 1). I noticed a subtle difference between the positive control heatmap in my Figure 1 and their Figure 3D. Our heatmaps appears to be transposed versions of each other. In fact, in the `deicode_benchmarking/simulations/negative_control.ipynb` notebook (see L13 and L15 of block 138), they used the `imshow` function which plots the rows of a matrix on the x-axis and the columns of the matrix on the y-axis. The matrix being plotted had the taxa in the rows and the samples along the columns, which is opposite of the labels that were specified (see L21-24 of block 138). Re-inspection of the heatmap suggested that rather than simulating communities with overlapping taxa, the authors imulated communities that were shared between the two treatment groups.
+
+Because I sought to modify the effect size to test the effect of using RPCA and other transformations on statistical power and classification accuracy, I needed to modify the code to adjust the overlap of taxa rather than samples as described in the original paper. My further investigation of the simulation code provided in the `deicode_benchmarking/simulations/scripts/simulations.py` Python script revealed several points where the written description of the simulations deviated from those in the code and instances where errors were likely introduced into the original code. First...
+
+Second...
+
+
+
+* Found numerous problems with simulations as coded
+  * Overlapped samples rather than features
+  * Variation in feature abundance was across samples rather than across features
+  * Homoscedastic and heteroscedastic variation and creating sparsity was screwed up - didn't actually subsample, signs of negative values were removed
+
+
+
+* Rewrote simulation code and analyzed original simulation data in parallel to revised data (except for PERMANOVA power analysis because it was not possible to get treatment groups to truly overlap with each other)
+  * Simulated communitites had uneven sampling effort, increased sampling effort and then subsampled to correct depth
+* Qualitatively was able to reproduce the original results
+
+
+### Simulated communities - PERMANOVA analysis
+
+* Used PERMANOVA F-statistic rather than p-values (why?!), likely because even MatrixCompletionon raw counts was was significant
+* Using rclr transformed data outperformed raw data when followed by matrix completion
+* F statistic values were inflated because they only used 2 dimensions, which artificailly cut out a lot of noise that would bring down the F statistic values
+* Investigators compared results using overlapped community and found RPCA outperformed MatrixCompletion; didn't compare to Bray-Curtis, rarefaction, other compositional methods
+* Noted that they did not include other relevant comparisons such as using relative abundance, other compositional transformations, rarefaction, subsampling, etc. Expande workflow pipeline to include these other methods
+* Found numerous problems with simulations
+  * Desired to increase number of replicate datasets from 10 to 100 to test statistical power
+* Rewrote simulation code and selected a level of overlap and a total number of features so that approximately 50% of tests using 4000 sequences would have been significant when using rarefaction
+* Bray-Curtis and OCLR did as well as each other; much better than RPCA and other methods
+* Researchers used balanced designs with varying number of samples per treatment group. Unnecessary other than to show the change in power with sampling effort. Likely done because knn analysis is sensitive to uneven smapling effort. Regardless, the results did not change
+
+
+### Simulated communities - KNN analysis
+
+* Unaware of researchers who have used KNN to differentiate communities. Far more likely that they would use PERMANOVA or another machine learning technique like logistic regresssion or random forest.
+* Problems with analysis
+  * Only generated one simulation for each sequencing depth - would have done 10 to test sensitivity on RNG seed
+  * Did not run knn on negative and positive control samples - included all three simulation datasets
+  * Said they did 40:60 training-testing splits, but actually did 60:40 training-testing splits - would have prefered 80:20 training-testing splits
+  * Used a single seed per simulation replicate - modified to use 100 seeds to generate 100 80:20 splits (did they say they used 1 or 10; pretty sure code only was for 1 iteration)
+  * Hard coded k value - would have preferred to use a variety of values in the training with the optimal value selected for the testing phase
+  * Only used raw and rclr transformed data as input to matrix completion followed by PCA and used that as input to kNN. Later, they used weighted UniFrac and Bray-Curtis ordinations to generate distances - would have preferred to use the distances themselves as input
+* Regardless of how the training-testing splits were generated or whether their simulated data or mine were used rarefaction performed as well or better than all other methods, including RPCA.
+* Across the board, as shown in original paper, the classification accuracy increased with sampling effort
+* Median k values were...
+
+
+### Experimental data - Overview
+
+* Picked case studies with large effect sizes that were easily seen on PCoA/PCA; most microbiome studies are not so easy to differentiate
+  * Sleep apnea and sponge datasets - relatively small and had treatment groups that were highly distinct
+  * I added a third dataset - CRC, which was larger and had treatment groups that were more similar to each other
+* All sequences were used for RPCA; only 1000 sequences per sample were used for Bray-Curtis and WUniFrac
+
+
+### Experimental data - PERMANOVA analysis
+
+* RPCA was compared to Bray-Curtis and weighted UniFrac distances
+  * For BC and wU, euclidean distances were calculated from first two PCoA axes and used as input to PERMANOVA (**confirm?**). Analysis compared F statistics, which again are flawed, since so much noise was removed
+  * Sleep Apnea data analysis used three axes rather than two like the Sponge dataset
+* RPCA not able to detect differences in CRC dataset
+
+
+### Experimental data - KNN analysis
+
+* Used 1st 2 axes of PCoA of Bray-Curtis distances to calcualte euclidean distances, which were then fed into kNN. Why not use the original Bray-Curtis distance matrix?
+  * 1 60:40 split (said 10-fold, but repeated the same split 10 times)
+  * did not fit hyperparameter: choice for k in case studies was messed up, in some cases using a fraction of the number of columns in the metadata file
+* I rewrote knn algorithm to use any distance matrix and to use 100 x 80:20 splits with search for optimal k value
+* Bray-Curtis was similar to better than RPCA for each dataset; other compositional methods performed at least as well as RPCA and better than Bray-Curtis for Sleep Apnea dataset
+
+
+### Sampling depth experiment with simulated and experimental data
+* Buried in M&M was the description of an analysis and its results where Martino et al. compared the clustering of samples in an ordination where samples were duplicated and subsampled to 500 and 100 sequences per sample. They calculated distances using Jaccard, Bray-Curtis, and RPCA. They found that "RPCA alleviated the clustering by sequencing depth both qualitatively and quantitatively"
+  * The ordinations still showed clustering by sampling depth
+  * The Jaccard and Bray-Curtis distances were not calculated using rarefaction.
+* Repeated analysis withe the simulated and experimental data by using 5000 and 10000 sequences per sample
+* Analyzed distances usign PERMANOVA accounting for sampling depth -> Rarefaction was only method that could reliably control for the uneven sampling effort
 
 
 ## Discussion
 
-Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+* Overall method problems
+  * Choice of number of partitions/axes seems arbitrary/no guidance. Controls and sponges used 2, sleep apnea used 3. Default is 3
+  * auto_rpca available within recent implementation but has since been deprecated
+  * Authors acknowledged that RPCA doesn't work on time series datasets
+* Benchmarking should use methods that are commonly used in the field. KNN was interesting, but not relevant. Who is using raw with matrix completion?
+* Statistical modeling approach is appealing for building communities and treatment groups and nicely complements results found using simulations based on observed sequencing counts and sequencing depths
+* Comment on problematic coding practices
+* Use rarefaction
 
 ## Materials & Methods
 
-Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+* Deicode benchmarking data and code
+
+* KNN analysis
+
+* Description of Sampling depth experiment
+  * adonis2 model
+
+* Workflow
+  * Snakemake
+  * Conda - Software versions
+  * GitHub
 
 ## Acknowledgements
 
-Viral glossier taxidermy keytar celiac ethical. Next level knausgaard tousled palo santo photo booth kogi brunch wayfarers vice tilde squid. Marfa edison bulb fashion axe flannel. Shabby chic man bun heirloom kitsch DIY marfa ascot same migas. Venmo tacos chambray yr ramps green juice man bun fixie gastropub craft beer enamel pin. Ascot irony blog, pork belly microdosing tumblr cardigan shaman before they sold out hell of la croix grailed intelligentsia activated charcoal tumeric. Copper mug bicycle rights scenester 3 wolf moon whatever schlitz.
+* Thanks for making code publicly accessible!
+* Funding agencies
+
 
 \newpage
 

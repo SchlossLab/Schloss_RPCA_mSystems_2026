@@ -330,23 +330,6 @@ rule partition_by_sizes_sim:
 #
 # ******************************************************************************
 
-rule transform_oclr:
-  input:
-    tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
-    pyscript="workflow/scripts/transform_oclr.py"
-  output:
-    tsv="data/{dataset}/data.{other_stuff}.oclr.tsv.gz",
-  conda:
-    "envs/rpca.yml"
-  # group:
-  #   "transform_oclr"
-  # resources:
-  #   mem_mb=600
-  shell:
-    """
-    {input.pyscript} {input.tsv}
-    """
-
 rule transform_clr:
   input:
     tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
@@ -354,7 +337,7 @@ rule transform_clr:
   output:
     tsv="data/{dataset}/data.{other_stuff}.{trans}clr.tsv.gz",
   wildcard_constraints:
-    trans="n|z"
+    trans="n|z|o"
   # group:
   #   "transform_clr"
   # resources:
