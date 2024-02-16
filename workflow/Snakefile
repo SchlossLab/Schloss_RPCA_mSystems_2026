@@ -120,11 +120,11 @@ gemelli_auto_files = [s for s in pcoa_axes_files if 'auto' in s]
 
 rule targets:
   input:
-    "data/pooled_data/permanova_treatment.tsv",
-    "data/pooled_data/permanova_size.tsv",
-    "data/pooled_data/depth_confounding.tsv",
-    "data/pooled_data/gemelli_auto_naxes.tsv",
-    pcoa_axes_files,
+    # "data/pooled_data/permanova_treatment.tsv",
+    # "data/pooled_data/permanova_size.tsv",
+    # "data/pooled_data/depth_confounding.tsv",
+    # "data/pooled_data/gemelli_auto_naxes.tsv",
+    # pcoa_axes_files,
     "data/pooled_data/knn_results.tsv.gz",
   # # figures
   #   "figures/cs_seq_depth.png",
@@ -796,4 +796,15 @@ rule make_paper:
   shell:
     """
     quarto render submission/manuscript.qmd
+    """
+
+rule supplemental_text:
+  input:
+    "submission/supplemental_text.qmd",
+  output:
+    expand("submission/supplemental_text.{format}",
+          format = ["pdf", "md", "tex"])
+  shell:
+    """
+    quarto render submission/supplemental_text.qmd
     """
