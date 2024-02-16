@@ -1,0 +1,10 @@
+name: metagenomeseq
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base=4.3.2
+  - r-r.utils=2.12.3
+  - r-tidyverse=2.0.0
+  - r-data.table=1.14.10
+  - bioconductor-metagenomeseq=1.43.0

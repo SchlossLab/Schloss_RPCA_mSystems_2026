@@ -51,6 +51,7 @@ processes_dists = {
   'raw':          {'euclidean', 'bray'},
   'rare':         {'euclidean', 'bray'},
   'sub':          {'euclidean', 'bray'},
+  'relabund':     {'euclidean', 'bray'},
   'oclr':         {'euclidean'},
   'nclr':         {'euclidean'},
   'zclr':         {'euclidean'},
@@ -60,7 +61,10 @@ processes_dists = {
   'gemelli_9':    {'euclidean'},
   'gemelli_auto': {'euclidean'},
   'optspace':     {'euclidean'},
-  'bray_pcoa':    {'euclidean'}
+  'bray_pcoa':    {'euclidean'},
+  'srs':          {'bray'},
+  'css':          {'bray'},
+  'deseq2':       {'euclidean'}
 }
 
 knn_analyses = ["knn_cmfixed.tsv", "knn_cmgrid.tsv", "knn_pdsgrid.tsv"]
@@ -101,12 +105,16 @@ for ds in seq_depths.keys():
         pcoa_axes_files.append(f'data/{ds}/data.5000.size_{i+1}.{proc}.{dist}.pcoa.axes')
         permanova_size_files.append(f'data/{ds}/data.5000.size_{i+1}.{proc}.{dist}.permanova.tsv')
 
-# remove 1000 and 2000 zclr *_pds simulation files since they produced NaNs due
-# to excessive sparsity
-regex = re.compile(r'pds/data.[12]000\..*zclr')
-pcoa_axes_files = [i for i in pcoa_axes_files if not regex.search(i)]
-permanova_treatment_files = [i for i in permanova_treatment_files if not regex.search(i)]
-knn_results_files = [i for i in knn_results_files if not regex.search(i)]
+# remove 1000 and 2000 zclr *_pds simulation files and 1000 deseq2 positive_pds
+# files since they failed to produce results due to excessive sparsity
+zclr_regex = r'pds/data.[12]000\..*zclr'
+deseq2_regex_a = r'positive_pds/data.1000\..*deseq2'
+deseq2_regex_b = r'negative/data.[12]000\..*deseq2'
+regexes_combined = re.compile("(%s|%s|%s)" % (zclr_regex, deseq2_regex_a, deseq2_regex_b))
+
+pcoa_axes_files = [i for i in pcoa_axes_files if not regexes_combined.search(i)]
+permanova_treatment_files = [i for i in permanova_treatment_files if not regexes_combined.search(i)]
+knn_results_files = [i for i in knn_results_files if not regexes_combined.search(i)]
 
 gemelli_auto_files = [s for s in pcoa_axes_files if 'auto' in s]
 
@@ -316,9 +324,9 @@ rule partition_by_sizes_sim:
 
 # ******************************************************************************
 #
-# Calculate distances and ordinations. Am using the ipynb code for the RPCA
-# calculations because need the OptSpace data, which doesn't appear available
-# in gemelli
+# Transform data by one clr, nudge clr, zcomposition clr, relative abundance,
+# css normalization, srs normalization, deseq2 variance stabilization
+# normalization
 #
 # ******************************************************************************
 
@@ -356,6 +364,78 @@ rule transform_clr:
     {input.rscript} {input.tsv}
     """
 
+rule transform_srs:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
+    rscript="workflow/scripts/transform_srs.R"
+  output:
+    tsv="data/{dataset}/data.{other_stuff}.srs.tsv.gz",
+  # group:
+  #   "transform_srs"
+  # resources:
+  #   mem_mb=600
+  shell:
+    """
+    {input.rscript} {input.tsv}
+    """
+
+rule transform_relabund:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
+    rscript="workflow/scripts/transform_relabund.R"
+  output:
+    tsv="data/{dataset}/data.{other_stuff}.relabund.tsv.gz",
+  # group:
+  #   "transform_relabund"
+  # resources:
+  #   mem_mb=600
+  shell:
+    """
+    {input.rscript} {input.tsv}
+    """
+
+rule transform_css:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
+    rscript="workflow/scripts/transform_css.R"
+  output:
+    tsv="data/{dataset}/data.{other_stuff}.css.tsv.gz",
+  conda:
+    "envs/metagenomeseq.yml"
+  # group:
+  #   "transform_css"
+  # resources:
+  #   mem_mb=600
+  shell:
+    """
+    {input.rscript} {input.tsv}
+    """
+
+rule transform_deseq2:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.raw.tsv.gz",
+    rscript="workflow/scripts/transform_deseq2.R"
+  output:
+    tsv="data/{dataset}/data.{other_stuff}.deseq2.tsv.gz",
+  conda:
+    "envs/deseq2.yml"
+  # group:
+  #   "transform_deseq2"
+  # resources:
+  #   mem_mb=600
+  shell:
+    """
+    {input.rscript} {input.tsv}
+    """
+
+# ******************************************************************************
+#
+# Calculate distances and ordinations. Am using the ipynb code for the RPCA
+# calculations because need the OptSpace data, which doesn't appear available
+# in gemelli
+#
+# ******************************************************************************
+
 rule calc_dist_norare:
   input:
     tsv="data/{dataset}/data.{other_stuff}.{process}.tsv.gz",
@@ -363,7 +443,7 @@ rule calc_dist_norare:
   output:
     "data/{dataset}/data.{other_stuff}.{process}.{distance}.dist.gz"
   wildcard_constraints:
-    process="oclr|nclr|zclr|raw",
+    process="oclr|nclr|zclr|raw|relabund|srs|css|deseq2",
     distance="euclidean|bray"
   # group:
   #   "calc_dist_norare"
@@ -451,15 +531,6 @@ rule calc_dist_from_pcoa:
     {input.rscript} {input.tsv}
     """
 
-
-##******************************************************************************
-##
-## Carry out PERMANOVA and KNN tests on distance matrices. Not using the PCoA
-## for KNN as was done in the original Martino et al paper for the Bray-Curtis
-## distances
-##
-##******************************************************************************
-
 rule calc_pcoa_from_dist:
   input:
     dmatrix = "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.dist.gz",
@@ -467,7 +538,7 @@ rule calc_pcoa_from_dist:
   output:
     "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.pcoa.axes",
   wildcard_constraints:
-    process="raw|oclr|nclr|zclr|rare|sub|bray_pcoa"
+    process="raw|oclr|nclr|zclr|rare|sub|bray_pcoa|relabund|deseq2|css|srs"
   # group:
   #   "calc_pcoa_from_dist"
   # resources:
@@ -476,6 +547,15 @@ rule calc_pcoa_from_dist:
     """
     {input.rscript} {input.dmatrix} {output}
     """
+
+
+##******************************************************************************
+##
+## Carry out PERMANOVA and KNN tests on distance matrices. Not using the PCoA
+## for KNN as was done in the original Martino et al paper for the Bray-Curtis
+## distances
+##
+##******************************************************************************
 
 ruleorder: test_permanova_size > test_permanova_treatment
 
