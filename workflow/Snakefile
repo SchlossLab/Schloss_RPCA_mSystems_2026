@@ -86,9 +86,9 @@ for ds,depths in seq_depths.items():
               for ka in knn_analyses:
                 knn_results_files.append(f'data/{ds}/data.{d}.{part}_{i+1}.{proc}.{dist}.{ka}')
 
-# these will get 90 additional iterations for permanova to quantify the fraction
-# of significant tests by permanova. primarily intended for the overlap
-# condition but will also get the positive and negative conditions usig the pds
+# these will get 90 additional iterations for permanova and knn to quantify the
+# fraction of significant tests. primarily intended for the overlap condition
+# but will also get the positive and negative conditions usig the pds
 # simulation framework
 for pds in {'overlap_pds', 'positive_pds', 'negative_pds'}:
   for d in seq_depths[pds]:
@@ -96,6 +96,8 @@ for pds in {'overlap_pds', 'positive_pds', 'negative_pds'}:
         for proc, dists in processes_dists.items():
           for dist in dists:
             permanova_treatment_files.append(f'data/{pds}/data.{d}.100_{i+1}.{proc}.{dist}.permanova.tsv')
+            for ka in knn_analyses:
+              knn_results_files.append(f'data/{pds}/data.{d}.100_{i+1}.{proc}.{dist}.{ka}')
 
 permanova_size_files = []
 for ds in seq_depths.keys():
