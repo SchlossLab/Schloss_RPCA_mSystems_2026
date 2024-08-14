@@ -1,3 +1,5 @@
 #!/bin/bash
 
-salloc --account=pschloss1 --partition=standard --time=100:00:00 --ntasks=1 --cpus-per-task=16 --nodes=1 --mem=40GB
+#don't run with sbatch! run directly in terminal like...
+#  slurm/interactive.batch
+salloc --account=pschloss0 --partition=standard --time=100:00:00 --ntasks=1 --cpus-per-task=16 --nodes=1 --mem=40GB

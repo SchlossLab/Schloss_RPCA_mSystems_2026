@@ -122,24 +122,8 @@ gemelli_auto_files = [s for s in pcoa_axes_files if 'auto' in s]
 
 rule targets:
   input:
-    # "data/pooled_data/permanova_treatment.tsv",
-    # "data/pooled_data/permanova_size.tsv",
-    # "data/pooled_data/depth_confounding.tsv",
-    # "data/pooled_data/gemelli_auto_naxes.tsv",
-    # pcoa_axes_files,
-    "data/pooled_data/knn_results.tsv.gz",
-  # # figures
-  #   "figures/cs_seq_depth.png",
-  #   expand("figures/pcoa/{depth}_{seed}.tiff",
-  #         depth = seq_depths["positive"],
-  #         seed = range(1, (n_iters+1))),
-  #   "figures/knn_pdsgrid_sim.tiff",
-  #   "figures/knn_cmgrid_sim.tiff",
-  #   "figures/knn_cmfixed_sim.tiff",
-  #   "figures/knn_pdsgrid_cs.tiff",
-  #   "figures/knn_cmgrid_cs.tiff",
-  #   "figures/knn_cmfixed_cs.tiff",
-
+    "submission/manuscript.pdf",
+    "submission/supplemental_text.pdf"
 
 ##******************************************************************************
 ##
@@ -695,15 +679,18 @@ rule pool_permanova_size:
     {input.rscript} {input.tsvs}
     """
 
+n_knn_results_files = len(knn_results_files)
 rule pool_knn_results:
   input:
     tsvs = knn_results_files,
     rscript = "workflow/scripts/pool_knn_results.R"
   output:
     "data/pooled_data/knn_results.tsv.gz"
+  resources:
+    mem_mb=16000
   shell:
     """
-    {input.rscript} {input.tsvs}
+    {input.rscript} {n_knn_results_files}
     """
 
 rule pool_gemelli_auto_count_axes:
@@ -716,6 +703,20 @@ rule pool_gemelli_auto_count_axes:
     """
     {input.rscript} {input.tsvs}
     """
+
+
+rule pool_ns:
+  input:
+    tsvs = expand("data/{dataset}/data.depths.tsv",
+        dataset = list(treatment_groups.keys())),
+    rscript = "workflow/scripts/pool_ns.R"
+  output:
+    "data/pooled_data/case_study_ns.tsv"
+  shell:
+    """
+    {input.rscript} {input.tsvs}
+    """
+
 
 ##******************************************************************************
 ##
@@ -769,16 +770,117 @@ rule plot_knn_cs:
     {input.rscript} {wildcards.method}
     """
 
+#figure 1
+rule plot_heatmap_pcoa_martino:
+  input:
+    rscript = "workflow/scripts/plot_heat_pcoa_martino.R",
+    neg = "data/negative/data.4000.100_1.oclr.tsv.gz",
+    over = "data/overlap/data.4000.100_1.oclr.tsv.gz",
+    pos = "data/positive/data.4000.100_1.oclr.tsv.gz",
+    neg_bray = "data/negative/data.4000.100_1.raw.bray.pcoa.axes",
+    over_bray = "data/overlap/data.4000.100_1.raw.bray.pcoa.axes",
+    pos_bray = "data/positive/data.4000.100_1.raw.bray.pcoa.axes",
+    neg_gem = "data/negative/data.4000.100_1.gemelli_2.euclidean.pcoa.axes",
+    over_gem = "data/overlap/data.4000.100_1.gemelli_2.euclidean.pcoa.axes",
+    pos_gem = "data/positive/data.4000.100_1.gemelli_2.euclidean.pcoa.axes"
+  output:
+    "figures/heatmap_pcoa_martino.tiff"
+  shell:
+    """
+    {input.rscript}
+    """
+
+#figure 2
+rule plot_martino_fst_knn:
+  input:
+    rscript = "workflow/scripts/plot_martino_fst_knn.R",
+    permanova = "data/pooled_data/permanova_treatment.tsv",
+    knn = "data/pooled_data/knn_results.tsv.gz"
+  output:
+    "figures/fst_knn_martino.tiff",
+  shell:
+    """
+    {input.rscript}
+    """
+
+#figure 3
+rule plot_heatmap_pcoa_pds:
+  input:
+    rscript = "workflow/scripts/plot_heat_pcoa_pds.R",
+    raw = "data/overlap_pds/data.10000.100_1.raw.tsv.gz",
+    neg = "data/negative_pds/data.10000.100_1.oclr.tsv.gz",
+    over = "data/overlap_pds/data.10000.100_1.oclr.tsv.gz",
+    pos = "data/positive_pds/data.10000.100_1.oclr.tsv.gz",
+    neg_bray = "data/negative_pds/data.10000.100_1.raw.bray.pcoa.axes",
+    over_bray = "data/overlap_pds/data.10000.100_1.raw.bray.pcoa.axes",
+    pos_bray = "data/positive_pds/data.10000.100_1.raw.bray.pcoa.axes",
+    neg_gem = "data/negative_pds/data.10000.100_1.gemelli_2.euclidean.pcoa.axes",
+    over_gem = "data/overlap_pds/data.10000.100_1.gemelli_2.euclidean.pcoa.axes",
+    pos_gem = "data/positive_pds/data.10000.100_1.gemelli_2.euclidean.pcoa.axes"
+  output:
+    "figures/heatmap_pcoa_pds.tiff"
+  shell:
+    """
+    {input.rscript}
+    """
+
+#figure 4
+rule plot_pds_fst_knn:
+  input:
+    rscript = "workflow/scripts/plot_pds_fst_knn.R",
+    permanova = "data/pooled_data/permanova_treatment.tsv",
+    knn = "data/pooled_data/knn_results.tsv.gz"
+  output:
+    "figures/fst_knn_pds.tiff",
+  shell:
+    """
+    {input.rscript}
+    """
+
+#figure s1
+rule plot_knn_methods_martino:
+  input:
+    rscript = "workflow/scripts/plot_martino_knn_methods.R",
+    data = "data/pooled_data/knn_results.tsv.gz"
+  output:
+    "figures/knn_methods_martino.tiff",
+  shell:
+    """
+    {input.rscript}
+    """
+
+#figure s2
+rule plot_knn_methods_pds:
+  input:
+    rscript = "workflow/scripts/plot_pds_knn_methods.R",
+    data = "data/pooled_data/knn_results.tsv.gz"
+  output:
+    "figures/knn_methods_pds.tiff",
+  shell:
+    """
+    {input.rscript}
+    """
+
 rule plot_cs_seq_depth:
   input:
     tsvs=expand("data/{dataset}/data.depths.tsv",
                 dataset = list(treatment_groups.keys())),
     rscript="workflow/scripts/plot_sequence_depths.R"
   output:
-    "figures/cs_seq_depth.png"
+    "figures/cs_seq_depth.tiff"
   shell:
     """
     {input.rscript}
+    """
+
+rule get_png:
+  input:
+    "{stub}.tiff"
+  output:
+    "{stub}.png"
+  shell:
+    """
+    convert {input} {output}
     """
 
 ##******************************************************************************
@@ -789,9 +891,19 @@ rule plot_cs_seq_depth:
 
 rule make_paper:
   input:
-    "submission/manuscript.qmd",
-    "submission/references.bib",
-    "submission/asm.csl"
+    qmd = "submission/manuscript.qmd",
+    ref = "submission/references.bib",
+    csl = "submission/asm.csl",
+    data1 = "data/pooled_data/permanova_treatment.tsv",
+    data2 = "data/pooled_data/knn_results.tsv.gz",
+    data3 = "data/pooled_data/case_study_ns.tsv",
+    fig1 = "figures/heatmap_pcoa_martino.png",
+    fig2 = "figures/fst_knn_martino.png",
+    fig3 = "figures/heatmap_pcoa_pds.png",
+    fig4 = "figures/fst_knn_pds.png",
+    fig5 = "figures/cs_seq_depth.png",
+    figs1 = "figures/knn_methods_martino.png",
+    figs2 = "figures/knn_methods_pds.png"
   output:
     expand("submission/manuscript.{format}",
           format = ["pdf", "md", "tex", "docx"])

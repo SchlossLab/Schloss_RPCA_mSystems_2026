@@ -73,4 +73,5 @@ depths %>%
     axis.text.x = element_markdown()
   )
 
-ggsave("figures/cs_seq_depth.png", width = 5, height = 5)
+ggsave("figures/cs_seq_depth.tiff", width = 5, height = 5,
+      compression = "lzw+p")

@@ -5,7 +5,7 @@ cluster:
     --job-name={rule}
     --output=logs/cluster_logs/`date +"%Y%m%d"`/{rule}/%j.out
     --partition={resources.partition}
-    --account=pschloss1
+    --account=pschloss0
     --nodes=1
     --time=100:00:00
     --mem={resources.mem_mb}

@@ -11,7 +11,7 @@ Make sure conda and mamba are installed. Installing TinyTex may take some fenagl
 ```bash
 mamba config --set channel_priority strict
 mamba env create -f workflow/envs/martino.yml 
-conda activate martino
+mamba activate martino
 ```
 
 Use Snakemake (installed in `martino` environment) to build project
