@@ -9,6 +9,10 @@ format:
     highlight-style: atom-one
     mainfont: "Nimbus Sans"
     monofont: "DejaVu Sans Mono"
+    include-in-header: 
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
   gfm: default
 pdf-engine: xelatex
 geometry: margin=1.0in
@@ -16,7 +20,7 @@ geometry: margin=1.0in
 linestretch: 1.75
 code-block-bg: "#F3F3F3"
 code-block-border-left: "#FFFFFF"
-engine: jupyter
+engine: knitr
 execute:
   echo: FALSE
   tidy: TRUE
@@ -26,6 +30,14 @@ execute:
   cache: FALSE
   enabled: true
 toc-title: "Supplemental text: Review of code used by Martino et al.\n"
+include-before-body:
+  text: |
+    \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
+      showspaces = false,
+      showtabs = false,
+      breaksymbolleft={},
+      breaklines
+    }
 ---
 
 ```{python setup, echo = FALSE}
@@ -92,10 +104,6 @@ rand = np.random.RandomState(42)
 ```
 
 \raggedright
-
-
-# THINK ABOUT TENSE OF VERBS!
-
 
 The code chunks displayed below are copied directly from the code used by Martino et al. ("Martino") and the line numbers correspond to the indicated files. The hyperlinks in the text go to the GitHub repository for the [current project](https://github.com/SchlossLab/Schloss_RPCA_XXXXXX_2024), which is a copy of the [original repository](https://github.com/cameronmartino/deicode-benchmarking) developed by Martino. Martino's repository was [forked from the Deicode repository](https://github.com/biocore/DEICODE/commit/ea7835b9a0d16c35685542a81d05ee12c412c6ba) January 28, 2019. The only changes between the Martino repository and the copy for this project was to make the directory and file names lowercase and to replace hyphens with underscores.
 
@@ -251,7 +259,7 @@ def build_block_model(
 ```
 \normalsize\setstretch{1.75}
 
-As called in `cluster_build.py`, the value of `rank` was 2 (i.e., the number of treatment groups), `num_samples` was 200 (i.e., the number of samples across all treatment groups), `num_features` was 1000 (i.e., number of taxa or features), and `overlap` was 20 (i.e., the number of features that overlapped between the treatment groups; it was zero in the positive control analysis). The values of `spar`, `C_`, `hoced`, and `hsced`,  were based on a parameter that was altered for each sequencing depth. The `spar` and `C_` values were set to the same value (e.g., 2500) and were used to scale the relative abundance values in the `Subsample` (L261) and `block_diagonal_gaus` (L237-243) functions, respectively. As used in the simulations with partially overlapping features the `hoced` and `hsced` values were set to `hoced` and `hsced` values divided by 15; for the positive control analysis they were divided by 60. These values were used in the `Homoscedastic` (L257) and `Heteroscedastic` (L259) functions where `hoced` and `hsced` were used to set the standard deviation of a normal distribution with mean set to the relative abundance of the sample-taxon pair receiving additional noise uniformly or randomly. The values of `spar`, `C_`, `hoced`, and `hsced` that were used in `build_block_model` were selected by fitting the model to experimental data from a study comparing the microbial communities on subject's fingers and keyboards. Although I did not attempt to replicate their model fitting, other code is found in `simulations.py` that ostensibly performs this analysis.
+As called in `cluster_build.py`, the value of `rank` was 2 (i.e., the number of treatment groups), `num_samples` was 200 (i.e., the number of samples across all treatment groups), `num_features` was 1000 (i.e., number of taxa or features), and `overlap` was 20 (i.e., the number of features that overlapped between the treatment groups; it was zero in the positive control analysis). The values of `spar`, `C_`, `hoced`, and `hsced` were based on a parameter that was altered for each sequencing depth. The `spar` and `C_` values were set to the same value (e.g., 2500) and were used to scale the relative abundance values in the `Subsample` (L261) and `block_diagonal_gaus` (L237-243) functions, respectively. As used in the simulations with partially overlapping features the `hoced` and `hsced` values were set to `hoced` and `hsced` values divided by 15; for the positive control analysis they were divided by 60. These values were used in the `Homoscedastic` (L257) and `Heteroscedastic` (L259) functions where `hoced` and `hsced` were used to set the standard deviation of a normal distribution with mean set to the relative abundance of the sample-taxon pair receiving additional noise uniformly or randomly. The values of `spar`, `C_`, `hoced`, and `hsced` that were used in `build_block_model` were selected by fitting the model to experimental data from a study comparing the microbial communities on subject's fingers and keyboards. Although I did not attempt to replicate their model fitting, other code is found in `simulations.py` that ostensibly performs this analysis.
 
 A general problem with the code in `simulations.py` was that if I loaded `simulations.py` and ran `build_block_model` multiple times with the same input data and random number generator seed, the code did not produce the same results. Although not a critical problem, the lack of computational reproducibility was part of my motivation to assess the benchmarking test results with ten rather than only one seed. 
 
@@ -332,7 +340,7 @@ xs = [norm.pdf(gradient, loc=mu[i], scale=sigma)
 mat = np.vstack(xs).T
 ```
 
-The function begins by initializing a matrix with zeroes (i.e., `mat`) and a graidient of values to define a distribution (i.e., `gradient`). However, this code is largely superfluous since the values of these values are written over by subsequent code before the matrix (i.e., `mat`) is updated. Regardless, operationally, `mat` is defined as a matrix of zeroes with `num_features` rows and `num_samples` columns (L188). A vector with `num_features` values, `gradient`, is defined as a linear interpolation between the values of 0 and 10 (L189). Similarly, a vector with `num_samples` values, `mu`, is defined as a linear interpolation between the values of 0 and 10 (L190). These values along with a `sigma` value of 1 are used to create a `num_samples` long vector of arrays, which are each `num_features` long (L123-124). This vector of arrays, `xs`, takes its values from the Normal probability density function at the `num_features` values of `gradient` under a distribution with a mean at each of the `num_samples` values of `mu` with a standard deviation of `sigma` (i.e., 1). The `num_features` by `num_samples` matrix `mat` is generated by combining each element of `xs` as the columns. As suggested in the comment above from L108-110, this matrix has maximum probabilities along the diagonal of the matrix. Values far off the diagonal are nearly zero. For example, the value for the first feature in the first sample was `{python} f'{round(mat[0,0], 4):.4f}'` and it was `{python} f'{mat[0,199]:.1e}'` in the last sample. The following is a heatmap visualization of the raw values in the matrix (the matrix has been transposed).
+The function begins by initializing a matrix with zeroes (i.e., `mat`) and a gradient of values to define a distribution (i.e., `gradient`). However, this code is largely superfluous since the values of these values are written over by subsequent code before the matrix (i.e., `mat`) is updated. Regardless, operationally, `mat` is defined as a matrix of zeroes with `num_features` rows and `num_samples` columns (L188). A vector with `num_features` values, `gradient`, is defined as a linear interpolation between the values of 0 and 10 (L189). Similarly, a vector with `num_samples` values, `mu`, is defined as a linear interpolation between the values of 0 and 10 (L190). These values along with a `sigma` value of 1 are used to create a `num_samples` long vector of arrays, which are each `num_features` long (L123-124). This vector of arrays, `xs`, takes its values from the Normal probability density function at the `num_features` values of `gradient` under a distribution with a mean at each of the `num_samples` values of `mu` with a standard deviation of `sigma` (i.e., 1). The `num_features` by `num_samples` matrix `mat` is generated by combining each element of `xs` as the columns. As suggested in the comment above from L108-110, this matrix has maximum probabilities along the diagonal of the matrix. Values far off the diagonal are nearly zero. For example, the value for the first feature in the first sample was `{python} f'{round(mat[0,0], 4):.4f}'` and it was `{python} f'{mat[0,199]:.1e}'` in the last sample. The following is a heatmap visualization of the raw values in the matrix (the matrix has been transposed).
 
 
 ```{python, echo = FALSE}
@@ -369,7 +377,7 @@ As stated above in my description of L117-125, the values of `mat` are largely o
 ```
 \normalsize\setstretch{1.75}
 
-L127 and L128 define the number of columns (`block_cols`) and rows (`block_rows`) in each block. Because `nblocks` is 2 for all simulations, these values become 100 and 500, respectively. At L129, a loop is initiated for values of the index variable `b`, which ranges between 0 and the integer less than `nblocks-1` or 0. Therefore, the loop is only executed once and the else statement at L146-159 is never executed. At L131 and L133 new versions of `gradient` and `mu` are generated. All of the values in `gradient` are 5 and the values in `mu` are taken from a linear extrapolation between 0 and 10. **This is evidence that Martino's simulation considered the overlap of samples rather than features.** The vector `mu` has `block_cols` (i.e., 100) plus `overlap` (i.e., 20) values. Because the columns contain sample data the additional 20 columns represent 20 additional samples rather than features. The code that was described at L123-125 is repeated as L135-138, using a standard deviation of 2 rather than 1. The resulting matrix, `B`, has 500 rows and 120 columns. Each row of `B` is identical with the columns being the value of the probability distribution function at 5.0 (i.e., `gradient` as defined at L131) for a normal distribution with the 120 values of `mu` as the mean and 2.0 (i.e., `sigma`) as the standard deviation. At L145, this matrix is used to replace the values in the upper left quadrant of `mat` in L139-145. The values of the first 500 rows in the last 80 columns are all nearly zero and are taken from the value of `mat` generated at L125.
+L127 and L128 define the number of columns (`block_cols`) and rows (`block_rows`) in each block. Because `nblocks` is 2 for all simulations, these values become 100 and 500, respectively. At L129, a loop is initiated for values of the index variable `b`, which ranges between 0 and the integer less than `nblocks-1` or 0. Therefore, the loop is only executed once and the else statement at L146-159 is never executed. At L131 and L133 new versions of `gradient` and `mu` are generated. All the values in `gradient` are 5 and the values in `mu` are taken from a linear extrapolation between 0 and 10. **This is evidence that Martino's simulation considered the overlap of samples rather than features.** The vector `mu` has `block_cols` (i.e., 100) plus `overlap` (i.e., 20) values. Because the columns contain sample data the additional 20 columns represent 20 additional samples rather than features. The code that was described at L123-125 is repeated as L135-138, using a standard deviation of 2 rather than 1. The resulting matrix, `B`, has 500 rows and 120 columns. Each row of `B` is identical with the columns being the value of the probability distribution function at 5.0 (i.e., `gradient` as defined at L131) for a normal distribution with the 120 values of `mu` as the mean and 2.0 (i.e., `sigma`) as the standard deviation. At L145, this matrix is used to replace the values in the upper left quadrant of `mat` in L139-145. The values of the first 500 rows in the last 80 columns are all nearly zero and are taken from the value of `mat` generated at L125.
 
 \setstretch{1.0}\footnotesize
 ```{.python startFrom="161"}
@@ -574,16 +582,16 @@ Five problems were found in the code as written in the original `simulations.py`
 **6. The signs of negative values generated after applying the heteroscedastic noise were made positive.** It is likely that the intention was for negative values to be transformed to zeros.  
 **7. Setting the random number generator seed was inadequate to ensure that rerunning `simulations.py` with the same parameters yielded the same result.**  
 
-I suspect that the confusion over the information contained in the rows and columns of the positive and negative controls was principly caused by the first two problems listed in this summary. Taken together, these problems do not entirely invalidate the claims made by Martino about the performance of RPCA. Regardless, it was necessary to re-evaluate the claims with revised code.Therefore, I rewrote `simulations.py` as an R script `simulations.R` (found in `workflow/scripts/`) that resolved the above-mentioned problems.
+I suspect that the confusion over the information contained in the rows and columns of the positive and negative controls was principally caused by the first two problems listed in this summary. Taken together, these problems do not entirely invalidate the claims made by Martino about the performance of RPCA. Regardless, it was necessary to re-evaluate the claims with revised code. Therefore, I rewrote `simulations.py` as an R script `simulations.R` (found in `workflow/scripts/`) that resolved the above-mentioned problems.
 
 
 # Review of simulation analysis code
 
-Continuing my review of the code used in the published benchmarking analysis, I next inspected the code that was used to calculate the PERMANOVA F statistics and P-values and k-Nearest Neighbor (KNN) accuracy values. Review of the code in `deicode_benchmarking/simulations/negative_control.ipynb` and `deicode_benchmarking/simulations/scripts/cluster_build.py` and the data outputted to `deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz` made it clear that each simulation (i.e., negative, positive, and overlapping) were only replicated a single time making it impossible to assess the sensitivity of the simulation results on the choice of the random number generator seed.
+Continuing my review of the code used in the published benchmarking analysis of the simulated data, I next inspected the code that was used to calculate the PERMANOVA F statistics and P-values and k-Nearest Neighbor (KNN) accuracy values. Review of the code in `deicode_benchmarking/simulations/negative_control.ipynb` and `deicode_benchmarking/simulations/scripts/cluster_build.py` and the data outputted to `deicode_benchmarking/simulations/cluster_models/simulation_subsampled_noisy.csv.gz` made it clear that each simulation (i.e., negative, positive, and overlapping) were only replicated a single time making it impossible to assess the sensitivity of the simulation results on the choice of the random number generator seed.
 
 Aside from the lack of simulation replication, my primary critique was the KNN analysis. The manuscript stated "ordination output was compared by permutational multivariate analysis of variance (PERMANOVA) F-statistic and supervised k-nearest neighbor (KNN) classification cross-validation (40:60) split". The convention for describing cross-validation splits is to indicate the percentage of samples used in the training set followed by the percentage used in the testing set. Therefore, according to a 40:60 split, 40% of the samples would have been used to train the model and 60% would have been used to test the model. Such a split would be curious since the training set is typically larger than the testing set. Furthermore, a split is typically performed multiple times to remove bias from the selection of the random number generator seed.
 
-Analysis of the benchmarking code made it clear that a 40:60 split was not used. In fact, for the negative and positive control analyses reportedin their Table S1, the authros used an 80:20 training-testing splits. This can be seen on L7 of box 186 from `deicode_benchmarking/simulations/negative_control.ipynb` shown here:
+Analysis of the benchmarking code made it clear that a 40:60 split was not used. In fact, for the negative and positive control analyses reported in their Table S1, the authors used 80:20 training-testing splits. This can be seen on L7 of box 186 from `deicode_benchmarking/simulations/negative_control.ipynb` shown here:
 
 \setstretch{1.0}\footnotesize
 ```{.python startFrom="3"}
@@ -617,13 +625,232 @@ Review of the code in both `negative_control.ipynb` and `cluster_results.py` mad
 
 Finally, the choice of the number of neighbors (i.e., k) to use in the KNN analysis was not described in the manuscript. Often the training set will be repeatedly split to fit such hyperparameters [**XXXXXX**]. As shown above in the code from box 186 `negative_control.ipynb` at L10, a k value of 10 was used for classifying the positive and negative control data. In contrast, as shown above in the code from `cluster_results.py` at L78, a k value of 13 was selected for classifying the samples with overlapping features.
 
-In summary, the authors used inconsisitent splits and k-values in their simulations, misstated the nature of the split, did not incorporate multiple splits, and provided no information for how the k-value was selected. These problems raise the question of whether their models were overfit (i.e., too small of a k value) or underfit (i.e., too large of a k value). I implemented my own version of a KNN classifier (`workflow/scripts/test_train_knn.R`) that allows users to input a distance matrix, training, validation, and testing fractions,  and the number of iterations.
+In summary, the authors used inconsistent splits and k-values in their simulations, misstated the nature of the split, did not incorporate multiple splits, and provided no information for how the k-value was selected. These problems raise the question of whether their models were overfit (i.e., too small of a k value) or under fit (i.e., too large of a k value). I implemented my own version of a KNN classifier (`workflow/scripts/test_train_knn.R`) that allows users to input a distance matrix, training, validation, and testing fractions, and the number of iterations.
 
 
 # Review of case study analysis code
 
-* when using RPCA all of the sequences in each sample were used but only 1,000 sequences per sample were used with the Bray-Curtis and weighted UniFrac distances (**Supplementary Text**).
-* Performed 1 60:40 split (said 10-fold, but repeated the same split 10 times)
-* They did not fit hyperparameter: choice for k in case studies was messed up, in some cases using a fraction of the number of columns in the metadata file
+## Processing of case study datasets
 
-* Used raw and rclr transformed data as input to matrix completion followed by PCA. The output from PCA was used as input to kNN. Later, they used weighted UniFrac and Bray-Curtis ordinations to generate distances - would have preferred to use the distances themselves as input
+After benchmarking RPCA using simulated data, Martino evaluated the method relative to using Bray-Curtis and weighted UniFrac distances with the Sponges and Sleep Apnea datasets [**XXXXX**]. Both datasets consist of two treatment groups represented by varying numbers of samples, each with a wide distribution in the number of sequences (**Fig. XXXXX**). The datasets were analyzed separately by similar methods. Before commenting on the analysis of these datasets, several issues are noteworthy.
+
+First, to create balanced experimental designs, with the authors randomly selected an equal number of samples from each treatment group. While unbalanced design is problematic for KNN classification, PERMANOVA is not known to be sensitive to such designs. To mitigate the effects of the random number generator seed, they repeated this sampling. The text of the manuscript states that they performed "10-fold random subsamples of the data". In fact, at L45 of `deicode_benchmarking/case_studies/scripts/subsample.py` it is clear that they only performed 9-fold random subsamples. Admittedly, this is unlikely to have had a meaningful impact on the results of the case study analysis
+
+\setstretch{1.0}\footnotesize
+```{.python startFrom="44"}
+# repeat randomized sub-sample 10 fold times
+for fold_ in range(1,10):
+    # Randomly Sub-sample to balance groups
+```
+\normalsize\setstretch{1.75}
+
+The python `range(start, stop)` function outputs values from the value of `start` and ends at one less than `stop`. For example:
+
+```{python}
+#| echo: TRUE
+list(range(1, 10))
+```
+
+Second, Bray-Curtis and weighted UniFrac distances are known to be sensitive to uneven sampling effort of the samples being compared; Martino claims evidence that RPCA is not. To mitigate the effects of uneven sequencing depth among samples, Martino performed a single subsampling of the data down to 1,000 sequences per sample when calculating the Bray-Curtis and weighted UniFrac distances; all samples with more than 1,000 sequences were used for RPCA without subsampling to a common number of sequences. This is illustrated in L38-49 and 61-62 from `deicode_benchmarking/case_studies/scripts/distances.py`.
+
+\setstretch{1.0}\footnotesize
+```{.python startFrom="33"}
+table_path = os.path.join(dir_path,subpath_,sub_set,'table.biom')
+metadata_path_qiime = os.path.join(dir_path,subpath_,sub_set,'metadata.tsv')  
+# make qiime2 table form biom 
+table_path_qiime=os.path.join(dir_path,subpath_,sub_set,'table.qza')
+subprocess.call("qiime tools import --input-path %s --type 'FeatureTable[Frequency]' --source-format BIOMV210Format --output-path %s"%(table_path,table_path_qiime), shell=True)
+# sequencing depth cleaning (1000 read/sample)
+subprocess.call("qiime feature-table filter-samples --i-table %s --p-min-frequency 1000 --o-filtered-table %s"%(table_path_qiime,table_path_qiime), shell=True)
+# trim biom of any tree issues (should not be any but why not)
+subprocess.call("qiime phylogeny filter-table --i-table %s --i-tree %s --o-filtered-table %s"%(table_path_qiime,tree_path_qiime,table_path_qiime), shell=True)
+# rarefy (1,000)
+subprocess.call("qiime feature-table rarefy --i-table %s --p-sampling-depth 1000 --o-rarefied-table %s"%(table_path_qiime,table_path_qiime), shell=True)
+# bray-curtis
+bray_dist = os.path.join(dir_path,subpath_,sub_set,'Bray_Distance.qza')
+subprocess.call("qiime diversity beta --i-table %s --p-metric 'braycurtis' --o-distance-matrix %s"%(table_path_qiime,bray_dist), shell=True)
+# generalized weighted alpha=1.0
+wone_dist = os.path.join(dir_path,subpath_,sub_set,'GUniFrac_alpha_one_Distance.qza')
+subprocess.call("qiime diversity beta-phylogenetic-alt --i-table %s --i-phylogeny %s --p-metric generalized_unifrac --p-alpha 1.0 --o-distance-matrix %s"%(table_path_qiime,tree_path_qiime,wone_dist), shell=True)           
+```
+\normalsize\setstretch{1.75}
+
+\setstretch{1.0}\footnotesize
+```{.python startFrom="61"}
+# run RPCA
+subprocess.call("deicode_rpca --in_biom %s --output_dir %s --rank %s --min_sample_depth 1000"%(table_path,sub_path_sub,str(ranks[dataset_])), shell=True)                
+```
+\normalsize\setstretch{1.75}
+
+From this code, one will note on that `table_path_qiime` is created on L653 and updated at L655 (filtering to remove samples smaller than 1,000 sequences), L657 (tree cleaning), and L659 (each sample subsampled once to 1,000 sequences). The data in `table_path_qiime` was used to calculate Bray-Curtis and UniFrac distances at L662 and 665, respectively. When RPCA was performed on L672, the input is `table_path`, which was created on L649 and used as the input to create the biom-formatted file in the initial version of the data in `table_path_qiime` (L653). It is also worth noting that Bray-Curtis and weighted UniFrac distances from a single subsampling were used rather than using the average of a large number of subsamplings (e.g., 100) [**XXXXXX**].
+
+As shown in **Fig. XXXXXX**, 1,000 appears to have been an arbitrary threshold. It could have been greater than 10,000 sequences for both datasets without losing a significant number of samples. That so many more sequences were included in the RPCA analyses could create an advantage to the sensitivity of RPCA over the other distance calculations.
+
+Third, the methods section of Martino indicates, "Both data sets were then preprocessed with the robust centered log ratio (rclr) transform, and RPCA was run with a rank of 2 because there were two metadata categories of interest in each comparison". However, different ranks were used when running RPCA for the Sleep Apnea and Sponges dataset. Three ranks were used with the Sleep Apnea dataset and two were used with the Sponges dataset. This can be seen at L23 and 24 of `deicode_benchmarking/case_studies/scripts/distances.py`
+
+\setstretch{1.0}\footnotesize
+```{.python startFrom="23"}
+ranks['Sleep_Apnea'] = 3 # three clusters here
+ranks['Sponges'] = 2 # two clusters here 
+```
+\normalsize\setstretch{1.75}
+
+As indicated above at L62 of the same file, the value of `ranks` set here in L23 and 24 is given to `deicode_rpca` in the `--rank` argument for each dataset. That a rank of 3 was used for the Sleep Apnea dataset was used can also be seen in Martino's Figure 4F. The percent of the total variation explained by the two axes does not add to 100% for the RPCA data. In contrast, for the Sponges dataset shown in Martino's Figure 4E they add to 100%.
+
+Among these issues, the most salient is likely the disparity in the number of sequence reads used by RPCA and in calculating the Bray-Curtis and weighted UniFrac distances. As shown in my analysis, RPCA is actually highly sensitive to uneven sequencing effort.
+
+
+
+## PERMANOVA analysis of case study datasets
+
+The factors outlined in the previous section would likely impact the results of Martino's PERMANOVA analysis of the case study datasets. Several factors are worth raising and emphasizing.
+
+First, throughout Martino's analysis, they report the PERMANOVA F-statistic rather than the test's P-value. This is likely because there was a pronounced effect size between the treatment groups in both studies that was clearly evident in the first two axes of the ordinations shown in Martino's Fig. 4EF. Reporting all tests as having significant P-values regardless of the method used to calculate the distance would not have been interesting. However, comparing F-statistics is biased in favor of RPCA. This is because RPCA was run using 2 (i.e., Sponges) or 3 (i.e., Sleep Apnea) axes and then used as the basis for calculating the Euclidean distance between samples. The analysis effectively removed higher ordered components thus dramatically reducing the MS<sub>error</sub> term in the denominator of the F-statistic calculation. In contrast, Bray-Curtis and weighted UniFrac distances were used without further processing in PERMANOVA leaving in the higher ordered components. As done in my analysis, using datasets where the first two axes for Bray-Curtis distances did not explain so much of the variation would have provided a more balanced comparison of the methods.
+
+Second, Martino did not show the variation across their 9 subsamplings for their PERMANOVA or KNN classification analyses. This can be seen in L43-72 of code block 104 from `deicode_benchmarking/case_studies/case_studies.ipynb`. An illustrative example is shown here:
+
+\setstretch{1.0}\footnotesize
+```{.python startFrom="43"}
+# plot benchmarking
+fstat_ax1.set_title('PERMANOVA F-statistic', fontsize=fontsize_)
+sns.pointplot(x='N-Samples',y='Values',hue='Method',
+              data=both_perm_res['Sponges'].sort_values('Method',ascending=False),
+              palette=colors_, ci=0, ax=fstat_ax1)
+```
+\normalsize\setstretch{1.75}
+
+The `pointplot()` function from the Seaborn data visualization library plots the mean of multiple values across a series of categorical values. By default it returns the 95% confidence interval. However, as shown by the `ci=0` in L47 above, the authors set the confidence interval to zero to suppress it's output. Using the data included in the `deicode_benchmarking` repository `deicode_benchmarking/case_studies/subsample_results.tar.gz`, I calculated the median, interquartile range (IQR), minimum, and maximum values across the 9 subsamplings for each dataset, distance method, and type of analysis. The conditions where 79 samples were taken from each treatment in the Sponges dataset and 92 samples were taken from each sample in the Sleep Apnea dataset were used in this analysis.
+
+\setstretch{1.0}
+```{r}
+options(tidyverse.quiet = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+
+tbl <- read_csv(
+  list.files("../deicode_benchmarking/case_studies/subsample_results",
+    full.names = TRUE),
+  id = "fname"
+  ) %>%
+  mutate(
+    dataset = str_replace(fname, ".*/(.*)_[^_]+_[^_]+_[^_]+.csv", "\\1"),
+    analysis = str_replace(fname, ".*/.*_[^_]+_[^_]+_([^_]+).csv", "\\1"),
+    analysis = if_else(analysis == "fstat", "PERMANOVA", "KNN")
+  ) %>%
+  filter(`...2` == 158 | `...2` == 184) %>%
+  select(analysis, dataset, Bray_Curtis, GUniFrac_Alpha_One, Robust_Aitchison) %>%
+  pivot_longer(-c(analysis, dataset)) %>%
+  summarize(
+    median = median(value),
+    iqr = IQR(value),
+    min = min(value), 
+    max = max(value), 
+    .by = c(analysis, dataset, name)
+    ) %>%
+    arrange(analysis, dataset, name)
+
+knitr::kable(tbl, digits = 2)
+```
+\normalsize\setstretch{1.75}
+
+These results indicate a modest amount of variation between the replicates. The RPCA data for the Sleep Apnea dataset had no variation because all samples were used in the analysis and no subsampling was performed to obtain equal sampling depth across the samples. 
+
+```{r}
+#! echo: false
+sample_counts <- read_tsv("../data/pooled_data/case_study_ns.tsv") %>%
+  filter(n_seqs >= 1000) %>%
+  count(dataset, treatment)
+
+healthy_n <- sample_counts %>%
+  filter(dataset == "sponges" & treatment == "healthy") %>%
+  pull(n)
+
+stressed_n <- sample_counts %>%
+  filter(dataset == "sponges" & treatment == "stressed") %>%
+  pull(n)
+```
+
+Third, the performance of PERMANOVA is not known to be negatively impacted by unbalanced designs where treatment groups have different numbers of samples. Although understanding the effect of the number of samples on PERMANOVA is a worthy question, it is curious that the entire Sponges dataset was not included in Martino's analysis. The Sponges dataset had `{r} healthy_n` Healthy samples with more than 1,000 sequences and `{r} stressed_n` Stressed samples. Yet, for the largest number of samples in Figure 4 the largest subsample was 79 Healthy and 79 Stressed samples.
+
+Among the issues I have identified, the primary concerns with how Martino used PERMANOVA with the case studies was (i) that they used datasets with large effect sizes and (ii) that RPCA has a built-in bias over Bray-Curtis and weighted UniFrac distances for such datasets when calculating the F-statistics, which are all significant regardless of the magnitude of the statistic.
+
+
+
+## KNN analysis of case study datasets
+
+In addition to PERMANOVA, Martino also used KNN classification using their two case study datasets to demonstrate the performance of RPCA over weighted UniFrac and Bray-Curtis distances. The issues identified earlier with the simulation data were also present with their case study analysis (i.e., 60:40 vs. 40:60 splits and choice of K). Several additional issues were identified in the application of KNN to the case study datasets. The Python code that was used to implement their KNN analysis is found in `deicode_benchmarking/case_studies/scripts/sub_results.py` between L123 and L174.
+
+\setstretch{1.0}\footnotesize
+```{.python startFrom="123"}
+for dataset_,subs in distances.items():
+  nn_res[dataset_]={}
+  nn_res_tmp[dataset_]={}
+  # set splits for each dataset here
+  max_size=np.max([j for i,j in distances[dataset_].keys()])
+  dist_tmp=distances[dataset_][(1,max_size)]['Bray_Curtis'] #any method to split
+  meta_=meta[dataset_][(1,max_size)]['metadata']
+  pcoa_tmp=pcoa(DistanceMatrix(dist_tmp)).samples
+  pcoa_tmp.index=dist_tmp.index
+  # prepare binary classifier 
+  y=meta_[case_study[dataset_]['factor']].values
+  proc=preprocessing.LabelBinarizer()
+  proc.fit(y)
+  meta_['y_encode']=proc.transform(y)
+  # split
+  X_train, X_test, y_train, y_test = train_test_split(pcoa_tmp, meta_['y_encode'].ravel(), 
+                                                      test_size=.4, 
+                                                      stratify=meta_['y_encode'].ravel(), 
+                                                      random_state=42)
+  train_index =X_train.index
+  test_index = X_test.index
+  # run KNN for every subset with train and test splits
+  for (fold_,Nsamp_),methods_ in subs.items():
+    meta_=meta[dataset_][(fold_,Nsamp_)]['metadata']
+    if len(meta_.index)<Nsamp_:
+        continue 
+    nn_res[dataset_][(fold_,Nsamp_)]={}
+    nn_res_tmp[dataset_][(fold_,Nsamp_)]={}
+    for count_,(method,dist_tmp) in enumerate(methods_.items()):
+      if method in ['Bray_Curtis','GUniFrac_Alpha_One', 'Robust_Aitchison']:
+        nn_res[dataset_][(fold_,Nsamp_)][method]={}
+        meta_=meta[dataset_][(fold_,Nsamp_)]['metadata']
+        tmp_train_index=list(set(train_index)&set(meta_.index))
+        tmp_test_index=list(set(test_index)&set(meta_.index))
+        # encode 
+        meta_['y_encode']=proc.transform(meta_[case_study[dataset_]['factor']].values).ravel()
+        pcoa_tmp=pcoa(DistanceMatrix(dist_tmp)).samples[['PC1','PC2']]
+        pcoa_tmp.index=meta_.index
+        # Run default classifier 
+        acc_s=[]
+        for fold_rep in range(11):
+          k_=int(min(meta_.loc[tmp_test_index,:].shape)/1.4)
+          knn = KNeighborsClassifier(n_neighbors=k_).fit(pcoa_tmp.loc[tmp_train_index,:], 
+                                          meta_.loc[tmp_train_index,:]['y_encode'].astype(int).ravel())
+          acc_ = accuracy_score(meta_.loc[tmp_test_index,:]['y_encode'].ravel(),
+                              knn.predict(pcoa_tmp.loc[tmp_test_index,:]).astype(int))
+          acc_s.append(acc_)
+
+        nn_res[dataset_][(fold_,Nsamp_)][method]['R^{2}'] = np.mean(acc_)
+        nn_res_tmp[dataset_][(fold_,Nsamp_)]=pd.DataFrame(nn_res[dataset_][(fold_,Nsamp_)])
+
+  both_nn[dataset_]=pd.concat(nn_res_tmp[dataset_])
+```
+\normalsize\setstretch{1.75}
+
+
+First, when describing their KNN analysis Martino again stated that they performed 40:60 splits. As shown at L139 the test fraction was 0.4 rather than 0.6 as would have been expected from a 40:60 split. As shown, Martino implemented a 60:40 split where 60% of the data were used to train the model an 40% were used to test the model.
+
+Second, inspection of the above code chunk demonstrates that they only performed a single split of the data. Moreover, there was only one split across all subsamples for each dataset. At L142 and L143 they assign the output of the training-testing split from L138-141 to two variables, `train_index` (L142) and `test_index` (L143). These variables contain the indices for the samples in the training and testing set across all the samples, stratified by the number of samples in each treatment group (L140). It is important to note that the code between L124 and L143 is only run once for each dataset creating a single 60:40 split that is then used for each subsampling. On L155 and L156, training and testing sets, respectively, are created for each subsample based on the split that was performed at L138-L143. Because the sample subsampling was not performed based on the 60:40 split, different numbers samples from each treatment group appear in each of the replicate subsamples. Thus, the training and testing sets were not equally represented by both treatment groups. Considering KNN is sensitive to unbalanced sampling designs, this would artificially increase or decrease the accuracy of the classification. Finally, at L163 to L169 it appears that KNN is run 10 times (i.e., see the `range(11)` statement). However, the 10 values in `acc_s` are identical to each other. Furthermore, `acc_s` is not used outside the loop. At L171, the mean of `acc_` is calculated; however, `acc_` is a single value. Regardless, because the classifier does not use a random number generator seed, the ten values in `acc_s` would be identical to `acc_` and of course the mean of `acc_`. For each dataset, subsampling, and iteration of subsampling Martino should have split the data into a training and testing split stratified by the treatment group. Also, these splits should have been repeated many times (e.g., 10 or 100) with the mean accuracy of those repeats returned as the mean accuracy for the iteration of the subsampling for the dataset. The lack of replication or balanced stratification of the treatment groups within the subsamples significantly compromised the reliability of the KNN classification accuracy results.
+
+Third, Martino did not fit the hyperparameter, k, to their data and the code to select a value for k was clearly incorrect. The value of k was calculated at L158
+
+\setstretch{1.0}\footnotesize
+```{.python startFrom="158"}
+k_=int(min(meta_.loc[tmp_test_index,:].shape)/1.4)
+```
+\normalsize\setstretch{1.75}
+
+Martino subsetted the metadata data frame (i.e., `meta_`) using the values in the test data (i.e., `tmp_test_index`). Then they used the `.shape` function to return the number of rows and columns. The smaller number was then divided by 1.4 and converted to an integer. There are several problems with this calculation. First, one would expect the choice of k to be dependent on the number of samples included in the **training** dataset and not the **testing** dataset since its the observations in the training set that result in the classification. Instead Martino subsetted `meta_` by the samples in the **testing** dataset. Furthermore, the number of samples and not the amount of metadata for each sample that would be relevant to determining the value of k. To illustrate this further, the number of columns for the Sponges dataset was 46 and for the Sleep Apnea dataset it was 50 (one column added for `y_encode`). Therefore, when more than 115 and 125 total samples, respectively, were in a subsample k would hav been selected based on the number of columns in `meta_` (e.g. 46/0.4 = 114). These would have been the 150 and 158 subsamples for the Sponges datset and 150 and 184 subsamples for the Sleep Apnea dataset. The values of k would have been 32 and 35 for these subsamples in the Sponges and Sleep Apnea datasets, respectively. For the other subsamples k would have been the total number of samples in the subsample times 0.4 divided by 1.4. The subsamples with 70 samples would have had a k value of 20 and the 110 subsamples would have had a k value of 31. Because the stratification was not balanced (see above discussion) these thresholds are approximate. For context, in the simulations there were 200 samples with 120 in the training set and 80 in the testing set. A k of 13 was used. Therefore, the ratio of k to the number of samples in the training set was 0.108333. Although no justification was given for the k of 13, if the same ratio was used with the case study datasets, the k values would have been 4, 7, 9, 10, and 12 for the subsamples of 70, 110, 150, 158, 185 samples, respectively (e.g., 150 times 0.6 times 0.108333 = 9.75, converted to an integer gives 9). As discussed above with the KNN analysis of the simulation data, a preferred approach would have subdivided the training dataset into a secondary training set and a validation datset. The secondary and validation training sets could have been used to identify the optimal value of k to use with the full training set on the testing dataset [**XXXXXX**]. As described above with the discussion of the choice of k for the simulation data, if a too small value of k is chosen the model could be underfit to the data while too large of a value of k could overfit the model to the data. Given the problems identified here, it is clear that in practice there was no logic to the choice of k. Therefore, it is difficult to have confidence in the reported accuracy values from the KNN analysis.
+
+Fourth, at L159 two dimensions from a principle coordinates analysis (PCoA) performed on the Bray-Curtis and weighted UniFrac distances and two dimensions from the RPCA were used to define the dataset for KNN; this line would have ignored the third dimension from the Sleep Apnea dataset and many dimensions from the PCoA. The KNN used a euclidean distance to find the k nearest neighbors in the training dataset for each value in the testing dataset. Because so much information was censored from the Bray-Curtis and weighted UniFrac distances, those methods were disadvantaged relative to RPCA. Considering a distance was calculated by the `KNeighborsClassifier` function when called at L165-166 it seems to be an odd choice to calculate a euclidean distance on a distorted representation of the data rather than using the actual Bray-Curtis or weighted UniFrac distances. Since `KNeighborsClassifier` does not take distance matrices as input, Martino could have at least used all of the dimensions for the Bray-Curtis and weighted UniFrac distances to make a more fair comparison to RPCA. Overall, the implementation of the KNN analysis was biased towards favoring the RPCA approach. This was exacerbated by the choice of datasets that had large differences between their treatment groups.
+
+Given the problems in the implementation of KNN by Martino, I rewrote the method in R. The functions to run my analysis is found in `workflow/scripts/test_train_knn.R`. I rewrote the KNN analysis to implement the fitting of k using the training dataset with a secondary training and validation dataset. Furthermore, it also accepts distance matrices from the user rather than the PCoA ordination. Users can alter the training, testing, and validation fractions and number of replications. Appropriate parameter values could be used to replicate Martino's approach or the approach outlined by Topcuoglu et al. [**XXXXXX**].
