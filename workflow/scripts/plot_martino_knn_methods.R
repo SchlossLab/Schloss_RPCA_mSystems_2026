@@ -71,10 +71,11 @@ overlap_plot <- overlap_knn %>%
     strip.text.x = element_text(size = 12),
     strip.text.y = element_text(size = 10),
     axis.line = element_blank(),
+    axis.text = element_text(color = "black"),
     panel.spacing = unit(10, "pt"),
     panel.background = element_rect(fill = NA, color = "black",
                                     linewidth = 1.1),
-    legend.text.align = 1,
+    legend.text = element_text(hjust = 1),
     legend.key = element_rect(color = NA),
     legend.key.height = unit(0.8, "lines"),
     panel.ontop = TRUE

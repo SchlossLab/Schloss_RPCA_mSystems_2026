@@ -917,7 +917,7 @@ rule supplemental_text:
     "submission/supplemental_text.qmd",
     "data/pooled_data/case_study_ns.tsv",
     "deicode_benchmarking/case_studies/subsample_results/Sleep_Apnea_exposure_type_classifier.csv",
-    "deicode_benchmarking/case_studies/subsample_results/Sleep_Apnea_exposure_type_fstat.csv".
+    "deicode_benchmarking/case_studies/subsample_results/Sleep_Apnea_exposure_type_fstat.csv",
     "deicode_benchmarking/case_studies/subsample_results/Sponges_health_status_classifier.csv",
     "deicode_benchmarking/case_studies/subsample_results/Sponges_health_status_fstat.csv"
   output:

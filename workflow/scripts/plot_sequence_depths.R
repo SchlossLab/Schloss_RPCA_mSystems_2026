@@ -70,7 +70,8 @@ depths %>%
     strip.placement = "outside",
     strip.text = element_text(size = 12),
     strip.background = element_blank(),
-    axis.text.x = element_markdown()
+    axis.text.x = element_markdown(),
+    axis.text = element_markdown(color = "black")
   )
 
 ggsave("figures/cs_seq_depth.tiff", width = 5, height = 5,

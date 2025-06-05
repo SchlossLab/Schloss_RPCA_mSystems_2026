@@ -75,7 +75,7 @@ plot_pcoa <- function(fname) {
          y = loadings[2]) +
     theme_classic() +
     theme(plot.title = element_text(face = "bold", hjust = 0.5),
-          axis.text = element_text(size = 7),
+          axis.text = element_text(size = 7, color = "black"),
           axis.title = element_text(size = 10)
     )
 

@@ -70,7 +70,7 @@ pooled_data %>%
             group = depth_chr,
             color = depth_chr)) +
   geom_hline(yintercept = 0.5, color = "gray") +
-  stat_summary(fun.data = median_iqr, size = 0.3,
+  stat_summary(fun.data = median_hilow, size = 0.3, #95% confidence interval
               position = position_dodge(width = 5)) +
   facet_grid2(rows = vars(dataset), cols = vars(process_distance),
               scales = "free_x", independent = "x") +

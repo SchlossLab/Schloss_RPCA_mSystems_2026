@@ -69,6 +69,7 @@ pooled_data %>%
   theme_classic() +
   theme(strip.background = element_rect(color = NA, fill = "lightgray"),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        axis.text = element_text(color = "black"),
         panel.grid.major.y = element_line(color = "gray", linewidth = 0.1))
 
 ggsave(glue("figures/{fitting_method}_sim.tiff"),

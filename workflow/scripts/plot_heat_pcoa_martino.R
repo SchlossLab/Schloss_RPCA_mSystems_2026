@@ -122,7 +122,8 @@ pcoa_figure <- pcoa_data |>
   theme(
     panel.background = element_rect(color = "black", linewidth = 1.1),
     strip.background = element_blank(),
-    axis.line = element_blank()
+    axis.line = element_blank(),
+    axis.text = element_text(color = "black")
   )
 
 

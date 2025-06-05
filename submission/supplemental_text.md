@@ -95,7 +95,7 @@ problems could have been avoided by transposing the matrices within the
 arguments to `clr` at L13 and L15. The result is shown below on the
 right.
 
-    <matplotlib.image.AxesImage object at 0x14fa77518c90>
+    <matplotlib.image.AxesImage object at 0x14966aaf54d0>
 
     Text(0.5, 1.0, 'Not transposed')
 
@@ -117,7 +117,7 @@ right.
 
     Text(0.5, 0, 'Features')
 
-    <matplotlib.colorbar.Colorbar object at 0x14fa75f01410>
+    <matplotlib.colorbar.Colorbar object at 0x14966aaab410>
 
 ![](supplemental_text_files/figure-commonmark/unnamed-chunk-2-1.png)
 

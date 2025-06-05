@@ -374,37 +374,71 @@ splits with a grid-based search (**Figure S2**). From the revised
 simulations, it is evident that the performance of RCLR and RPCA was
 considerably worse than the other methods.
 
-### Description of case study datasets
+### Description of case study datasets and analysis
 
 After describing the results of their simulations, Martino and
 colleagues used two published datasets as case studies to evaluate RPCA
 and related methods. They evaluated RPCA relative to Bray-Curtis and
 weighted Unifrac distances using PERMANOVA, KNN, and ordinations. The
 two datasets were drawn from a natural study comparing healthy and
-stressed sponges \[**XXXXX**\] and from another study of a murine model
-of sleep apnea were mice were given air or intermittent hypoxia and
-hypercapnia (IHH) \[**XXXXX**\]. Both datasets were small. The sponge
-dataset had 133 healthy and 85 stressed samples and the sleep apnea
-dataset had 96 air treated and 93 IHH treated samples (**Figure 5**).
-The effect sizes for both studies were relatively large and could easily
-be differentiated by the first two PCoA axes. Similar to the results
-from the simulations, I wondered whether a difference was observed
-between the methods when there was a smaller effect size and when there
-was better control for differences in effect sizes. Therefore, I added a
-third dataset from a study that explored associations between the
-microbiome and colorectal cancer \[**XXXXX**\]. The differences between
-the two treatment groups were not so obvious by PCoA and there were more
-subjects. The colorectal cancer dataset included 261 subjects with
-healthy colons and 229 subjects with screen relevant colonic neoplasias
-(**Figure 5**). Sequences from the three datasets were processed in
-parallel using the same mothur-based sequence curation pipeline. After
-conducting an exhaustive review of the code they provided in their
+stressed sponges \[**XXXXX**\] and from a study that used a murine model
+of sleep apnea where mice were given air or intermittent hypoxia and
+hypercapnia (IHH) \[**XXXXX**\]. Both datasets were small relative to
+other papers published at the time. The sponge dataset had 133 healthy
+and 85 stressed samples and the sleep apnea dataset had 96 air treated
+and 93 IHH treated samples (**Figure 5**). Also, the effect sizes for
+both studies were relatively large and could easily be differentiated by
+the first two PCoA axes. Similar to the results from the simulations, I
+wondered whether a difference was observed between the methods when
+there was a smaller effect size and when there was better control for
+differences in effect sizes. Therefore, I added a third dataset from a
+study that explored associations between the microbiome and colorectal
+cancer \[**XXXXX**\]. The differences between the two treatment groups
+were not so obvious by PCoA and the study included more subjects. The
+colorectal cancer dataset included 261 subjects with healthy colons and
+229 subjects with screen relevant colonic neoplasias (**Figure 5**). The
+three datasets were analyzed in parallel.
+
+After conducting an exhaustive review of the code they provided in their
 GitHub repository, I discovered several problems in the analysis that
 Martino and colleagues performed with the case study data. The details
-of this review can be found in the **Supplementary Text**. Solutions to
-the problems I identified are described below.
+of this review can be found in the **Supplementary Text**. Aside from
+the selection of datasets with large effect sizes that were visible
+using the first two PCoA axes, the principle problems included (i)
+performing a single subsampling the samples in each data to an
+artificially low number of sequences (i.e., 1,000) for the Bray-Curtis
+and weighted Unifrac distance calculations; (ii) performing 9 rather
+than 10 random subsamples of the datasets when generating balanced
+designs; (iii) running RPCA with a rank of 3 for the Sleep Apnea dataset
+rather than 2 as was described in the manuscript; (iv) significant
+problems in the training and testing of the KNN classification to the
+data including the selection of the hyperparameter, lack of balance
+design in the stratifications, and only performing a single iteration;
+and (v) not using the actual Bray-Curtis and weighted UniFrac distances
+or more PCoA axes in the KNN classification. The details to these
+problems are described in the **Supplementary Text**. The following
+analyses uese the solutions that are described in that text. My analysis
+did not include the weighted UniFrac distances since reliable trees are
+difficult to generate for large datasets and because previous experience
+has demonstrated that results of Bray-Curtis and weighted UniFrac
+distances rarely disagree.
 
 ### PERMANOVA analysis of case study datasets
+
+I performed PERMANOVA to test whether the average beta-diversity was
+significantly different between the two treatment groups within each of
+the three case studies. In separate analyses, each sample was either
+subsampled to 1,000 sequences or to a higher threshold based on the
+identification of natural breaks in the data (**Figure 5**). These were
+11879 sequences for the sleep apnea dataset, 13755 sequences for the
+sponges dataset, and 10439 sequences for the CRC dataset. Pairwise
+euclidean distances were calculated based on using 2 or 3 RPCA axes,
+Nudge, One, and Zero CLR transformed data, **OptSpace** and DeSeq2
+transformed data, raw counts, relative abundance data, a single
+subsampling, with rarefaction, and based on the first two PCoA axes
+using Bray-Curtis distances. Pairwise Bray-Curtis distances were
+calcualted using raw counts, relative abundance data, SRS and CSS
+normalized data, a single subsampling, and with rarefaction.
 
 - RPCA was compared to Bray-Curtis and weighted UniFrac distances
   Analysis compared F statistics, which again are flawed, since so much
@@ -600,9 +634,9 @@ line indicates the 1,000 sequence threshold, which was used by Martino
 and colleagues when calculating Bray-Curtis and weighted UniFrac
 distances. The vertical solid line indicates the higher threshold that
 was added in this study to explore the effects of sequencing depths. The
-higher threshold was 13755 sequences for the sponges dataset, 11,879
-sequences for the sleep apnea dataset, and 10,439 sequences for the
-colorectal cancer dataset.
+higher threshold was 11879 sequences for the sleep apnea dataset, 13755
+sequences for the sponges dataset, and 10439 sequences for the CRC
+dataset.
 
 
 
@@ -622,7 +656,7 @@ splits.
 
 ![](../figures/knn_methods_pds.png)
 
-**Figure S1. Differences in KNN classification accuracy for
+**Figure S2. Differences in KNN classification accuracy for
 distinguishing between overlapping treatment groups using the revised
 simulation data by different approaches to optimize the number of
 neighbors was negligible**. Martino split 60% of their data into a
