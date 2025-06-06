@@ -94,15 +94,17 @@ balanced %>%
   theme(
     axis.line = element_blank(),
     axis.ticks = element_blank(),
+    axis.text = element_text(color = "black"),
     strip.background = element_rect(color = NA),
     strip.text = element_text(size = 12),
+    strip.text.x = element_text(face = "bold"),
     legend.position = "none"
   )
 
-ggsave('test.high.png', width = 8, height = 5)
+ggsave('figures/heatmap_permanova_sig_cs.png', width = 8, height = 5)
 
 
-## Move following lines to qmd file?
+## Move following lines to qmd file? ------
 case_study_data %>%
   filter(nsamples_per_group == "all") %>%
   filter(p_value > 0.05)  # RPCA2 and RPCA3 non-significant for CRC
@@ -168,3 +170,14 @@ r2 %>%
 ggsave('r2.png')
 r2 %>% filter(low > high)
 r2 %>% filter(process == "rare" & distance ==  "bray")
+
+
+case_study_data %>%
+  filter(nsamples_per_group == "all" & depth_chr == "high") %>%
+  summarize(
+    f_sig = sum(p_value < 0.05),
+    .by = c(dataset, nsamples_per_group, process, distance, depth_chr)
+  ) %>%
+  filter(f_sig != 1)
+
+## Move preceding lines to qmd file? ------
