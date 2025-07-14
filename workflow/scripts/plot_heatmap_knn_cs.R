@@ -68,7 +68,7 @@ case_study_data <- read_tsv("data/pooled_data/knn_results.tsv.gz") %>%
 case_study_data %>%
   mutate(label = format(round(test, 2L), nsmall = 2L)) %>%
   ggplot(aes(x = nsamples_per_group, y = process, fill = test, label = label)) +
-  geom_tile() +
+  geom_tile(show.legend = FALSE) +
   geom_text(size = 6, size.unit = "pt") +
   facet_grid(
     distance~dataset, scales = "free", space = "free_y",

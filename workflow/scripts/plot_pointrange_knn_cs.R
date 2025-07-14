@@ -30,6 +30,12 @@ pretty_distances <- c(
   bray = "Bray-Curtis"
 )
 
+pretty_datasets <- c(
+  crc = "Colorectal cancer",
+  sponges = "Sponges", 
+  sleep_apnea = "Sleep Apnea"
+)
+
 case_study_data <- read_tsv("data/pooled_data/knn_results.tsv.gz") %>%
   filter(
     dataset %in% c("crc", "sponges", "sleep_apnea") &
@@ -52,10 +58,6 @@ pretty_tibble <- case_study_data %>%
           ), by = "dataset"
   ) %>%
   mutate(full_name = glue("**{full_name}**<br><span style='font-size:8pt;'>(N={nsamples_per_group} samples per group)</span>"))
-
-pretty_datasets <- pull(pretty_tibble, full_name)
-names(pretty_datasets) <- pull(pretty_tibble, dataset)
-
 
 case_study_data %>%
   mutate(
