@@ -30,10 +30,10 @@ wilcox <- fread("data/overlap_pds/data.10000.100_1.raw.tsv.gz") |>
   mutate(p.adj = p.adjust(p.value, method = "BH")) %>%
   filter(p.adj < 0.05) %>%
   mutate(condition = "Overlap",
-        otu = if_else(otu > 9980, 20 + (otu - 9980), otu))
+        otu = if_else(otu > 9980, 21 + (otu - 9980), otu))
 
 
-
+# skip "otu21" to add a gap in the middle of the heatmap
 oclr_data <- c("data/negative_pds/data.10000.100_1.oclr.tsv.gz",
   "data/overlap_pds/data.10000.100_1.oclr.tsv.gz",
   "data/positive_pds/data.10000.100_1.oclr.tsv.gz") |>
@@ -63,7 +63,7 @@ heat_map <- oclr_data |>
   geom_point(data = wilcox, aes(x = otu), y = -100, inherit.aes = FALSE,
             fill = "white", shape = 23, size = 3) +
   geom_vline(xintercept = 6.5, color = c(NA, "yellow", NA), linewidth = 1) +
-  geom_vline(xintercept = 34.5, color = c(NA, "yellow", NA), linewidth = 1) +
+  geom_vline(xintercept = 35.5, color = c(NA, "yellow", NA), linewidth = 1) +
   # geom_rect(xmin = 1, xmax = 6, ymin = 20, ymax = , color = "white") +
   scale_fill_gradientn(name = NULL,
                       colors = c("#8E0152", "#FFFFFF", "#276419"),
@@ -83,7 +83,6 @@ heat_map <- oclr_data |>
         strip.background = element_blank(),
         panel.background = element_blank()
       )
-# ggsave("test.png", heat_map)
 
 pcoa <- c("data/negative_pds/data.10000.100_1.raw.bray.pcoa.axes",
 "data/overlap_pds/data.10000.100_1.raw.bray.pcoa.axes",

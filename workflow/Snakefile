@@ -837,6 +837,69 @@ rule plot_pds_fst_knn:
     {input.rscript}
     """
 
+#figure 5
+rule plot_cs_seq_depth:
+  input:
+    tsvs=expand("data/{dataset}/data.depths.tsv",
+                dataset = list(treatment_groups.keys())),
+    rscript="workflow/scripts/plot_sequence_depths.R"
+  output:
+    "figures/cs_seq_depth.tiff"
+  shell:
+    """
+    {input.rscript}
+    """
+
+#figure 6
+rule plot_fst_knn_depth_diff_cs:
+  input:
+    rscript="workflow/scripts/plot_fst_knn_depth_diff_cs.R",
+    knn = "data/pooled_data/knn_results.tsv.gz",
+    permanova = "data/pooled_data/permanova_treatment.tsv"
+  output:
+    "figures/fst_knn_depth_diff_cs.tiff"
+  shell:
+    """
+    {input.rscript}
+    """
+
+#figure 7
+rule plot_heatmap_permanova_sig_cs:
+  input:
+    rscript="workflow/scripts/plot_heatmap_permanova_sig_cs.R",
+    permanova = "data/pooled_data/permanova_treatment.tsv"
+  output:
+    "figures/heatmap_permanova_sig_cs.tiff"
+  shell:
+    """
+    {input.rscript}
+    """
+
+#figure 8
+rule plot_heatmap_knn_cs:
+  input:
+    rscript="workflow/scripts/plot_heatmap_knn_cs.R",
+    data = "data/pooled_data/knn_results.tsv.gz",
+  output:
+    "figures/heatmap_knn_cs.tiff"
+  shell:
+    """
+    {input.rscript}
+    """
+
+#figure 9
+rule plot_heatmap_depth_sig:
+  input:
+    rscript="workflow/scripts/plot_heatmap_depth_sig.R",
+    data = "data/pooled_data/data/pooled_data/permanova_size.tsv",
+  output:
+    "figures/heatmap_depth_sig.tiff"
+  shell:
+    """
+    {input.rscript}
+    """
+
+
 #figure s1
 rule plot_knn_methods_martino:
   input:
@@ -861,17 +924,6 @@ rule plot_knn_methods_pds:
     {input.rscript}
     """
 
-rule plot_cs_seq_depth:
-  input:
-    tsvs=expand("data/{dataset}/data.depths.tsv",
-                dataset = list(treatment_groups.keys())),
-    rscript="workflow/scripts/plot_sequence_depths.R"
-  output:
-    "figures/cs_seq_depth.tiff"
-  shell:
-    """
-    {input.rscript}
-    """
 
 rule get_png:
   input:
@@ -902,6 +954,10 @@ rule make_paper:
     fig3 = "figures/heatmap_pcoa_pds.png",
     fig4 = "figures/fst_knn_pds.png",
     fig5 = "figures/cs_seq_depth.png",
+    fig6 = "figures/fst_knn_depth_diff_cs.png",
+    fig7 = "figures/heatmap_permanova_sig_cs.png",
+    fig8 = "figures/heatmap_knn_cs.png",
+    fig9 = "figures/heatmap_depth_sig.png",
     figs1 = "figures/knn_methods_martino.png",
     figs2 = "figures/knn_methods_pds.png"
   output:
