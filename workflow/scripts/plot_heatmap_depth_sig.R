@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 library(tidyverse)
 
 # NOTE: We don't really care about the treatment effect in this simulation. It's
@@ -33,9 +35,9 @@ pretty_distances <- c(
 )
 
 pretty_datasets <- c(
-  crc = "CRC",
   sponges = "Sponges", 
-  sleep_apnea = "Sleep\nApnea",
+  sleep_apnea = "Sleep Apnea",
+  crc = "CRC",
   negative = "Negative",
   overlap = "Overlap",
   positive = "Positive"
@@ -49,7 +51,6 @@ pretty_experiments <- c(
 
 
 read_tsv("data/pooled_data/permanova_size.tsv") %>%
-#  filter(rep == 1) %>%
   filter(effect == "size" & process != "gemelli_auto") %>% 
   select(dataset, rep, process, distance, p_value) %>%
   summarize(n_sig = sum(p_value < 0.05), .by = c(dataset, process, distance)) %>%
@@ -69,16 +70,18 @@ read_tsv("data/pooled_data/permanova_size.tsv") %>%
                       labels = pretty_datasets),
     process = factor(process,
                     levels = rev(names(pretty_processes)),
-                    labels = rev(pretty_processes))
+                    labels = rev(pretty_processes)),
+    n_sig_label = if_else(n_sig != 0, as.character(n_sig), "")
   ) %>%
-  ggplot(aes(y = process, x = dataset, fill = n_sig)) +
+  ggplot(aes(y = process, x = dataset, fill = n_sig, label = n_sig_label)) +
   geom_tile() +
+  geom_text(size = 8, size.unit = "pt") +
   facet_grid(distance~ experiment, scales = "free", space = "free_y") +
   scale_fill_gradient(
-    low = "white", high = "dodgerblue",
-    n.breaks = 6
+    low = "white", high = "orange",
+    n.breaks = 11
   ) +
-
+  scale_x_discrete(position = "top") +
   labs(x = NULL, y = NULL, fill = NULL) +
   coord_cartesian(expand = FALSE) +
   theme_classic() +
@@ -86,10 +89,15 @@ read_tsv("data/pooled_data/permanova_size.tsv") %>%
     axis.line = element_blank(),
     axis.ticks = element_blank(),
     axis.text = element_text(color = "black"),
+    axis.text.x = element_text(size = 8),
     strip.background = element_rect(color = NA),
     strip.text = element_text(size = 12),
-    strip.text.x = element_text(face = "bold")
+    strip.text.x = element_text(face = "bold"),
+    strip.placement = "outside",
+    panel.background = element_rect(color = "black", fill = NA, linewidth = 1),
+    panel.ontop = TRUE,
+    legend.position = "none"
   )
 
-
-ggsave('figures/heatmap_depth_sig.png', width = 8, height = 5)
+ggsave('figures/heatmap_depth_sig.tiff', width = 8, height = 5,
+      compression = "lzw+p")

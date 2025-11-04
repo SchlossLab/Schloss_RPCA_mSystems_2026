@@ -29,9 +29,9 @@ pretty_distances <- c(
 )
 
 pretty_datasets <- c(
-  crc = "Colorectal cancer",
   sponges = "Sponges", 
-  sleep_apnea = "Sleep Apnea"
+  sleep_apnea = "Sleep Apnea",
+  crc = "Colorectal cancer"
 )
 
 case_study_data <- read_tsv("data/pooled_data/knn_results.tsv.gz") %>%
@@ -91,7 +91,10 @@ case_study_data %>%
     axis.text = element_text(color = "black"),
     strip.background = element_rect(color = NA),
     strip.text = element_text(size = 12),
-    strip.text.x = element_text(face = "bold")
+    strip.text.x = element_text(face = "bold"),
+    panel.background = element_rect(color = "black", fill = NA, linewidth = 1),
+    panel.ontop = TRUE
   )
 
-ggsave('figures/heatmap_knn_cs.png', width = 8, height = 5)
+ggsave("figures/heatmap_knn_cs.tiff", width = 8, height = 5,
+      compression = "lzw+p")

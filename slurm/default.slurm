@@ -16,8 +16,9 @@
 source /etc/profile.d/http_proxy.sh
 
 ### Conda environment:
-source ~/miniconda3/etc/profile.d/conda.sh
-conda activate martino
+# source ~/miniconda3/etc/profile.d/conda.sh
+eval "$(mamba shell hook --shell bash)"
+mamba activate martino
 
 ### This chunk changes directory to the directory from which it was submitted
 echo "Changing directory to $SLURM_SUBMIT_DIR"

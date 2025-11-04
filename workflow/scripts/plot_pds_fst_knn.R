@@ -11,7 +11,7 @@ processes <- c("raw", "optspace", "gemelli_2", "zclr", "nclr", "oclr", "deseq2",
                "css", "srs", "bray_pcoa")
 
 pretty_processes <- c(
-  "raw" = "Raw",
+  "raw" = "Raw counts",
   "srs" = "SRS Normalized",
   "css" = "CSS Normalized",
 
