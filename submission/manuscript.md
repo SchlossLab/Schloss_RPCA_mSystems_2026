@@ -301,13 +301,8 @@ Martino did not report the classification accuracy for their positive
 and negative controls. As would be expected, the mean accuracy for
 classifying the treatment groups in the negative control model across
 each depth, transformation, and distance calculation was 0.50 (sd =
-<<<<<<< HEAD
 0.01). Furthermore, the mean accuracy for classifying samples in the
 positive control was 0.99 (sd = 0.01).
-=======
-0.0085). Furthermore, the mean accuracy for classifying samples in the
-positive control was 0.99 (sd = 0.0086).
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 
 Rather than using a training data set to identify an optimal number of
 neighbors (i.e., K), Martino used 13 neighbors. To assess whether the
@@ -413,11 +408,7 @@ selection of datasets with large effect sizes that were visible using
 the first two PCoA axes, the principle problems included (i) performing
 a single subsampling the samples in each data to an artificially low
 number of sequences (i.e., 1,000) for the Bray-Curtis and weighted
-<<<<<<< HEAD
 UniFrac distance calculations; (ii) when generating balanced designs of
-=======
-Unifrac distance calculations; (ii) when generating balanced designs of
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 the data sets, they performed 9 rather than the 10 random subsamples of
 the datasets as was described in the manuscript; (iii) running RPCA with
 a rank of 3 for the Sleep Apnea dataset rather than 2 as was described
@@ -473,20 +464,12 @@ treatment groups. For the colorectal cancer dataset the results were
 more varied. The most striking result was that RPCA with 2 or 3 axes
 only yielded significant results in 2 or 3 of the 10 replicates. When 5
 or 9 axes were used, the tests were more frequently significant. With
-<<<<<<< HEAD
 the exception of Zero CLR and using distances extracted from Bray-Curtis
-=======
-the execption of Zero CLR and using distances extracted from Bray-Curtis
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 PCoA, the other transformations consistently yielded significant
 results. Across all methods, the fraction of significant tests increased
 with the number of samples in each group. The inclusion of the
 colorectal cancer dataset, which had a smaller effect size than the
-<<<<<<< HEAD
 sponge and sleep apnea datasets helped to highlight the shortcomings of
-=======
-sponge and sleep apnea datasets helped to highlight the shortcommings of
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 RPCA.
 
 ### KNN classification of case study datasets
@@ -507,11 +490,7 @@ Similar to the PERMANOVA analysis, my KNN classification results largely
 replicated those observed for the sleep apnea and sponge datasets. In
 general, using RPCA with any number of axes resulted in median
 accuracies greater than 0.90 for these datasets. When using RPCA with
-<<<<<<< HEAD
 the colorectal cancer dataset the accuracy increased modestly with the
-=======
-the colorecetal cancer dataset the accuracy increased modestly with the
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 number of axes and the effect of the number of samples per group did not
 have a consistent effect on classification accuracy. Caution should be
 used in interpreting such results as there is no *a priori* reason to
@@ -521,13 +500,8 @@ values between 0.94 and 1.00; the worst performer was using raw
 abundances as input to RPCA with two axes (accuracy = 0.88). Within the
 sleep apnea dataset the CLR-based methods and DeSeq2 transformed data
 outperformed the RPCA methods, which outperformed the other
-<<<<<<< HEAD
 Euclidean-distance methods; accuracies calculated using KNN with
 Bray-Curtis distances performed similar to the RPCA-based methods.
-=======
-Euclidean-distance methods; accuracies calcualted using KNN with
-Bray-Curis distances performed similar to the RPCA-based methods.
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 Finally, within the colorectal cancer dataset, KNN classification using
 Bray-Curtis distances outperformed the Euclidean-based distances for all
 transformations except when RPCA was used with 5 or 9 axes. These
@@ -562,34 +536,90 @@ distances, CLR-transformed counts, DeSeq2, and CSS normalized data
 yielded significant differences between the number of sequences per
 sample. They were not able to control for uneven sampling effort. In
 contrast, SRA normalization, subsampling, and rarefaction consistently
-<<<<<<< HEAD
 controlled for the effects of uneven sampling effort across the
-=======
-controlled for the effects of uneven samling effort across the
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 simulations.
 
 ## Discussion
 
-A frequent challenge in benchmarking data analysis methods is that
-investigators often obtain different results for the same method.
+Results using simulated and real datasets can complement each other in
+studies evaluating bioinformatics tools when the true difference between
+treatment groups cannot be known. The simulation approach described by
+Martino offered a novel approach to studying the performance of various
+methods for controlling uneven sampling effort. Unfortunately, the
+simulation code had critical errors that made it impossible to
+meaningfully compare overlapping treatment groups. When the code was
+corrected and a smaller effect size was applied, the limitations of RPCA
+relative to other methods became clear. Because simulated data does not
+not always depict the complexity of real data, real datasets can be
+useful for demonstrating the utility of these methods. The datasets
+selected by Martino had large effect sizes, which limited the ability to
+detect variation in performance since the differences were relatively
+easy to detect. For example, significant P-values and median
+classification accuracies above 0.90 were common regardless of the
+method. By incorporating the colorectal cancer dataset with a smaller
+effect size there was more variation in the power to detect differences
+and classification accuracy. Under more nuanced conditions RPCA was no
+better than rarefaction and was often worse.
 
-<<<<<<< HEAD
-- Overall method problems\`
-=======
-- Overall method problems
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
-  - Choice of number of partitions/axes seems arbitrary/no guidance.
-    Controls and sponges used 2, sleep apnea used 3. Default is 3
-  - Authors acknowledged that RPCA doesn’t work on time series datasets
-- Benchmarking should use methods that are commonly used in the field.
-  KNN was interesting, but not relevant. Who is using raw with matrix
-  completion?
-- Statistical modeling approach is appealing for building communities
-  and treatment groups and nicely complements results found using
-  simulations based on observed sequencing counts and sequencing depths
-- Comment on problematic coding practices
-- Use rarefaction
+Martino also implemented methods for evaluating RPCA relative to other
+strategies of controlling for uneven sampling effort that would not
+normally be used in a typical microbiome analysis. First, Martino
+benchmarked RPCA by comparing the method’s performance using raw counts
+or RCLR-transformed data. Missing from their benchmarking was a
+comparison to Bray-Curtis or UniFrac distances or use of other methods
+of controlling for uneven sampling effort. The result was a “straw man”
+comparison that made their new method appear considerably better than a
+method that no one would think to use. Second, they used of KNN as a
+classification tool rather than using logistic regression or random
+forest. I am unaware of other studies that have used KNN with microbiome
+data. When they used KNN they did so based on distances from the first
+two or three axes of a PCoA using a Bray-Curtis distance matrix rather
+than the Bray-Curtis distances themselves. The effect was a loss of
+information stored in higher dimensions. Even with the limitations of
+KNN (e.g., requirement of balanced design, distances), RPCA was
+outperformed by the other methods.
+
+Even if RPCA’s performance were better, there are several limitations
+inherent in the method. First, there is no guidance on selecting the
+number of axes one should use with RPCA. They used 2 axes with their
+simulated data and with the sponges dataset and used 3 axes with the
+sleep apnea dataset; 3 is the default value in their publicly released
+gemelli software for running RPCA. As I showed with the real datasets,
+increasing the number of axes increased the power to detect differences
+and the classification accuracy. This creates a scenario where users
+could select a number of axes to fit their expected results (aka,
+“P-hacking”). Second, as Martino indicated the method does not perform
+well with time series data or where there is considerable variation
+between the samples. This is likely when effect sizes between treatment
+groups are small.
+
+Martino made the claim that Aitchison distances calculated using RPCA
+are insensitive to uneven sequencing effort. The only data they provide
+to support this claim was found in their paper’s “Materials and Methods”
+section, which references their supplemental Figure 3 and supplemental
+Table 2. Yet, their figure shows that the RPCA ordination still clusters
+by sequencing depth. Unfortunately, they did not rarefy the Jaccard or
+Bray-Curtis distances to a common number of sequences as one would do in
+a real analysis. I replicated this analysis, but with a larger number of
+sequences per sample, with the simulated and real datasets, and using a
+two-factor PERMANOVA analysis. These results (**Figure 9**) confirmed
+that RPCA, the other CLR-based methods, using raw counts, DeSeq2, CSS
+normalization, and relative abundance were unable to control for uneven
+sampling effort in this analysis. Only rarefaction, subsampling, and SRS
+normalization were able to control for uneven sampling effort.
+
+This is my third analysis describing the effects of uneven sequencing
+effort and comparing the methods to control for those negative effects
+**\[XXXXXXX; XXXXXXX\]**. My results in this study confirm what I
+previously reported. The primary difference is that subsampling and SRS
+normalization performed as well as rarefaction. It is worth noting that
+in a previous analysis where I correlated sequencing depth with multiple
+alpha and beta diversity metrics the correlations for SRS normalization
+varied widely across 12 different real datasets. The benefit of
+rarefaction over subsampling include basing an analysis on a large
+number of iterations (e.g. 100 or 1,000) rather than only one. Until it
+is possible to obtain a uniform number of sequence reads per sample,
+rarefaction should be used to control for uneven sampling effort.
 
 ## Materials & Methods
 
@@ -665,11 +695,7 @@ that each axis explained.
 **Figure 2. RPCA-based methods did not consistently perform as well as
 other methods by PERMANOVA or KNN classification when attempting to
 distinguish between overlapping communities.** This figure includes data
-<<<<<<< HEAD
 that was shown in in Figure 3BC of Martino with the inclusion of results
-=======
-that was showin in Figure 3BC of Martino with the inclusion of results
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 when using additional data transformations, Bray-Curtis distances, and I
 used 10 instead of 1 replicate simulation. Each circle represents the
 median of ten replicate simulations and the confidence line indicates
@@ -750,11 +776,7 @@ classification accuracy was performed using the largest possible
 balanced design, which included 78 samples for the sponges dataset, 87
 samples for the sleep apnea dataset, and 229 samples for the CRC
 dataset. Because 10 iterations of the sample subsampling were performed
-<<<<<<< HEAD
 we measured the difference in accuracy for each iteration. Each point
-=======
-we measured the differnce in accuracy for each iteration. Each point
->>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 represents the median difference and the confidence intervals represent
 the range. The vertical gray lines indicate where the Fst or accuracy
 was not different between using 1,000 sequences and the number of
