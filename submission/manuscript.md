@@ -301,8 +301,13 @@ Martino did not report the classification accuracy for their positive
 and negative controls. As would be expected, the mean accuracy for
 classifying the treatment groups in the negative control model across
 each depth, transformation, and distance calculation was 0.50 (sd =
+<<<<<<< HEAD
 0.01). Furthermore, the mean accuracy for classifying samples in the
 positive control was 0.99 (sd = 0.01).
+=======
+0.0085). Furthermore, the mean accuracy for classifying samples in the
+positive control was 0.99 (sd = 0.0086).
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 
 Rather than using a training data set to identify an optimal number of
 neighbors (i.e., K), Martino used 13 neighbors. To assess whether the
@@ -408,7 +413,11 @@ selection of datasets with large effect sizes that were visible using
 the first two PCoA axes, the principle problems included (i) performing
 a single subsampling the samples in each data to an artificially low
 number of sequences (i.e., 1,000) for the Bray-Curtis and weighted
+<<<<<<< HEAD
 UniFrac distance calculations; (ii) when generating balanced designs of
+=======
+Unifrac distance calculations; (ii) when generating balanced designs of
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 the data sets, they performed 9 rather than the 10 random subsamples of
 the datasets as was described in the manuscript; (iii) running RPCA with
 a rank of 3 for the Sleep Apnea dataset rather than 2 as was described
@@ -464,12 +473,20 @@ treatment groups. For the colorectal cancer dataset the results were
 more varied. The most striking result was that RPCA with 2 or 3 axes
 only yielded significant results in 2 or 3 of the 10 replicates. When 5
 or 9 axes were used, the tests were more frequently significant. With
+<<<<<<< HEAD
 the exception of Zero CLR and using distances extracted from Bray-Curtis
+=======
+the execption of Zero CLR and using distances extracted from Bray-Curtis
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 PCoA, the other transformations consistently yielded significant
 results. Across all methods, the fraction of significant tests increased
 with the number of samples in each group. The inclusion of the
 colorectal cancer dataset, which had a smaller effect size than the
+<<<<<<< HEAD
 sponge and sleep apnea datasets helped to highlight the shortcomings of
+=======
+sponge and sleep apnea datasets helped to highlight the shortcommings of
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 RPCA.
 
 ### KNN classification of case study datasets
@@ -490,7 +507,11 @@ Similar to the PERMANOVA analysis, my KNN classification results largely
 replicated those observed for the sleep apnea and sponge datasets. In
 general, using RPCA with any number of axes resulted in median
 accuracies greater than 0.90 for these datasets. When using RPCA with
+<<<<<<< HEAD
 the colorectal cancer dataset the accuracy increased modestly with the
+=======
+the colorecetal cancer dataset the accuracy increased modestly with the
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 number of axes and the effect of the number of samples per group did not
 have a consistent effect on classification accuracy. Caution should be
 used in interpreting such results as there is no *a priori* reason to
@@ -500,8 +521,13 @@ values between 0.94 and 1.00; the worst performer was using raw
 abundances as input to RPCA with two axes (accuracy = 0.88). Within the
 sleep apnea dataset the CLR-based methods and DeSeq2 transformed data
 outperformed the RPCA methods, which outperformed the other
+<<<<<<< HEAD
 Euclidean-distance methods; accuracies calculated using KNN with
 Bray-Curtis distances performed similar to the RPCA-based methods.
+=======
+Euclidean-distance methods; accuracies calcualted using KNN with
+Bray-Curis distances performed similar to the RPCA-based methods.
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 Finally, within the colorectal cancer dataset, KNN classification using
 Bray-Curtis distances outperformed the Euclidean-based distances for all
 transformations except when RPCA was used with 5 or 9 axes. These
@@ -536,7 +562,11 @@ distances, CLR-transformed counts, DeSeq2, and CSS normalized data
 yielded significant differences between the number of sequences per
 sample. They were not able to control for uneven sampling effort. In
 contrast, SRA normalization, subsampling, and rarefaction consistently
+<<<<<<< HEAD
 controlled for the effects of uneven sampling effort across the
+=======
+controlled for the effects of uneven samling effort across the
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 simulations.
 
 ## Discussion
@@ -544,7 +574,11 @@ simulations.
 A frequent challenge in benchmarking data analysis methods is that
 investigators often obtain different results for the same method.
 
+<<<<<<< HEAD
 - Overall method problems\`
+=======
+- Overall method problems
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
   - Choice of number of partitions/axes seems arbitrary/no guidance.
     Controls and sponges used 2, sleep apnea used 3. Default is 3
   - Authors acknowledged that RPCA doesn’t work on time series datasets
@@ -631,7 +665,11 @@ that each axis explained.
 **Figure 2. RPCA-based methods did not consistently perform as well as
 other methods by PERMANOVA or KNN classification when attempting to
 distinguish between overlapping communities.** This figure includes data
+<<<<<<< HEAD
 that was shown in in Figure 3BC of Martino with the inclusion of results
+=======
+that was showin in Figure 3BC of Martino with the inclusion of results
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 when using additional data transformations, Bray-Curtis distances, and I
 used 10 instead of 1 replicate simulation. Each circle represents the
 median of ten replicate simulations and the confidence line indicates
@@ -712,7 +750,11 @@ classification accuracy was performed using the largest possible
 balanced design, which included 78 samples for the sponges dataset, 87
 samples for the sleep apnea dataset, and 229 samples for the CRC
 dataset. Because 10 iterations of the sample subsampling were performed
+<<<<<<< HEAD
 we measured the difference in accuracy for each iteration. Each point
+=======
+we measured the differnce in accuracy for each iteration. Each point
+>>>>>>> a8bf595a5236822733ba0227419d6469d9446274
 represents the median difference and the confidence intervals represent
 the range. The vertical gray lines indicate where the Fst or accuracy
 was not different between using 1,000 sequences and the number of

@@ -313,6 +313,9 @@ To test the sensitivity of various methods to uneven sequencing effort Martino g
 
 ## Discussion
 
+The simulation approach described by Martino offered an alternative approach to studying the benefits of various methods for controlling uneven sampling effort. After replicating and improving upon Martino's analysis rarefaction is still the preferred approach to controlling for uneven sampling effort. The performance of RPCA is no better than rarefaction and is often worse. Even using 
+
+
 A frequent challenge in benchmarking data analysis methods is that investigators often obtain different results for the same method. 
 
 * Overall method problems`
