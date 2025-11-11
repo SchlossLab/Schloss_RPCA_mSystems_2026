@@ -197,39 +197,34 @@ rarefaction using the modelling framework used by Martino.
 
 ### Description of simulated communities
 
-Martino made a git-based repository available on GitHub that includes
-the actual benchmarking code written in Python and the data used in
-their analysis (https://github.com/cameronmartino/deicode-benchmarking);
-the code and data from that repository are included as the directory
-“deicode_benchmarking” within repository for the current analysis
-(https://github.com/SchlossLab/Schloss_RPCA_mSystems_2025). To maintain
-a connection to the original simulations and implement a broader set of
-tests, several changes were necessary in the implementation of Martino’s
-code. First, because one goal of this study was to assess the effect of
-variation in sequencing effort on the performance of RPCA, I modified
-the parameters inputted to Martino’s code to produce more than the
-desired number of sequences per sample and then performed a single
-subsampling of the samples to 1,000, 2,000, 4,000, or 10,000 sequences
-per sample to have exactly the desired number of sequences per sample.
-Second, to account for the effect of the random number generator,
-instead of replicating each simulation condition only once as Martino
-did, I replicated each condition 10 or 100 times depending on the
-analysis. Third, Martino only analyzed their positive and negative
-control simulations with 4,000 sequences. My implementation of their
-simulations and subsequent tests added the sequencing depths of 1,000,
-2,000, and 10,000 sequences for the positive and negative controls and
-for the simulations with partially overlapping treatment groups. The
-regenerated heatmaps and principal coordinates analysis (PCoA) plots in
-**Figure 1** are qualitatively similar to those in Figure 3 of Martino.
-The most notable difference with Martino is that they inadvertently
-switched the labels of the axes and performed the OCLR transformation on
-features rather than samples (**Supplementary Text**). Replicating what
-Martino reported, the first two axes of the Bray-Curtis ordinations only
-explain a fraction of the total variation in the data while the RPCA
-ordinations explained all the variation. This was because RPCA is run by
-giving the algorithm a desired number of axes; in this case, 2 axes. The
-ratio of the fraction of the variation explained by the first two axes
-were similar between RPCA and PCoA with Bray-Curtis.
+To maintain a connection to Martino’s original simulations and implement
+a broader set of tests, several changes were necessary in the
+implementation of Martino’s code. First, because one goal of this study
+was to assess the effect of variation in sequencing effort on the
+performance of RPCA, I modified the parameters inputted to Martino’s
+code to produce more than the desired number of sequences per sample and
+then performed a single subsampling of the samples to 1,000, 2,000,
+4,000, or 10,000 sequences per sample to have exactly the desired number
+of sequences per sample. Second, to account for the effect of the random
+number generator, instead of replicating each simulation condition only
+once as Martino did, I replicated each condition 10 or 100 times
+depending on the analysis. Third, Martino only analyzed their positive
+and negative control simulations with 4,000 sequences. My implementation
+of their simulations and subsequent tests added the sequencing depths of
+1,000, 2,000, and 10,000 sequences for the positive and negative
+controls and for the simulations with partially overlapping treatment
+groups. The regenerated heatmaps and principal coordinates analysis
+(PCoA) plots in **Figure 1** are qualitatively similar to those in
+Figure 3 of Martino. The most notable difference with Martino is that
+they inadvertently switched the labels of the axes and performed the
+OCLR transformation on features rather than samples (**Supplementary
+Text**). Replicating what Martino reported, the first two axes of the
+Bray-Curtis ordinations only explain a fraction of the total variation
+in the data while the RPCA ordinations explained all the variation. This
+was because RPCA is run by giving the algorithm a desired number of
+axes; in this case, 2 axes. The ratio of the fraction of the variation
+explained by the first two axes were similar between RPCA and PCoA with
+Bray-Curtis.
 
 ### Comparison of simulated communities using PERMANOVA
 
@@ -541,27 +536,27 @@ simulations.
 
 ## Discussion
 
-Results using simulated and real datasets can complement each other in
-studies evaluating bioinformatics tools when the true difference between
-treatment groups cannot be known. The simulation approach described by
-Martino offered a novel approach to studying the performance of various
-methods for controlling uneven sampling effort. Unfortunately, the
-simulation code had critical errors that made it impossible to
-meaningfully compare overlapping treatment groups. When the code was
-corrected and a smaller effect size was applied, the limitations of RPCA
-relative to other methods became clear. Because simulated data does not
-not always depict the complexity of real data, real datasets can be
-useful for demonstrating the utility of these methods. The datasets
-selected by Martino had large effect sizes, which limited the ability to
-detect variation in performance since the differences were relatively
-easy to detect. For example, significant P-values and median
-classification accuracies above 0.90 were common regardless of the
-method. By incorporating the colorectal cancer dataset with a smaller
-effect size there was more variation in the power to detect differences
-and classification accuracy. Under more nuanced conditions RPCA was no
+When evaluating bioinformatics tools, simulated datasets are useful when
+a true difference between treatment groups in a real dataset cannot be
+established. The simulation approach described by Martino offered a
+novel approach to studying the performance of various methods for
+controlling uneven sampling effort. Unfortunately, the simulation code
+had critical errors that made it impossible to meaningfully compare
+overlapping treatment groups. When the code was corrected and a smaller
+effect size was applied, the limitations of RPCA relative to other
+methods became clear. Because simulated data does not not always depict
+the complexity of real data, real datasets can be useful for
+demonstrating the utility of these methods. The datasets selected by
+Martino had large effect sizes, which limited the ability to detect
+variation in performance since the differences were relatively easy to
+detect. For example, significant P-values and median classification
+accuracies above 0.90 were common regardless of the method. By
+incorporating the colorectal cancer dataset, which had a small effect
+size, there was more variation in the power to detect differences and
+classification accuracy. Under more nuanced conditions RPCA was no
 better than rarefaction and was often worse.
 
-Martino also implemented methods for evaluating RPCA relative to other
+Martino implemented methods for evaluating RPCA relative to other
 strategies of controlling for uneven sampling effort that would not
 normally be used in a typical microbiome analysis. First, Martino
 benchmarked RPCA by comparing the method’s performance using raw counts
@@ -571,13 +566,13 @@ of controlling for uneven sampling effort. The result was a “straw man”
 comparison that made their new method appear considerably better than a
 method that no one would think to use. Second, they used of KNN as a
 classification tool rather than using logistic regression or random
-forest. I am unaware of other studies that have used KNN with microbiome
-data. When they used KNN they did so based on distances from the first
-two or three axes of a PCoA using a Bray-Curtis distance matrix rather
-than the Bray-Curtis distances themselves. The effect was a loss of
-information stored in higher dimensions. Even with the limitations of
-KNN (e.g., requirement of balanced design, distances), RPCA was
-outperformed by the other methods.
+forest. KNN is simply not used for classifying microbiome data.
+Compounding the problem of using KNN was that they did so based on
+distances from the first two or three axes of a PCoA using a Bray-Curtis
+distance matrix rather than directly using the Bray-Curtis distances
+themselves. The effect was a loss of information stored in higher
+dimensions. Even with the limitations of KNN (e.g., requirement of
+balanced design, distances), RPCA was outperformed by the other methods.
 
 Even if RPCA’s performance were better, there are several limitations
 inherent in the method. First, there is no guidance on selecting the
@@ -587,23 +582,24 @@ sleep apnea dataset; 3 is the default value in their publicly released
 gemelli software for running RPCA. As I showed with the real datasets,
 increasing the number of axes increased the power to detect differences
 and the classification accuracy. This creates a scenario where users
-could select a number of axes to fit their expected results (aka,
+could select a number of axes to fit their expected results (i.e.,
 “P-hacking”). Second, as Martino indicated the method does not perform
 well with time series data or where there is considerable variation
 between the samples. This is likely when effect sizes between treatment
-groups are small.
+groups are small as is typical in most microbiome analyses.
 
-Martino made the claim that Aitchison distances calculated using RPCA
-are insensitive to uneven sequencing effort. The only data they provide
-to support this claim was found in their paper’s “Materials and Methods”
-section, which references their supplemental Figure 3 and supplemental
-Table 2. Yet, their figure shows that the RPCA ordination still clusters
-by sequencing depth. Unfortunately, they did not rarefy the Jaccard or
-Bray-Curtis distances to a common number of sequences as one would do in
-a real analysis. I replicated this analysis, but with a larger number of
-sequences per sample, with the simulated and real datasets, and using a
-two-factor PERMANOVA analysis. These results (**Figure 9**) confirmed
-that RPCA, the other CLR-based methods, using raw counts, DeSeq2, CSS
+Martino made the claim in their paper’s Discussion section that
+Aitchison distances calculated using RPCA are insensitive to uneven
+sequencing effort. The only data they provide to support this claim was
+found in their paper’s Materials and Methods section, which references
+their supplemental Figure 3 and supplemental Table 2. Yet, that figure
+shows that the RPCA ordination still clustered by sequencing depth.
+Unfortunately, they did not rarefy the Jaccard or Bray-Curtis distances
+to a common number of sequences as one would do in a real analysis. I
+replicated this analysis, but with a larger number of sequences per
+sample, with the simulated and real datasets, and using a two-factor
+PERMANOVA analysis. These results (**Figure 9**) confirmed that RPCA,
+the other CLR-based methods, using raw counts, DeSeq2, CSS
 normalization, and relative abundance were unable to control for uneven
 sampling effort in this analysis. Only rarefaction, subsampling, and SRS
 normalization were able to control for uneven sampling effort.
@@ -623,24 +619,157 @@ rarefaction should be used to control for uneven sampling effort.
 
 ## Materials & Methods
 
-- Deicode benchmarking data and code
+### Deicode benchmarking data and code
 
-- KNN analysis
+Martino made a git-based repository available on GitHub that includes
+the actual benchmarking code written in Python and the data used in
+their analysis (https://github.com/cameronmartino/deicode-benchmarking).
+Deicode was the original name of the package that implemented RPCA. That
+functionality is now available as part of the Gemelli package. The code
+and data from their benchmarking repository are included as the
+directory “deicode_benchmarking” within repository for the current
+analysis (https://github.com/SchlossLab/Schloss_RPCA_mSystems_2025). A
+conda virtual environment was created to mimic the versions of the tools
+used the original simulation. The environment file is available within
+the current project’s repository as workflow/envs/rpca.yml
 
-- Description of Sampling depth experiment
+### Revised simulation code
 
-  - adonis2 model
+A revised version of the simulation code was written in R as described
+in the Results section. The code I generated uses functions from base R
+and the tidyverse metapackage. The script that implements the simulation
+is available in the repository as workflow/scripts/simulations.R.
+Similar to Martino’s original Python implementation, the simulation code
+takes the number of samples, OTUs, treatment groups, OTUs shared between
+the treatment groups, and sequences to generate the simulated
+communities. A driver script subsampled the data to the desired number
+of sequences and formatted the data for downstream analysis.
 
-- Workflow
+### Case study data
 
-  - Snakemake
-  - Conda - Software versions
-  - GitHub
+The operational taxonomic unit (OTU) count data and metadata for the
+sponges and sleep apnea datasets were obtained from the Deicode
+benchmarking repository. The OTU count data and metadata for the
+colorectal cancer dataset were obtained from a previous study where it
+was referred to as the “Human” dataset. Those data were generated by
+obtaining sequence data and metadata from the Sequence Read Archive. The
+sequence data was processed using the mothur software program
+**\[XXXXXXX; XXXXXXX\]**. This included assembling the paired reads that
+covered the V4 region of the 16S rRNA gene using a quality score-aware
+method **\[XXXXXXX\]**, aligning the assembled contig to a SILVA
+reference alignment **\[XXXXXXX\]**, pre-clustering to remove residual
+sequencing errors **\[XXXXXXX\]**, chimera checking and removal
+**\[XXXXXXX\]**, and clustering of sequences into OTUs using the
+OptiClust algorithm **\[XXXXXXX\]**; OTUs were defined a group of
+sequences not more than than 3% different from each other.
+
+### Distance-based K Nearest Neighbor (KNN) classification
+
+Martino’s KNN classification analysis used the KNeighborsClassifier
+function from scikit-learn **\[XXXXXXX\]**. Although that function can
+take a pre-computed distance matrix as input, the default was used by
+Martino, which is to calculate the Euclidean distance between samples in
+an ordination. I reimplemented an R-based version of the KNN
+classification method as workflow/scripts/test_train_knn.R. This method
+implements the training-testing framework described by Topcuoglu et
+al. **\[XXXXXXX\]** to fit the number of neighbors hyperparameter (i.e.,
+K). My R script takes as input a distance matrix, a design file that
+assigns samples to treatment groups, the fractions of data to be used
+for training and testing, the number of inner and outer loops, and the
+hyperparameter grid for fitting K.
+
+### Methods of controlling for uneven sampling effort
+
+I evaluated twelve methods for controlling for uneven sampling effort.
+These included using: (i) raw counts, which were the number of sequences
+in each OTU; (ii) the OptSpace algorithm performed on raw counts as
+implemented in Deicode (v.0.1.5) **\[XXXXXXX\]**; (iii) the full RCLR
+algorithm performed using Gemelli (v.0.0.9) with 2, 3, 5, and 9
+components **\[XXXXXXX\]**; (iv) Zero CLR, which calculated the center
+log ratio (CLR) after imputing teh of zero counts using the
+zCompositions (v.1.4.0.1) R package **XX(49)XX**; (v) Nudge CLR, which
+calculated the CLR after adding a pseudo-count of 1 divided by the total
+number of sequences in a sample to the abundance of each OTU in the
+sample **XX(19, 24)XX**; (vi) One CLR, which calculated the CLR after
+adding a pseudo-count of 1 to the abundance of all of the OTUs **XX(19,
+21)XX**; (vii) the DESeq2 R package (v.1.34.0), which was used to
+implement the variance stabilizing transformation to normalize the OTU
+counts \[**(11, 48)**\]; (viii) the SRS R package (v.0.2.3), which was
+used to normalize OTU counts using the scaled ranked subsampling
+algorithm \[**(20)**\]; (ix) the metagenomeSeq R package (v.1.36.0),
+which was used to normalize OTU accounts using the cumulative sum
+scaling (CSS) algorithm; (x) relative abundances, which were calculated
+as the abundance of each OTU in a sample divided by the total number of
+sequences in the sample; (xi) subsampling, which involved randomly
+selecting a specified number of sequences from each sample and removing
+any samples that had fewer than the desired number of sequences; (xii)
+rarefaction, which involved repeating subsampling 100 times and
+calculating a distance matrix after each iteration followed by
+calculating the mean distance matrix.
+
+### Methods for calculating distances between communities
+
+The vegan R package (v.2.6_4) was used to calculate ecological distances
+matrices using the Euclidean and Bray-Curtis formulations
+**\[XXXXXXX\]**. Euclidean distances are not typically used in
+microbiome analyses because they inflate the similarity of communities.
+However, they are used with CLR transformed data resulting in so-called
+Aitchison distances. The OptSpace and RCLR algorithms outputted
+Euclidean distances directly from the Deicode and Gemelli software.
+Euclidean distances were calculated for raw counts, and data transformed
+by the CLR-based methods, DeSeq2, relative abundance, subsampling, and
+rarefaction using the vegdist function in vegan. Because OptSpace,
+CLR-based methods, and DeSeq2 outputted negative values, it was not
+possible to calculate the popular Bray-Curtis distances on those data.
+Bray-Curtis distances were calculated using raw counts, relative
+abundances, and subsampled data using the vegdist function in vegan;
+rarefaction was performed using vegan’s avgdist function.
+
+### Sampling depth simulation
+
+Following the approach described by Martino to assess the sensitivity of
+the different methods to uneven sequencing I randomly sampled 5,000 and
+10,000 sequences from each of the simulation and case study datasets.
+These data were pooled so that each sample was represented at each of
+the sequencing levels. A sequencing depth variable was added to the
+treatment group label. Each dataset was replicated 10 times with a
+different random number generator seed. To test the effects of
+sequencing depth, I used the adonis2 function from the vegan R package
+(v.2.6_4) **\[XXXXXXX\]** to test the model:
+
+Distance ~ Treatment + Sequencing Depth + Treatment x Sequencing Depth
+
+Although this model tests for a treatment effect, it’s P-value will be
+biased downward. This is because every sample was artificially
+duplicated, which makes each treatment look more similar to itself than
+it really is leading to reduced the intra-treatment variation. The
+result is a larger F statistic and smaller P-value for the treatment
+effect. My analysis of this simulation focused on the significance of
+the sequencing depth effect.
+
+### Data availability
+
+No new biological data were generated in this study. The entire codebase
+for my analysis is available as a GitHub repository at
+https://github.com/SchlossLab/Schloss_RPCA_mSystems_2025. The repository
+includes a copy of Martino’s benchmarking repository. My repository
+includes a Snakemake-based workflow (v.7.32.4) includes all of the steps
+in the analyses described in this manuscript. The workflow uses R
+(v.4.3.3) and Python (v.3.11.14) packages and code. Notable R packages
+not already indicated included tidyverse (v.2.0.0), data.table
+(v.1.14.8), ggh4x (v.0.2.6), ggtext (v.0.1.2), patchwork (v.1.1.3), and
+quarto (v.1.4.550), Notable Python packages not already indicated
+included matplotlib (v.3.8.1), numpy (v.1.12.1), pandas (v.2.1.3),
+scikit-bio (v.0.5.9), scikit-learn (v.1.3.2), and scipy (v.1.10.0).
 
 ## Acknowledgements
 
-- Thanks for making code publicly accessible!
-- Funding agencies
+I am grateful to the reviewers of the papers describing my previous
+analyses who raised the question of why I saw different results from
+other developers who had developed methods of controlling for uneven
+sampling effort. I appreciate that Martino and colleagues made their
+benchmarking code and data publicly accessible. This study would not
+have been possibly without their commendable transparency.
 
 
 

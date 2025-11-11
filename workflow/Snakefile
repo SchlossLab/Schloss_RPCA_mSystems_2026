@@ -180,7 +180,9 @@ rule collect_data_metadata_cs:
 
 rule collect_data_metadata_crc:
   input:
-    rscript="workflow/scripts/collect_data_metadata_crc.R"
+    rscript="workflow/scripts/collect_data_metadata_crc.R",
+    shared="data/crc/data.otu.shared.gz",
+    metadata="data/crc/sra_info.tsv.gz"
   output:
     "data/crc/data.{depth, \\d+}.raw.tsv.gz",
     "data/crc/data.{depth, \\d+}.design",
