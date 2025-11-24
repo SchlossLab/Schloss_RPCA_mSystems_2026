@@ -58,130 +58,127 @@ shorts.
 
 ## Introduction
 
-(1, 2)
-
 A persistent challenge in amplicon and shotgun metagenomic sequencing of
 microbial communities is the variation in the number of reads obtained
-across samples \[**XXXXX**\]. The variation in the number of reads
+across samples (e.g.,/ 1, 2, 3). The variation in the number of reads
 generally occurs because of an accumulation of sampling errors during
 library generation that includes attempts to pool equimolar amounts of
 DNA for subsequent sequencing. It is not uncommon to observe as much as
-100-fold variation in sequencing depth \[**XXXXX**\]. This challenge is
-not unique to microbial ecologists and has long plagued landscape and
-animal ecologists \[**XXXXX**\]. The classical approach to control for
-uneven sampling has been rarefaction \[**XXXXX**\]. In rarefaction, a
-consistent number of individuals are randomly sampled from each sample.
-An alpha or beta diversity metric is then calculated from the sampling.
-The random subsampling and diversity measurement steps are repeated a
-large number of times (e.g., 100 or 1,000) and the measurements are
-averaged over the subsamples \[**XXXXX**\]. Unfortunately, the term
-“rarefying” and occasionally rarefaction have been misidentified as a
-single subsampling step \[**XXXXX**\]. Regardless, over the past 10
-years, the process of rarefaction has become controversial because some
-view the choice of the sampling depth as arbitrary, the metrics can
-become more similar than they truly are, and because the practice of
-downsampling to a common number of sequences leaves the impression that
-good data are being unnecessarily discarded \[**XXXXX**\]. Numerous
-alternatives have been proposed including calculating the relative
-abundance of each taxon in a community so that they sum to 1 within a
-sample \[**XXXXX**\], normalization of counts so that the total number
-of individuals sums to a user defined value \[**XXXXX**\], use of
-estimators of diversity that can extrapolate beyond the number of
-observed individuals \[**XXXXX**\], and the use of compositional
-statistics, which are based on a log ratio of taxon counts to a
-reference value \[**XXXXX**\].
+100-fold variation in sequencing depth (4). This challenge is not unique
+to microbial ecologists and has long plagued landscape and animal
+ecologists (5, 6). The classical approach to control for uneven sampling
+has been rarefaction (7). In rarefaction, a consistent number of
+individuals are randomly sampled from each sample. An alpha or beta
+diversity metric is then calculated from the sampling. The random
+subsampling and diversity measurement steps are repeated a large number
+of times (e.g., 100 or 1,000) and the measurements are averaged over the
+subsamples (4). Unfortunately, the term “rarefying” and occasionally
+rarefaction have been misidentified as a single subsampling step (4, 8).
+Regardless, over the past 10 years, the process of rarefaction has
+become controversial because some view the choice of the sampling depth
+as arbitrary, the metrics can become more similar than they truly are,
+and because the practice of downsampling to a common number of sequences
+leaves the impression that good data are being unnecessarily discarded
+(8, 9). Numerous alternatives have been proposed including calculating
+the relative abundance of each taxon in a community so that they sum to
+1 within a sample (10), using a single subsampling step (11),
+normalization of counts so that the total number of individuals sums to
+a user defined value (12, 13), transforming the data using methods
+commonly used for gene expression analysis (8, 14), use of estimators of
+diversity that can extrapolate beyond the number of observed individuals
+(15–17), and the use of compositional statistics based on a log ratio of
+taxon counts to a reference value (10, 18–23).
 
 Researchers have adopted compositional methods because the number of
 sequences obtained per sample is typically independent of the true
 number of individuals in a community and so the number of times each
-taxon is observed is not independent of the other taxa \[**XXXXX**\].
-The general approach is to calculate a centralized log ratio (i.e., CLR)
+taxon is observed is not independent of the other taxa (10, 23). The
+general approach is to calculate a centralized log ratio (i.e., CLR)
 where the abundance of each taxon within a sample is divided by the
 geometric mean abundance within the sample, which is then used as the
 argument for the natural logarithm. These values are then used to
 calculate pairwise euclidean distances between samples resulting in
-so-called Aitchison distances \[**XXXXX**\]. Aside from controlling for
-the compositional nature of sequence data, proponents of the Aitchison
+so-called Aitchison distances (24). Aside from controlling for the
+compositional nature of sequence data, proponents of the Aitchison
 distance claim that the distances are insensitive to differences in
-sampling effort \[**XXXXX**\]. A challenge of Aitchison distances is
-that because microbial communities are patchy a large number of features
-will have a frequency of zero in each sample. This will cause the
-geometric mean to be undefined. To overcome this challenge, factors are
-added to the data. Three approaches have been proposed: adding a
-pseudocount of 1 all frequency data (i.e., Nudge CLR), adding a
-pseudocount of 1 divided by the total number of individuals in the
-sample (i.e., Nudge CLR), and imputing zero values to be a random small
-value (i.e. Zero CLR) \[**XXXXX**\]. As an alternative to these
-transformations, Martino et al. \[**XXXXX**\] (i.e., Martino) proposed
-calculating CLR values for each sample after ignoring zero values
-followed by matrix completion or robust principal components analysis
-(i.e., RPCA). The authors claimed that the advantage of RPCA over the
-other CLR-based approaches was that it did not require imputing zero
-values and that the method was less sensitive to uneven sampling effort.
+sampling effort (10, 23). A challenge of Aitchison distances is that
+because microbial communities are patchy a large number of features will
+have a frequency of zero in each sample. This will cause the geometric
+mean to be undefined. To overcome this challenge, factors are added to
+the data. Three approaches have been proposed: adding a pseudocount of 1
+all frequency data (i.e., One CLR), adding a pseudocount of 1 divided by
+the total number of individuals in the sample (i.e., Nudge CLR), and
+imputing zero values to be a random small value (i.e. Zero CLR) (20–22).
+As an alternative to these transformations, Martino et al. (23) (i.e.,
+Martino) proposed calculating CLR values for each sample after ignoring
+zero values followed by matrix completion or robust principal components
+analysis (i.e., RPCA). The authors claimed that the advantage of RPCA
+over the other CLR-based approaches was that it did not require imputing
+zero values and that the method was less sensitive to uneven sampling
+effort.
 
 In contrast to these claims, I have shown that the output of RPCA and
 other alternatives to rarefaction are more sensitive to uneven sampling
-than rarefaction \[**XXXXX**\]. Furthermore, use of these methods can
-inflate the false detection rate and decrease the statistical power to
-detect differences in alpha and beta diversity metrics. Given the near
+than rarefaction (4, 25). Furthermore, use of these methods can inflate
+the false detection rate and decrease the statistical power to detect
+differences in alpha and beta diversity metrics. Given the near
 unanimous agreement over the past decade that rarefaction is
-“inadmissible” and the development of alternatives to rarefaction, one
-might question why my results disagree so markedly with those of others.
-There are several possible reasons. First, researchers often propose new
-methods by demonstrating their method reveals new insights over old
-methods without objectively benchmarking the method \[**XXXXX**\].
-Because one cannot know the true difference between samples, a positive
-or negative result with experimental data cannot be interpreted. Second,
-when benchmarking tests are developed, researchers may inadvertently
-select tests that favor the method they are developing. This was the
-case in my recent re-analysis of the original paper that called
-rarefaction into question \[**XXXXX**\]. Therefore, it is necessary to
-use a comprehensive benchmarking test suite that allows one to compare
-diverse methods using inference methods that are commonly used by
-researchers. Third, the choice of how to simulate community data can
-inadvertently favor the method being developed. A popular cliché states
-that “all models are wrong, some are useful” \[**XXXXX**\]. Similar to
+“inadmissible” (8) and the development of alternatives to rarefaction
+(12–14, 20–23), one might question why my results disagree so markedly
+with those of others. There are several possible reasons. First,
+researchers often propose new methods by demonstrating their method
+reveals new insights over old methods without objectively benchmarking
+the method (13, 20). Because one cannot know the true difference between
+samples, a positive or negative result with experimental data cannot be
+interpreted. Second, when benchmarking tests are developed, researchers
+may inadvertently select tests that favor the method they are
+developing. This was the case in my recent re-analysis of the original
+paper that called rarefaction into question (8). Therefore, it is
+necessary to use a comprehensive benchmarking test suite that allows one
+to compare diverse methods using inference methods that are commonly
+used by researchers. Third, the choice of how to simulate community data
+can inadvertently favor the method being developed. A popular aphorism
+states that “all models are wrong, some are useful” (26). Similar to
 one’s choice of benchmarking tests, the modelling approach may favor
 some methods over others. For instance, I have critiqued how others have
 accounted for variation in sampling depth as being unlike what we see in
-experimental data \[**XXXXX**\].
+experimental data (25).
 
 In my previous analyses advocating for rarefaction, I generated null
 community models and treatment groups with known effect sizes by
 creating taxon abundance distributions and sampling depths based on 12
-published datasets \[**XXXXX**\]. Alternatively, Martino modelled
-communities with known effect sizes using a statistical model that
-sought to mimic the diversity of communities described in a study
-comparing the microbial communities found on people’s fingertips and
-their computer keyboards \[**XXXXX**\]. As described in Martino, the
-overall simulation framework involved simulating two treatment groups
-each represented by 100 communities for a total of 200 communities. Each
-community contained as many as 1,000 taxa, which they referred to as
-features. For each treatment group they fit a normal distribution to the
-relative abundances of taxa from two individuals’ samples to obtain a
-mean and standard deviation for each taxon. The fraction of taxa that
-overlapped between treatment groups was also selected to mimic the
-overlap observed between the two individuals. The expected taxon
-relative abundances for each sample were the same across each sample
-within the same treatment group. Next, a common normal distribution with
-a single mean and standard deviation was used to generate noise (i.e.,
-homoscedastic noise) that added to each relative abundance value to add
-variation across samples and features. Next, a random subset of
-sample-taxa combinations were selected for incorporation of additional
-noise (i.e., heteroscedastic noise). Finally, the sample-taxa
-combinations were randomly sampled using a Poisson-lognormal
-distribution to generate the simulated number of sequences for each
-sample-taxa combination so that the total number of sequences within a
-sample contained approximately 1,000, 2,000, 4,000, or 10,000 sequences
-per simulation. One set of 200 samples were simulated for each
-sequencing depth. In addition to the simulation where a subset of taxa
-was shared in both treatment groups, Martino created positive and
-negative control simulations. In the positive control simulation, there
-were no overlapping taxa resulting in two clearly defined groups of
-samples. In the negative control simulation all the taxa were shared in
-similar abundance so that the groups of samples could not be
-distinguished. Finally, they compared RPCA to other methods using two
-published datasets.
+published datasets (4). Alternatively, Martino modelled communities with
+known effect sizes using a statistical model that sought to mimic the
+diversity of communities described in a study comparing the microbial
+communities found on people’s fingertips and their computer keyboards
+(27). As described in Martino, the overall simulation framework involved
+simulating two treatment groups each represented by 100 communities for
+a total of 200 communities. Each community contained as many as 1,000
+taxa, which they referred to as features. For each treatment group they
+fit a normal distribution to the relative abundances of taxa from two
+individuals’ samples to obtain a mean and standard deviation for each
+taxon. The fraction of taxa that overlapped between treatment groups was
+also selected to mimic the overlap observed between the two individuals.
+The expected taxon relative abundances for each sample were the same
+across each sample within the same treatment group. Next, a common
+normal distribution with a single mean and standard deviation was used
+to generate noise (i.e., homoscedastic noise) that added to each
+relative abundance value to add variation across samples and features.
+Next, a random subset of sample-taxa combinations were selected for
+incorporation of additional noise (i.e., heteroscedastic noise).
+Finally, the sample-taxa combinations were randomly sampled using a
+Poisson-lognormal distribution to generate the simulated number of
+sequences for each sample-taxa combination so that the total number of
+sequences within a sample contained approximately 1,000, 2,000, 4,000,
+or 10,000 sequences per simulation. One set of 200 samples were
+simulated for each sequencing depth. In addition to the simulation where
+a subset of taxa was shared in both treatment groups, Martino created
+positive and negative control simulations. In the positive control
+simulation, there were no overlapping taxa resulting in two clearly
+defined groups of samples. In the negative control simulation all the
+taxa were shared in similar abundance so that the groups of samples
+could not be distinguished. Finally, they compared RPCA to other methods
+using two published datasets.
 
 This difference in modelling strategy has created an interesting
 opportunity to reframe whether to use rarefaction and to reassess the
@@ -216,8 +213,8 @@ controls and for the simulations with partially overlapping treatment
 groups. The regenerated heatmaps and principal coordinates analysis
 (PCoA) plots in **Figure 1** are qualitatively similar to those in
 Figure 3 of Martino. The most notable difference with Martino is that
-they inadvertently switched the labels of the axes and performed the
-OCLR transformation on features rather than samples (**Supplementary
+they inadvertently switched the labels of the axes and performed the One
+CLR transformation on features rather than samples (**Supplementary
 Text**). Replicating what Martino reported, the first two axes of the
 Bray-Curtis ordinations only explain a fraction of the total variation
 in the data while the RPCA ordinations explained all the variation. This
@@ -303,14 +300,14 @@ Rather than using a training data set to identify an optimal number of
 neighbors (i.e., K), Martino used 13 neighbors. To assess whether the
 classification was sensitive to the number of neighbors, I split the 60%
 of samples in the training data into another 60-40 split to train and
-optimize the number of neighbors 1,000 times \[**XXXXX**\]. Across the
-various conditions, the median optimal number of neighbors was 33
-(IQR=21 to 41). When I instead performed 1,000 80-20 splits on the full
-and training datasets, the median optimal number of neighbors was 58
-(IQR=42 to 65). Regardless of finding that the optimal number of
-neighbors was consistently larger than the 13 that Martino used, the
-difference in accuracy values was only modestly better than the other
-fitting procedures when using 80-20 splits (**Figure S1**).
+optimize the number of neighbors 100 times (28). Across the various
+conditions, the median optimal number of neighbors was 33 (IQR=21 to
+41). When I instead performed 100 80-20 splits on the full and training
+datasets, the median optimal number of neighbors was 58 (IQR=42 to 65).
+Regardless of finding that the optimal number of neighbors was
+consistently larger than the 13 that Martino used, the difference in
+accuracy values was only modestly better than the other fitting
+procedures when using 80-20 splits (**Figure S1**).
 
 ### Comparing PERMANOVA and KNN Classification results with more similar treatment groups
 
@@ -377,23 +374,23 @@ colleagues used two published datasets as case studies to evaluate RPCA
 and related methods. They evaluated RPCA relative to Bray-Curtis and
 weighted UniFrac distances using PERMANOVA, KNN, and ordinations. The
 two datasets were drawn from a natural study comparing healthy and
-stressed sponges \[**XXXXX**\] and from a study that used a murine model
-of sleep apnea where mice were given air or intermittent hypoxia and
-hypercapnia (IHH) \[**XXXXX**\]. Both datasets were small relative to
-other papers published at the time. The sponge dataset had 133 healthy
-and 85 stressed samples and the sleep apnea dataset had 96 air treated
-and 93 IHH treated samples (**Figure 5**). Also, the effect sizes in
-both studies were relatively large and could easily be differentiated by
-the first two PCoA axes. Similar to the results from the simulations, I
-wondered whether differences between the methods would be observed when
-there was a smaller effect size. Therefore, I added a third dataset from
-a study that explored associations between the microbiome and colorectal
-cancer \[**XXXXX**\]. The differences between healthy individuals and
-those with screen relevant colonic neoplasias were not obvious by PCoA
-and the study included more subjects. The colorectal cancer dataset
-included 261 subjects with healthy colons and 229 subjects with screen
-relevant colonic neoplasias (**Figure 5**). The three datasets were
-analyzed in parallel.
+stressed sponges (1) and from a study that used a murine model of sleep
+apnea where mice were given air or intermittent hypoxia and hypercapnia
+(IHH) (2). Both datasets were small relative to other papers published
+at the time. The sponge dataset had 133 healthy and 85 stressed samples
+and the sleep apnea dataset had 96 air treated and 93 IHH treated
+samples (**Figure 5**). Also, the effect sizes in both studies were
+relatively large and could easily be differentiated by the first two
+PCoA axes. Similar to the results from the simulations, I wondered
+whether differences between the methods would be observed when there was
+a smaller effect size. Therefore, I added a third dataset from a study
+that explored associations between the microbiome and colorectal cancer
+(3). The differences between healthy individuals and those with screen
+relevant colonic neoplasias were not obvious by PCoA and the study
+included more subjects. The colorectal cancer dataset included 261
+subjects with healthy colons and 229 subjects with screen relevant
+colonic neoplasias (**Figure 5**). The three datasets were analyzed in
+parallel.
 
 After conducting an exhaustive review of the code that Martino and
 colleagues provided in their GitHub repository, I discovered several
@@ -606,15 +603,15 @@ normalization were able to control for uneven sampling effort.
 
 This is my third analysis describing the effects of uneven sequencing
 effort and comparing the methods to control for those negative effects
-**\[XXXXXXX; XXXXXXX\]**. My results in this study confirm what I
-previously reported. The primary difference is that subsampling and SRS
-normalization performed as well as rarefaction. It is worth noting that
-in a previous analysis where I correlated sequencing depth with multiple
-alpha and beta diversity metrics the correlations for SRS normalization
-varied widely across 12 different real datasets. The benefit of
-rarefaction over subsampling include basing an analysis on a large
-number of iterations (e.g. 100 or 1,000) rather than only one. Until it
-is possible to obtain a uniform number of sequence reads per sample,
+(4, 25). My results in this study confirm what I previously reported.
+The primary difference is that subsampling and SRS normalization
+performed as well as rarefaction. It is worth noting that in a previous
+analysis where I correlated sequencing depth with multiple alpha and
+beta diversity metrics the correlations for SRS normalization varied
+widely across 12 different real datasets. The benefit of rarefaction
+over subsampling include basing an analysis on a large number of
+iterations (e.g. 100 or 1,000) rather than only one. Until it is
+possible to obtain a uniform number of sequence reads per sample,
 rarefaction should be used to control for uneven sampling effort.
 
 ## Materials & Methods
@@ -635,15 +632,16 @@ the current project’s repository as workflow/envs/rpca.yml
 
 ### Revised simulation code
 
-A revised version of the simulation code was written in R as described
-in the Results section. The code I generated uses functions from base R
-and the tidyverse metapackage. The script that implements the simulation
-is available in the repository as workflow/scripts/simulations.R.
-Similar to Martino’s original Python implementation, the simulation code
-takes the number of samples, OTUs, treatment groups, OTUs shared between
-the treatment groups, and sequences to generate the simulated
-communities. A driver script subsampled the data to the desired number
-of sequences and formatted the data for downstream analysis.
+A revised version of Martino’s simulation code was written in R as
+described in the Results section. The code I generated uses functions
+from base R and the tidyverse metapackage. The script that implements
+the simulation is available in the repository as
+workflow/scripts/simulations.R. Similar to Martino’s original Python
+implementation, the simulation code takes the number of samples, OTUs,
+treatment groups, OTUs shared between the treatment groups, and
+sequences to generate the simulated communities. A driver script
+subsampled the data to the desired number of sequences and formatted the
+data for downstream analysis.
 
 ### Case study data
 
@@ -653,71 +651,69 @@ benchmarking repository. The OTU count data and metadata for the
 colorectal cancer dataset were obtained from a previous study where it
 was referred to as the “Human” dataset. Those data were generated by
 obtaining sequence data and metadata from the Sequence Read Archive. The
-sequence data was processed using the mothur software program
-**\[XXXXXXX; XXXXXXX\]**. This included assembling the paired reads that
-covered the V4 region of the 16S rRNA gene using a quality score-aware
-method **\[XXXXXXX\]**, aligning the assembled contig to a SILVA
-reference alignment **\[XXXXXXX\]**, pre-clustering to remove residual
-sequencing errors **\[XXXXXXX\]**, chimera checking and removal
-**\[XXXXXXX\]**, and clustering of sequences into OTUs using the
-OptiClust algorithm **\[XXXXXXX\]**; OTUs were defined a group of
-sequences not more than than 3% different from each other.
+sequence data was processed using the mothur software program (29). This
+included assembling the paired reads that covered the V4 region of the
+16S rRNA gene using a quality score-aware method (30), aligning the
+assembled contig to a SILVA reference alignment (31, 32), pre-clustering
+to remove residual sequencing errors (33) chimera checking and removal
+(34), and clustering of sequences into OTUs using the OptiClust
+algorithm (35); OTUs were defined a group of sequences not more than
+than 3% different from each other.
 
 ### Distance-based K Nearest Neighbor (KNN) classification
 
 Martino’s KNN classification analysis used the KNeighborsClassifier
-function from scikit-learn **\[XXXXXXX\]**. Although that function can
-take a pre-computed distance matrix as input, the default was used by
-Martino, which is to calculate the Euclidean distance between samples in
-an ordination. I reimplemented an R-based version of the KNN
-classification method as workflow/scripts/test_train_knn.R. This method
-implements the training-testing framework described by Topcuoglu et
-al. **\[XXXXXXX\]** to fit the number of neighbors hyperparameter (i.e.,
-K). My R script takes as input a distance matrix, a design file that
-assigns samples to treatment groups, the fractions of data to be used
-for training and testing, the number of inner and outer loops, and the
-hyperparameter grid for fitting K.
+function from scikit-learn (36). Although that function can take a
+pre-computed distance matrix as input, the default was used by Martino,
+which is to calculate the Euclidean distance between samples in an
+ordination. I reimplemented an R-based version of the KNN classification
+method as workflow/scripts/test_train_knn.R. This method implements the
+training-testing framework described by Topcuoglu et al. (28) to fit the
+number of neighbors hyperparameter (i.e., K). My R script takes as input
+a distance matrix, a design file that assigns samples to treatment
+groups, the fractions of data to be used for training and testing, the
+number of inner and outer loops, and the hyperparameter grid for fitting
+K.
 
 ### Methods of controlling for uneven sampling effort
 
 I evaluated twelve methods for controlling for uneven sampling effort.
 These included using: (i) raw counts, which were the number of sequences
 in each OTU; (ii) the OptSpace algorithm performed on raw counts as
-implemented in Deicode (v.0.1.5) **\[XXXXXXX\]**; (iii) the full RCLR
-algorithm performed using Gemelli (v.0.0.9) with 2, 3, 5, and 9
-components **\[XXXXXXX\]**; (iv) Zero CLR, which calculated the center
-log ratio (CLR) after imputing teh of zero counts using the
-zCompositions (v.1.4.0.1) R package **XX(49)XX**; (v) Nudge CLR, which
-calculated the CLR after adding a pseudo-count of 1 divided by the total
-number of sequences in a sample to the abundance of each OTU in the
-sample **XX(19, 24)XX**; (vi) One CLR, which calculated the CLR after
-adding a pseudo-count of 1 to the abundance of all of the OTUs **XX(19,
-21)XX**; (vii) the DESeq2 R package (v.1.34.0), which was used to
-implement the variance stabilizing transformation to normalize the OTU
-counts \[**(11, 48)**\]; (viii) the SRS R package (v.0.2.3), which was
-used to normalize OTU counts using the scaled ranked subsampling
-algorithm \[**(20)**\]; (ix) the metagenomeSeq R package (v.1.36.0),
+implemented in Deicode (v.0.1.5) (23); (iii) the full RCLR algorithm
+performed using Gemelli (v.0.0.9) with 2, 3, 5, and 9 components (23);
+(iv) Zero CLR, which calculated the center log ratio (CLR) after
+imputing teh of zero counts using the zCompositions (v.1.4.0.1) R
+package (20); (v) Nudge CLR, which calculated the CLR after adding a
+pseudo-count of 1 divided by the total number of sequences in a sample
+to the abundance of each OTU in the sample (21, 22); (vi) One CLR, which
+calculated the CLR after adding a pseudo-count of 1 to the abundance of
+all of the OTUs (21, 22); (vii) the DESeq2 R package (v.1.34.0), which
+was used to implement the variance stabilizing transformation to
+normalize the OTU counts (8, 14); (viii) the SRS R package (v.0.2.3),
+which was used to normalize OTU counts using the scaled ranked
+subsampling algorithm (12); (ix) the metagenomeSeq R package (v.1.36.0),
 which was used to normalize OTU accounts using the cumulative sum
-scaling (CSS) algorithm; (x) relative abundances, which were calculated
-as the abundance of each OTU in a sample divided by the total number of
-sequences in the sample; (xi) subsampling, which involved randomly
-selecting a specified number of sequences from each sample and removing
-any samples that had fewer than the desired number of sequences; (xii)
-rarefaction, which involved repeating subsampling 100 times and
-calculating a distance matrix after each iteration followed by
+scaling (CSS) algorithm (13); (x) relative abundances, which were
+calculated as the abundance of each OTU in a sample divided by the total
+number of sequences in the sample; (xi) subsampling, which involved
+randomly selecting a specified number of sequences from each sample and
+removing any samples that had fewer than the desired number of
+sequences; (xii) rarefaction, which involved repeating subsampling 100
+times and calculating a distance matrix after each iteration followed by
 calculating the mean distance matrix.
 
 ### Methods for calculating distances between communities
 
 The vegan R package (v.2.6_4) was used to calculate ecological distances
-matrices using the Euclidean and Bray-Curtis formulations
-**\[XXXXXXX\]**. Euclidean distances are not typically used in
-microbiome analyses because they inflate the similarity of communities.
-However, they are used with CLR transformed data resulting in so-called
-Aitchison distances. The OptSpace and RCLR algorithms outputted
-Euclidean distances directly from the Deicode and Gemelli software.
-Euclidean distances were calculated for raw counts, and data transformed
-by the CLR-based methods, DeSeq2, relative abundance, subsampling, and
+matrices using the Euclidean and Bray-Curtis formulations (37, 38).
+Euclidean distances are not typically used in microbiome analyses
+because they inflate the similarity of communities. However, they are
+used with CLR transformed data resulting in so-called Aitchison
+distances. The OptSpace and RCLR algorithms outputted Euclidean
+distances directly from the Deicode and Gemelli software. Euclidean
+distances were calculated for raw counts, and data transformed by the
+CLR-based methods, DeSeq2, relative abundance, subsampling, and
 rarefaction using the vegdist function in vegan. Because OptSpace,
 CLR-based methods, and DeSeq2 outputted negative values, it was not
 possible to calculate the popular Bray-Curtis distances on those data.
@@ -725,7 +721,18 @@ Bray-Curtis distances were calculated using raw counts, relative
 abundances, and subsampled data using the vegdist function in vegan;
 rarefaction was performed using vegan’s avgdist function.
 
-### Sampling depth simulation
+### Measuring effects of controlling for uneven sampling effort on performance of PERMANOVA
+
+I used the adonis2 function from the vegan R package (v.2.6_4) to
+calculate the PERMANOVA F statistic for comparisons of treatment groups
+in the simulations and case studies (37, 39). Euclidean or Bray-Curtis
+distance matrices and a map indicating which group each sample belonged
+to were used as input to the function. Except for the simulation
+measuring the ability of the various methods to control the effects of
+sampling depth a single classification design was used in adonis2 to
+test the model, Distance ~ Treatment
+
+### Measuring ability of various methods to limit the effects of sampling depth
 
 Following the approach described by Martino to assess the sensitivity of
 the different methods to uneven sequencing I randomly sampled 5,000 and
@@ -735,17 +742,14 @@ the sequencing levels. A sequencing depth variable was added to the
 treatment group label. Each dataset was replicated 10 times with a
 different random number generator seed. To test the effects of
 sequencing depth, I used the adonis2 function from the vegan R package
-(v.2.6_4) **\[XXXXXXX\]** to test the model:
-
-Distance ~ Treatment + Sequencing Depth + Treatment x Sequencing Depth
-
-Although this model tests for a treatment effect, it’s P-value will be
-biased downward. This is because every sample was artificially
-duplicated, which makes each treatment look more similar to itself than
-it really is leading to reduced the intra-treatment variation. The
-result is a larger F statistic and smaller P-value for the treatment
-effect. My analysis of this simulation focused on the significance of
-the sequencing depth effect.
+(v.2.6_4) (37) to test the model, Distance ~ Treatment + Sequencing
+Depth + Treatment x Sequencing Depth. Although this model tests for a
+treatment effect, it’s P-value was biased downward. This is because
+every sample was artificially duplicated, which makes each treatment
+look more similar to itself than it really is leading to reduced the
+intra-treatment variation. The result is a larger F statistic and
+smaller P-value for the treatment effect. My analysis of this simulation
+focused on the significance of the sequencing depth effect.
 
 ### Data availability
 
@@ -778,9 +782,270 @@ have been possibly without their commendable transparency.
 <div id="refs" class="references csl-bib-body" entry-spacing="1"
 line-spacing="2">
 
-<div id="ref-Schloss2024a" class="csl-entry">
+<div id="ref-MoitinhoSilva2017" class="csl-entry">
 
 <span class="csl-left-margin">1.
+</span><span class="csl-right-inline">**Moitinho-Silva L**, **Nielsen
+S**, **Amir A**, **Gonzalez A**, **Ackermann GL**, **Cerrano C**,
+**Astudillo-Garcia C**, **Easson C**, **Sipkema D**, **Liu F**,
+**Steinert G**, **Kotoulas G**, **McCormack GP**, **Feng G**, **Bell
+JJ**, **Vicente J**, **Björk JR**, **Montoya JM**, **Olson JB**,
+**Reveillaud J**, **Steindler L**, **Pineda M-C**, **Marra MV**, **Ilan
+M**, **Taylor MW**, **Polymenakou P**, **Erwin PM**, **Schupp PJ**,
+**Simister RL**, **Knight R**, **Thacker RW**, **Costa R**, **Hill RT**,
+**Lopez-Legentil S**, **Dailianis T**, **Ravasi T**, **Hentschel U**,
+**Li Z**, **Webster NS**, **Thomas T**. 2017. The sponge microbiome
+project. GigaScience **6**.
+doi:[10.1093/gigascience/gix077](https://doi.org/10.1093/gigascience/gix077).</span>
+
+</div>
+
+<div id="ref-Tripathi2018" class="csl-entry">
+
+<span class="csl-left-margin">2.
+</span><span class="csl-right-inline">**Tripathi A**, **Melnik AV**,
+**Xue J**, **Poulsen O**, **Meehan MJ**, **Humphrey G**, **Jiang L**,
+**Ackermann G**, **McDonald D**, **Zhou D**, **Knight R**, **Dorrestein
+PC**, **Haddad GG**. 2018. Intermittent hypoxia and hypercapnia, a
+hallmark of obstructive sleep apnea, alters the gut microbiome and
+metabolome. mSystems **3**.
+doi:[10.1128/msystems.00020-18](https://doi.org/10.1128/msystems.00020-18).</span>
+
+</div>
+
+<div id="ref-Baxter2016" class="csl-entry">
+
+<span class="csl-left-margin">3.
+</span><span class="csl-right-inline">**Baxter NT**, **Ruffin MT**,
+**Rogers MAM**, **Schloss PD**. 2016. Microbiota-based model improves
+the sensitivity of fecal immunochemical test for detecting colonic
+lesions. Genome Medicine **8**.
+doi:[10.1186/s13073-016-0290-3](https://doi.org/10.1186/s13073-016-0290-3).</span>
+
+</div>
+
+<div id="ref-Schloss2024b" class="csl-entry">
+
+<span class="csl-left-margin">4.
+</span><span class="csl-right-inline">**Schloss PD**. 2024. Rarefaction
+is currently the best approach to control for uneven sequencing effort
+in amplicon sequence analyses. mSphere **9**.
+doi:[10.1128/msphere.00354-23](https://doi.org/10.1128/msphere.00354-23).</span>
+
+</div>
+
+<div id="ref-Sanders1968" class="csl-entry">
+
+<span class="csl-left-margin">5.
+</span><span class="csl-right-inline">**Sanders HL**. 1968. Marine
+benthic diversity: A comparative study. The American Naturalist
+**102**:243–282.
+doi:[10.1086/282541](https://doi.org/10.1086/282541).</span>
+
+</div>
+
+<div id="ref-Hurlbert1971" class="csl-entry">
+
+<span class="csl-left-margin">6.
+</span><span class="csl-right-inline">**Hurlbert SH**. 1971. The
+nonconcept of species diversity: A critique and alternative parameters.
+Ecology **52**:577–586.
+doi:[10.2307/1934145](https://doi.org/10.2307/1934145).</span>
+
+</div>
+
+<div id="ref-Tipper1979" class="csl-entry">
+
+<span class="csl-left-margin">7.
+</span><span class="csl-right-inline">**Tipper JC**. 1979. [Rarefaction
+and rarefiction: The use and abuse of a method in
+paleoecology](http://www.jstor.org/stable/2400321). Paleobiology
+**5**:423–434.</span>
+
+</div>
+
+<div id="ref-McMurdie2014" class="csl-entry">
+
+<span class="csl-left-margin">8.
+</span><span class="csl-right-inline">**McMurdie PJ**, **Holmes S**.
+2014. Waste not, want not: Why rarefying microbiome data is
+inadmissible. PLoS Computational Biology **10**:e1003531.
+doi:[10.1371/journal.pcbi.1003531](https://doi.org/10.1371/journal.pcbi.1003531).</span>
+
+</div>
+
+<div id="ref-Willis2019" class="csl-entry">
+
+<span class="csl-left-margin">9.
+</span><span class="csl-right-inline">**Willis AD**. 2019. Rarefaction,
+alpha diversity, and statistics. Frontiers in Microbiology **10**:2407.
+doi:[10.3389/fmicb.2019.02407](https://doi.org/10.3389/fmicb.2019.02407).</span>
+
+</div>
+
+<div id="ref-Gloor2017" class="csl-entry">
+
+<span class="csl-left-margin">10.
+</span><span class="csl-right-inline">**Gloor GB**, **Macklaim JM**,
+**Pawlowsky-Glahn V**, **Egozcue JJ**. 2017. Microbiome datasets are
+compositional: And this is not optional. Frontiers in Microbiology
+**8**.
+doi:[10.3389/fmicb.2017.02224](https://doi.org/10.3389/fmicb.2017.02224).</span>
+
+</div>
+
+<div id="ref-Weiss2017" class="csl-entry">
+
+<span class="csl-left-margin">11.
+</span><span class="csl-right-inline">**Weiss S**, **Xu ZZ**, **Peddada
+S**, **Amir A**, **Bittinger K**, **Gonzalez A**, **Lozupone C**,
+**Zaneveld JR**, **Vázquez-Baeza Y**, **Birmingham A**, **Hyde ER**,
+**Knight R**. 2017. Normalization and microbial differential abundance
+strategies depend upon data characteristics. Microbiome **5**.
+doi:[10.1186/s40168-017-0237-y](https://doi.org/10.1186/s40168-017-0237-y).</span>
+
+</div>
+
+<div id="ref-Beule2020" class="csl-entry">
+
+<span class="csl-left-margin">12.
+</span><span class="csl-right-inline">**Beule L**, **Karlovsky P**.
+2020. Improved normalization of species count data in ecology by scaling
+with ranked subsampling (SRS): Application to microbial communities.
+PeerJ **8**:e9593.
+doi:[10.7717/peerj.9593](https://doi.org/10.7717/peerj.9593).</span>
+
+</div>
+
+<div id="ref-Paulson2013" class="csl-entry">
+
+<span class="csl-left-margin">13.
+</span><span class="csl-right-inline">**Paulson JN**, **Stine OC**,
+**Bravo HC**, **Pop M**. 2013. Differential abundance analysis for
+microbial marker-gene surveys. Nature Methods **10**:1200–1202.
+doi:[10.1038/nmeth.2658](https://doi.org/10.1038/nmeth.2658).</span>
+
+</div>
+
+<div id="ref-Love2014" class="csl-entry">
+
+<span class="csl-left-margin">14.
+</span><span class="csl-right-inline">**Love MI**, **Huber W**, **Anders
+S**. 2014. Moderated estimation of fold change and dispersion for
+RNA-seq data with DESeq2. Genome Biology **15**.
+doi:[10.1186/s13059-014-0550-8](https://doi.org/10.1186/s13059-014-0550-8).</span>
+
+</div>
+
+<div id="ref-Chao2003" class="csl-entry">
+
+<span class="csl-left-margin">15.
+</span><span class="csl-right-inline">**Chao A**, **Shen T-J**. 2003.
+Environmental and Ecological Statistics **10**:429–443.
+doi:[10.1023/a:1026096204727](https://doi.org/10.1023/a:1026096204727).</span>
+
+</div>
+
+<div id="ref-Chao2014" class="csl-entry">
+
+<span class="csl-left-margin">16.
+</span><span class="csl-right-inline">**Chao A**, **Gotelli NJ**,
+**Hsieh TC**, **Sander EL**, **Ma KH**, **Colwell RK**, **Ellison AM**.
+2014. Rarefaction and extrapolation with hill numbers: A framework for
+sampling and estimation in species diversity studies. Ecological
+Monographs **84**:45–67.
+doi:[10.1890/13-0133.1](https://doi.org/10.1890/13-0133.1).</span>
+
+</div>
+
+<div id="ref-Chao2016" class="csl-entry">
+
+<span class="csl-left-margin">17.
+</span><span class="csl-right-inline">**Chao A**, **Chiu C-H**. 2016.
+[Species richness: Estimation and
+comparison](https://doi.org/10.1002/9781118445112.stat03432.pub2), p.
+1–26. *In* Wiley StatsRef: Statistics reference online. John Wiley &
+Sons, Ltd.</span>
+
+</div>
+
+<div id="ref-Quinn2018" class="csl-entry">
+
+<span class="csl-left-margin">18.
+</span><span class="csl-right-inline">**Quinn TP**, **Erb I**,
+**Richardson MF**, **Crowley TM**. 2018. Understanding sequencing data
+as compositions: An outlook and review. Bioinformatics **34**:2870–2878.
+doi:[10.1093/bioinformatics/bty175](https://doi.org/10.1093/bioinformatics/bty175).</span>
+
+</div>
+
+<div id="ref-Quinn2019" class="csl-entry">
+
+<span class="csl-left-margin">19.
+</span><span class="csl-right-inline">**Quinn TP**, **Erb I**, **Gloor
+G**, **Notredame C**, **Richardson MF**, **Crowley TM**. 2019. A field
+guide for the compositional analysis of any-omics data. GigaScience
+**8**:giz107.
+doi:[10.1093/gigascience/giz107](https://doi.org/10.1093/gigascience/giz107).</span>
+
+</div>
+
+<div id="ref-Palarea2015" class="csl-entry">
+
+<span class="csl-left-margin">20.
+</span><span class="csl-right-inline">**Palarea-Albaladejo J**,
+**Martin-Fernandez J**. 2015. zCompositions – R package for multivariate
+imputation of left-censored data under a compositional approach.
+Chemometrics and Intelligent Laboratory Systems **143**:85–96.
+doi:[10.1016/j.chemolab.2015.02.019](https://doi.org/10.1016/j.chemolab.2015.02.019).</span>
+
+</div>
+
+<div id="ref-Lin2020" class="csl-entry">
+
+<span class="csl-left-margin">21.
+</span><span class="csl-right-inline">**Lin H**, **Peddada SD**. 2020.
+Analysis of microbial compositions: A review of normalization and
+differential abundance analysis. npj Biofilms and Microbiomes **6**:60.
+doi:[10.1038/s41522-020-00160-w](https://doi.org/10.1038/s41522-020-00160-w).</span>
+
+</div>
+
+<div id="ref-Costea2014" class="csl-entry">
+
+<span class="csl-left-margin">22.
+</span><span class="csl-right-inline">**Costea PI**, **Zeller G**,
+**Sunagawa S**, **Bork P**. 2014. A fair comparison. Nature Methods
+**11**:359–359.
+doi:[10.1038/nmeth.2897](https://doi.org/10.1038/nmeth.2897).</span>
+
+</div>
+
+<div id="ref-Martino2019" class="csl-entry">
+
+<span class="csl-left-margin">23.
+</span><span class="csl-right-inline">**Martino C**, **Morton JT**,
+**Marotz CA**, **Thompson LR**, **Tripathi A**, **Knight R**, **Zengler
+K**. 2019. A novel sparse compositional technique reveals microbial
+perturbations. mSystems **4**.
+doi:[10.1128/msystems.00016-19](https://doi.org/10.1128/msystems.00016-19).</span>
+
+</div>
+
+<div id="ref-Aitchison2000" class="csl-entry">
+
+<span class="csl-left-margin">24.
+</span><span class="csl-right-inline">**Aitchison J**, **Barceló-Vidal
+C**, **Martín-Fernández JA**, **Pawlowsky-Glahn V**. 2000. Logratio
+analysis and compositional distance. Mathematical Geology
+**32**:271–275.
+doi:[10.1023/a:1007529726302](https://doi.org/10.1023/a:1007529726302).</span>
+
+</div>
+
+<div id="ref-Schloss2024a" class="csl-entry">
+
+<span class="csl-left-margin">25.
 </span><span class="csl-right-inline">**Schloss PD**. 2024. Waste not,
 want not: Revisiting the analysis that called into question the practice
 of rarefaction. mSphere **9**.
@@ -788,13 +1053,155 @@ doi:[10.1128/msphere.00355-23](https://doi.org/10.1128/msphere.00355-23).</span>
 
 </div>
 
-<div id="ref-Schloss2024b" class="csl-entry">
+<div id="ref-Box1976" class="csl-entry">
 
-<span class="csl-left-margin">2.
-</span><span class="csl-right-inline">**Schloss PD**. 2024. Rarefaction
-is currently the best approach to control for uneven sequencing effort
-in amplicon sequence analyses. mSphere **9**.
-doi:[10.1128/msphere.00354-23](https://doi.org/10.1128/msphere.00354-23).</span>
+<span class="csl-left-margin">26.
+</span><span class="csl-right-inline">**Box GEP**. 1976. Science and
+statistics. Journal of the American Statistical Association
+**71**:791–799.
+doi:[10.1080/01621459.1976.10480949](https://doi.org/10.1080/01621459.1976.10480949).</span>
+
+</div>
+
+<div id="ref-Fierer2010" class="csl-entry">
+
+<span class="csl-left-margin">27.
+</span><span class="csl-right-inline">**Fierer N**, **Lauber CL**,
+**Zhou N**, **McDonald D**, **Costello EK**, **Knight R**. 2010.
+Forensic identification using skin bacterial communities. Proceedings of
+the National Academy of Sciences **107**:6477–6481.
+doi:[10.1073/pnas.1000162107](https://doi.org/10.1073/pnas.1000162107).</span>
+
+</div>
+
+<div id="ref-Topuolu2020" class="csl-entry">
+
+<span class="csl-left-margin">28.
+</span><span class="csl-right-inline">**Topçuoğlu BD**, **Lesniak NA**,
+**Ruffin MT**, **Wiens J**, **Schloss PD**. 2020. A framework for
+effective application of machine learning to microbiome-based
+classification problems. mBio **11**.
+doi:[10.1128/mbio.00434-20](https://doi.org/10.1128/mbio.00434-20).</span>
+
+</div>
+
+<div id="ref-Schloss2009a" class="csl-entry">
+
+<span class="csl-left-margin">29.
+</span><span class="csl-right-inline">**Schloss PD**, **Westcott SL**,
+**Ryabin T**, **Hall JR**, **Hartmann M**, **Hollister EB**,
+**Lesniewski RA**, **Oakley BB**, **Parks DH**, **Robinson CJ**, **Sahl
+JW**, **Stres B**, **Thallinger GG**, **Horn DJV**, **Weber CF**. 2009.
+Introducing mothur: Open-source, platform-independent,
+community-supported software for describing and comparing microbial
+communities. Applied and Environmental Microbiology **75**:7537–7541.
+doi:[10.1128/aem.01541-09](https://doi.org/10.1128/aem.01541-09).</span>
+
+</div>
+
+<div id="ref-Kozich2013" class="csl-entry">
+
+<span class="csl-left-margin">30.
+</span><span class="csl-right-inline">**Kozich JJ**, **Westcott SL**,
+**Baxter NT**, **Highlander SK**, **Schloss PD**. 2013. Development of a
+dual-index sequencing strategy and curation pipeline for analyzing
+amplicon sequence data on the MiSeq illumina sequencing platform.
+Applied and Environmental Microbiology **79**:5112–5120.
+doi:[10.1128/aem.01043-13](https://doi.org/10.1128/aem.01043-13).</span>
+
+</div>
+
+<div id="ref-Schloss2009b" class="csl-entry">
+
+<span class="csl-left-margin">31.
+</span><span class="csl-right-inline">**Schloss PD**. 2009. A
+high-throughput DNA sequence aligner for microbial ecology studies. PLoS
+ONE **4**:e8230.
+doi:[10.1371/journal.pone.0008230](https://doi.org/10.1371/journal.pone.0008230).</span>
+
+</div>
+
+<div id="ref-Pruesse2007" class="csl-entry">
+
+<span class="csl-left-margin">32.
+</span><span class="csl-right-inline">**Pruesse E**, **Quast C**,
+**Knittel K**, **Fuchs BM**, **Ludwig W**, **Peplies J**, **Glockner
+FO**. 2007. SILVA: A comprehensive online resource for quality checked
+and aligned ribosomal RNA sequence data compatible with ARB. Nucleic
+Acids Research **35**:7188–7196.
+doi:[10.1093/nar/gkm864](https://doi.org/10.1093/nar/gkm864).</span>
+
+</div>
+
+<div id="ref-Schloss2011" class="csl-entry">
+
+<span class="csl-left-margin">33.
+</span><span class="csl-right-inline">**Schloss PD**, **Gevers D**,
+**Westcott SL**. 2011. Reducing the effects of PCR amplification and
+sequencing artifacts on 16S rRNA-based studies. PLoS ONE **6**:e27310.
+doi:[10.1371/journal.pone.0027310](https://doi.org/10.1371/journal.pone.0027310).</span>
+
+</div>
+
+<div id="ref-Edgar2011" class="csl-entry">
+
+<span class="csl-left-margin">34.
+</span><span class="csl-right-inline">**Edgar RC**, **Haas BJ**,
+**Clemente JC**, **Quince C**, **Knight R**. 2011. UCHIME improves
+sensitivity and speed of chimera detection. Bioinformatics
+**27**:2194–2200.
+doi:[10.1093/bioinformatics/btr381](https://doi.org/10.1093/bioinformatics/btr381).</span>
+
+</div>
+
+<div id="ref-Westcott2017" class="csl-entry">
+
+<span class="csl-left-margin">35.
+</span><span class="csl-right-inline">**Westcott SL**, **Schloss PD**.
+2017. OptiClust, an improved method for assigning amplicon-based
+sequence data to operational taxonomic units. mSphere **2**:e00073–17.
+doi:[10.1128/mspheredirect.00073-17](https://doi.org/10.1128/mspheredirect.00073-17).</span>
+
+</div>
+
+<div id="ref-Pedregosa2011" class="csl-entry">
+
+<span class="csl-left-margin">36.
+</span><span class="csl-right-inline">**Pedregosa F**, **Varoquaux G**,
+**Gramfort A**, **Michel V**, **Thirion B**, **Grisel O**, **Blondel
+M**, **Prettenhofer P**, **Weiss R**, **Dubourg V**, **Vanderplas J**,
+**Passos A**, **Cournapeau D**, **Brucher M**, **Perrot M**, **Duchesnay
+E**. 2011. Scikit-learn: Machine learning in Python. Journal of Machine
+Learning Research **12**:2825–2830.</span>
+
+</div>
+
+<div id="ref-Dixon2003" class="csl-entry">
+
+<span class="csl-left-margin">37.
+</span><span class="csl-right-inline">**Dixon P**. 2003. VEGAN, a
+package of r functions for community ecology. Journal of Vegetation
+Science **14**:927–930.
+doi:[10.1111/j.1654-1103.2003.tb02228.x](https://doi.org/10.1111/j.1654-1103.2003.tb02228.x).</span>
+
+</div>
+
+<div id="ref-Magurran2004" class="csl-entry">
+
+<span class="csl-left-margin">38.
+</span><span class="csl-right-inline">**Magurran AE**. 2004. [Measuring
+biological diversity](https://books.google.com/books?id=tUqzLSUzXxcC).
+Wiley.</span>
+
+</div>
+
+<div id="ref-Anderson2001" class="csl-entry">
+
+<span class="csl-left-margin">39.
+</span><span class="csl-right-inline">**Anderson MJ**. 2001. A new
+method for non-parametric multivariate analysis of variance. Austral
+Ecology **26**:32–46.
+doi:[10.1111/j.1442-9993.2001.01070.pp.x](https://doi.org/10.1111/j.1442-9993.2001.01070.pp.x).</span>
 
 </div>
 
@@ -811,11 +1218,11 @@ sample.** This figure is analogous to Figure 3DE of Martino with the
 inclusion of additional data from simulations where there was partial
 overlap between the two treatment groups (“Overlap”). The red and blue
 bars on the left edge of the heatmap indicate the treatment group that
-each sample belonged to. The heatmaps display the OCLR transformation of
-sequence counts. In addition to the RPCA output, I also provide the PCoA
-diagrams using Bray-Curtis distances. The numbers on the x and y axis of
-each ordination diagram represent the percent of the total variation
-that each axis explained.
+each sample belonged to. The heatmaps display the One CLR transformation
+of sequence counts. In addition to the RPCA output, I also provide the
+PCoA diagrams using Bray-Curtis distances. The numbers on the x and y
+axis of each ordination diagram represent the percent of the total
+variation that each axis explained.
 
 
 
@@ -957,9 +1364,9 @@ PERMANOVA. Each simulation was repeated 10 times.
 data sets had a minimal effect on KNN classification accuracy when using
 the original Martino overlap simulation data.** Martino split 60% of
 their data into a training set using 13 neighbors and tested on the
-remaining 40%. Following Topcuoglu et al. \[**XXXXX**\], I optimized the
-number of neighbors using 60-40 and 80-20 training-testing splits. The
-80-20 data were used in this analysis.
+remaining 40%. Following Topcuoglu et al. (28), I optimized the number
+of neighbors using 60-40 and 80-20 training-testing splits. The 80-20
+data were used in this analysis.
 
 
 
@@ -969,6 +1376,6 @@ number of neighbors using 60-40 and 80-20 training-testing splits. The
 data sets had a minimal effect on KNN classification accuracy when using
 the data generated by the revised simulation code.** Martino split 60%
 of their data into a training set using 13 neighbors and tested on the
-remaining 40%. Following Topcuoglu et al. \[**XXXXX**\], I optimized the
-number of neighbors using 60-40 and 80-20 training-testing splits. The
-80-20 data were used in this analysis.
+remaining 40%. Following Topcuoglu et al. (28), I optimized the number
+of neighbors using 60-40 and 80-20 training-testing splits. The 80-20
+data were used in this analysis.
