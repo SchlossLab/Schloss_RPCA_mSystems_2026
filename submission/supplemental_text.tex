@@ -1,26 +1,28 @@
 % Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
 ]{article}
-
+\usepackage{xcolor}
+\usepackage[margin=1.0in]{geometry}
 \usepackage{amsmath,amssymb}
-\usepackage{setspace}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
 \usepackage{lmodern}
-\ifPDFTeX\else  
-    % xetex/luatex font selection
+\ifPDFTeX\else
+  % xetex/luatex font selection
   \setmainfont[]{Nimbus Sans}
   \setmonofont[]{DejaVu Sans Mono}
 \fi
@@ -30,6 +32,7 @@
   \usepackage[]{microtype}
   \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
+\usepackage{setspace}
 \makeatletter
 \@ifundefined{KOMAClassName}{% if non-KOMA class
   \IfFileExists{parskip.sty}{%
@@ -40,19 +43,29 @@
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
-\usepackage{xcolor}
-\usepackage[margin=1.0in]{geometry}
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
+\makeatletter
 \ifx\paragraph\undefined\else
   \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
 \fi
 \ifx\subparagraph\undefined\else
   \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
+\makeatother
 
 \usepackage{color}
 \usepackage{fancyvrb}
@@ -93,8 +106,7 @@
 \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.85,0.27,0.33}{#1}}
 \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.85,0.27,0.33}{#1}}
 
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -106,17 +118,66 @@
 \makesavenoteenv{longtable}
 \usepackage{graphicx}
 \makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
 % Set default figure placement to htbp
-\makeatletter
 \def\fps@figure{htbp}
 \makeatother
+
+
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
 
 \usepackage{fvextra}
 \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
@@ -171,15 +232,11 @@
 \@ifundefined{codebgcolor}{\definecolor{codebgcolor}{HTML}{F3F3F3}}{}
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, enhanced, borderline west={3pt}{0pt}{shadecolor}, colback={codebgcolor}, sharp corners, frame hidden, boxrule=0pt]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, colback={codebgcolor}, boxrule=0pt, breakable, sharp corners, enhanced, frame hidden]}{\end{tcolorbox}}\fi
 \makeatother
-\ifLuaTeX
-  \usepackage{selnolig}  % disable illegal ligatures
-\fi
 \usepackage{bookmark}
-
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
+\urlstyle{same}
 \hypersetup{
   colorlinks=true,
   linkcolor={blue},
@@ -188,9 +245,9 @@
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
 
+
 \author{}
 \date{}
-
 \begin{document}
 
 \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
@@ -200,28 +257,29 @@
   breaklines
 }
 
-\renewcommand*\contentsname{Supplemental text: Review of code used by
-Martino et al.}
+\renewcommand*\contentsname{Supplemental text: Review of Python code
+from Martino et al.}
 {
 \hypersetup{linkcolor=}
 \setcounter{tocdepth}{3}
 \tableofcontents
 }
+
 \setstretch{1.75}
 \raggedright
 
-The code chunks displayed below are copied directly from the code used
-by Martino et al.~(``Martino'') and the line numbers correspond to the
-indicated files. The hyperlinks in the text go to the GitHub repository
-for the
-\href{https://github.com/SchlossLab/Schloss_RPCA_XXXXXX_2024}{current
-project}, which is a copy of the
+The code chunks displayed below were copied directly from the code used
+by Martino et al.~\href{\%22Martino\%22}{(1)} and the line numbers
+correspond to the indicated files. The hyperlinks in the text go to the
+GitHub repository for the
+\href{https://github.com/SchlossLab/Schloss_RPCA_mSystems_2026}{current
+project}, which was a copy of the
 \href{https://github.com/cameronmartino/deicode-benchmarking}{original
 repository} developed by Martino. Martino's repository was
 \href{https://github.com/biocore/DEICODE/commit/ea7835b9a0d16c35685542a81d05ee12c412c6ba}{forked
-from the Deicode repository} January 28, 2019. The only changes between
-the Martino repository and the copy for this project was to make the
-directory and file names lowercase and to replace hyphens with
+from the Deicode repository} on January 28, 2019. The only changes
+between the Martino repository and the copy for this project was to make
+the directory and file names lowercase and to replace hyphens with
 underscores.
 
 \section{Review of code used to generate positive and negative control
@@ -229,16 +287,16 @@ heatmaps in Figure 3DE of
 Martino}\label{review-of-code-used-to-generate-positive-and-negative-control-heatmaps-in-figure-3de-of-martino}
 
 Review of the code in
-\href{https://github.com/SchlossLab/Schloss_RPCA_XXXXXX_2024/blob/main/deicode_benchmarking/simulations/negative_control.ipynb}{\texttt{deicode\_benchmarking/simulations/negative\_control.ipynb}}
-reveals two important problems with the generation Martino's Figure 3DE.
-For background, the \texttt{X\_random} and \texttt{X\_signal} matrices
-represented the negative and positive controls, respectively, that were
-generated in an earlier block of this notebook. For both matrices, there
-were 1000 rows for each feature or taxon and 200 columns for each
-sample. At L13 and L15 of block 183, the
+\href{https://github.com/SchlossLab/Schloss_RPCA_mSystems_2026/blob/main/deicode_benchmarking/simulations/negative_control.ipynb}{\texttt{deicode\_benchmarking/simulations/negative\_control.ipynb}}
+revealed two important problems with the generation of Martino's Figure
+3DE. For background, the \texttt{X\_random} and \texttt{X\_signal}
+matrices represented the negative and positive controls, respectively,
+that were generated in an earlier block of this notebook. For both
+matrices, there were 1000 rows for each feature or taxon and 200 columns
+for each sample. At L13 and L15 of block 183, the
 \href{https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html}{\texttt{imshow}
 function} from the pyplot package within the \texttt{matplotlib} Python
-library is used to generate heatmaps of the two matrices.
+library was used to generate heatmaps of the two matrices.
 
 \setstretch{1.0}\footnotesize
 
@@ -256,23 +314,23 @@ library is used to generate heatmaps of the two matrices.
 
 \normalsize\setstretch{1.75}
 
-Within the arguments to \texttt{imshow}, the matrices are transformed by
-adding 1 to each cell and then subjecting the matrices to a central log
-ratio transformation with the
+Within the arguments to \texttt{imshow} (L13), the matrices were
+transformed by adding 1 to each cell and then subjecting the matrices to
+a central log ratio transformation with the
 \href{https://scikit.bio/docs/dev/generated/skbio.stats.composition.clr.html\#skbio.stats.composition.clr}{\texttt{clr}
 function} from the composition statistics module of the \texttt{skbio}
 Python library. It is important to note that the \texttt{clr} function
-assumes that the rows represent compositions or samples and the columns
-represent the components or taxa. Therefore, \texttt{X\_random} and
-\texttt{X\_signal} should have been transposed prior to performing the
-clr transformation. For example, earlier at L2 and L6 of the same code
-block, the matrices were transposed prior to using the \texttt{rclr}
-function.
+assumed that the rows represented compositions or samples and the
+columns represented the components or taxa. Therefore,
+\texttt{X\_random} and \texttt{X\_signal} should have been transposed
+prior to performing the clr transformation. For example, earlier at L2
+and L6 of the same code block, the matrices were transposed prior to
+using the \texttt{rclr} function.
 
 \setstretch{1.0}\footnotesize
 
 \begin{Shaded}
-\begin{Highlighting}[numbers=left,,firstnumber=2,]
+\begin{Highlighting}[numbers=left,,]
 \CommentTok{\#RPCA on random}
 \NormalTok{X\_random\_rclr }\OperatorTok{=}\NormalTok{ rclr().fit\_transform(X\_random.T)}
 \NormalTok{opt\_noise }\OperatorTok{=}\NormalTok{ OptSpace().fit(X\_random\_rclr)}
@@ -289,14 +347,14 @@ function.
 As executed in the notebook, the result of using the \texttt{clr}
 function was the same shape as the input matrices with features as rows
 and samples as columns. The transformed data were then used in the
-\texttt{imshow} function which plots the rows and columns of the matrix
-to the rows and columns of the heatmap. However, later at L21-24 in the
-same code block, ``Samples'' is added to the y-axis label and
-``Features'' is added to the x-axis label, which is the reverse of the
+\texttt{imshow} function which plotted the rows and columns of the
+matrix to the rows and columns of the heatmap. However, at L21-24 in the
+same code block, ``Samples'' was added to the y-axis label and
+``Features'' was added to the x-axis label, which was the reverse of the
 actual situation. These problems hid the fact that samples rather than
 taxa were shared between the treatment groups. Of course, sharing
-samples between treatment groups does not make sense and the taxa
-instead should have been shared.
+samples between treatment groups would not make sense and instead the
+taxa should have been shared.
 
 \setstretch{1.0}\footnotesize
 
@@ -311,65 +369,17 @@ instead should have been shared.
 
 \normalsize\setstretch{1.75}
 
-The problem with the labelling of the axes can more clearly be seen by
+The problem with the labelling of the axes could be more clearly seen by
 changing the value of the \texttt{aspect} argument in \texttt{imshow}
 from \texttt{\textquotesingle{}auto\textquotesingle{}} to \texttt{None}
 on L13-14. To summarize, the code in this block (i) performed the CLR
 transformation across the samples rather than across the taxa and (ii)
 mislabelled the axes of the heatmaps in Martino's Figure 3DE. Both
 problems could have been avoided by transposing the matrices within the
-arguments to \texttt{clr} at L13 and L15. The result is shown below on
-the right.
+arguments to \texttt{clr} at L13 and L15. The comparison between
+transposing the data or not are are shown below.
 
-\begin{verbatim}
-<matplotlib.image.AxesImage object at 0x14ebdb8fd910>
-\end{verbatim}
-
-\begin{verbatim}
-Text(0.5, 1.0, 'Not transposed')
-\end{verbatim}
-
-\begin{verbatim}
-Text(0.5, 1.0, 'Transposed')
-\end{verbatim}
-
-\begin{verbatim}
-[]
-\end{verbatim}
-
-\begin{verbatim}
-[]
-\end{verbatim}
-
-\begin{verbatim}
-[]
-\end{verbatim}
-
-\begin{verbatim}
-[]
-\end{verbatim}
-
-\begin{verbatim}
-Text(0, 0.5, 'Samples (actually Features)')
-\end{verbatim}
-
-\begin{verbatim}
-Text(0.5, 0, 'Features\n(actually Samples)')
-\end{verbatim}
-
-\begin{verbatim}
-Text(0, 0.5, 'Samples')
-\end{verbatim}
-
-\begin{verbatim}
-Text(0.5, 0, 'Features')
-\end{verbatim}
-
-\begin{verbatim}
-<matplotlib.colorbar.Colorbar object at 0x14ebda2b5710>
-\end{verbatim}
-
-\includegraphics{supplemental_text_files/figure-pdf/unnamed-chunk-2-1.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{supplemental_text_files/figure-pdf/unnamed-chunk-3-1.pdf}}
 
 \section{\texorpdfstring{Review of \texttt{build\_block\_model} function
 and its
@@ -378,13 +388,13 @@ dependencies}{Review of build\_block\_model function and its dependencies}}\labe
 Because it was clear that there was a problem in the simulation code
 such that samples rather than taxa were shared between treatment groups,
 I reviewed the code in
-\href{https://github.com/SchlossLab/Schloss_RPCA_XXXXXX_2024/blob/main/deicode_benchmarking/simulations/scripts/simulations.py\#L175}{\texttt{build\_block\_model}}
+\href{https://github.com/SchlossLab/Schloss_RPCA_mSystems_2026/blob/main/deicode_benchmarking/simulations/scripts/simulations.py\#L175}{\texttt{build\_block\_model}}
 and related functions to better diagnose the problems in the simulation.
-The \texttt{build\_block\_model} function can be found in
-\href{https://github.com/SchlossLab/Schloss_RPCA_XXXXXX_2024/blob/main/deicode_benchmarking/simulations/scripts/simulations.py}{\texttt{deicode\_benchmarking/simulations/scripts/simulations.py}}.
-The function is called in
+The \texttt{build\_block\_model} function was found in
+\href{https://github.com/SchlossLab/Schloss_RPCA_mSystems_2026/blob/main/deicode_benchmarking/simulations/scripts/simulations.py}{\texttt{deicode\_benchmarking/simulations/scripts/simulations.py}}.
+The function was called in
 \texttt{deicode\_benchmarking/simulations/negative\_control.ipynb} to
-generate the positive control data in Figure 3D and in
+generate the positive control data in Martino's Figure 3D and in
 \texttt{deicode\_benchmarking/simulations/scripts/cluster\_build.py} to
 generate the overlapping data analyzed in Martino's Figure 3ABC. The
 \texttt{build\_block\_model} function is listed below except for lines
@@ -465,28 +475,27 @@ functions where \texttt{hoced} and \texttt{hsced} were used to set the
 standard deviation of a normal distribution with mean set to the
 relative abundance of the sample-taxon pair receiving additional noise
 uniformly or randomly. The values of \texttt{spar}, \texttt{C\_},
-\texttt{hoced}, and \texttt{hsced} that were used in
-\texttt{build\_block\_model} were selected by fitting the model to
-experimental data from a study comparing the microbial communities on
-subject's fingers and keyboards. Although I did not attempt to replicate
-their model fitting, other code is found in \texttt{simulations.py} that
-ostensibly performs this analysis.
+\texttt{hoced}, and \texttt{hsced} used in \texttt{build\_block\_model}
+were selected by fitting the model to experimental data from a study
+comparing the microbial communities on subject's fingers and keyboards.
+Although I did not attempt to replicate their model fitting, other code
+was found in \texttt{simulations.py} that ostensibly performed this
+analysis.
 
-A general problem with the code in \texttt{simulations.py} was that if I
-loaded \texttt{simulations.py} and ran \texttt{build\_block\_model}
-multiple times with the same input data and random number generator
-seed, the code did not produce the same results. Although not a critical
-problem, the lack of computational reproducibility was part of my
-motivation to assess the benchmarking test results with ten rather than
-only one seed.
+I noticed that when I loaded \texttt{simulations.py} and ran
+\texttt{build\_block\_model} multiple times with the same input data and
+random number generator seed, the code did not produce the same results.
+Although not a critical problem, the lack of computational
+reproducibility was part of my motivation to assess the benchmarking
+test results obtained with ten rather than only one seed.
 
-Finally, comments in \texttt{build\_block\_model} describe the function
+Finally, comments in \texttt{build\_block\_model} described the function
 as returning a data frame with \texttt{num\_samples} rows and
-\texttt{num\_features} columns (L227-227). In fact, it returns a data
+\texttt{num\_features} columns (L223-227). In fact, it returned a data
 frame with \texttt{num\_features} rows and \texttt{num\_samples}
-columns. This confusion might help explain why samples rather than
-features overlap in the \texttt{block\_diagonal\_gaus} function as
-written. This issue is described in the next section.
+columns. This may account for why samples rather than features
+overlapped in the \texttt{block\_diagonal\_gaus} function. This issue is
+described further in the next section.
 
 \setstretch{1.0}\footnotesize
 
@@ -507,12 +516,12 @@ written. This issue is described in the next section.
 function}{Review of block\_diagonal\_gaus function}}\label{review-of-block_diagonal_gaus-function}
 
 The function
-\href{https://github.com/SchlossLab/Schloss_RPCA_XXXXXX_2024/blob/main/deicode_benchmarking/simulations/scripts/simulations.py\#73}{\texttt{block\_diagonal\_gaus}}
-creates a model that describes the abundance of each taxon across the
-samples for each treatment group before any noise has been applied to
-the data. This function is called by \texttt{build\_block\_model} and is
+\href{https://github.com/SchlossLab/Schloss_RPCA_mSystems_2026/blob/main/deicode_benchmarking/simulations/scripts/simulations.py\#73}{\texttt{block\_diagonal\_gaus}}
+created a model that described the abundance of each taxon across the
+samples for each treatment group before any noise was applied to the
+data. This function was called by \texttt{build\_block\_model} and was
 also found in
-\href{https://github.com/SchlossLab/Schloss_RPCA_XXXXXX_2024/blob/main/deicode_benchmarking/simulations/scripts/simulations.py}{\texttt{deicode\_benchmarking/simulations/scripts/simulations.py}}.
+\href{https://github.com/SchlossLab/Schloss_RPCA_mSystems_2026/blob/main/deicode_benchmarking/simulations/scripts/simulations.py}{\texttt{deicode\_benchmarking/simulations/scripts/simulations.py}}.
 
 \setstretch{1.0}\footnotesize
 
@@ -531,7 +540,7 @@ also found in
 \normalsize\setstretch{1.75}
 
 As used in Martino, \texttt{ncols} was 200 and \texttt{nrows} was 1000.
-As described in the Methods of the original study, the model uses a
+As described in the Methods of the original study, the model used a
 normal distribution to vary the relative abundance of each taxa with
 different distributions for each treatment group such that a specified
 fraction of taxa overlapped between the two treatment groups. Within
@@ -541,10 +550,10 @@ specified with \texttt{overlap}, which was 20 for the partial overlap
 simulation and 0 for the positive control simulation. The value of
 \texttt{maxval} was used to scale relative abundance values in the
 function and was set to the parameter described in the previous section
-(e.g., 2500 for a sequence depth of 4000). The function generates a
+(e.g., 2500 for a sequence depth of 4000). The function generated a
 matrix with \texttt{ncols} samples and \texttt{nrows} taxa; however,
-comments in the function describe a transposed version of the matrix. In
-addition, as I'll show below, the output is not a block diagonal.
+comments in the function described a transposed version of the matrix.
+In addition, as I'll show below, the output was not a block diagonal.
 
 \setstretch{1.0}\footnotesize
 
@@ -579,40 +588,37 @@ addition, as I'll show below, the output is not a block diagonal.
 
 \normalsize\setstretch{1.75}
 
-The function begins by initializing a matrix with zeroes (i.e.,
+The function began by initializing a matrix with zeroes (i.e.,
 \texttt{mat}) and a gradient of values to define a distribution (i.e.,
-\texttt{gradient}). However, this code is largely superfluous since the
-values of these values are written over by subsequent code before the
-matrix (i.e., \texttt{mat}) is updated. Regardless, operationally,
-\texttt{mat} is defined as a matrix of zeroes with
-\texttt{num\_features} rows and \texttt{num\_samples} columns (L188). A
-vector with \texttt{num\_features} values, \texttt{gradient}, is defined
-as a linear interpolation between the values of 0 and 10 (L189).
-Similarly, a vector with \texttt{num\_samples} values, \texttt{mu}, is
-defined as a linear interpolation between the values of 0 and 10 (L190).
-These values along with a \texttt{sigma} value of 1 are used to create a
-\texttt{num\_samples} long vector of arrays, which are each
+\texttt{gradient}). However, this code was largely superfluous since the
+values of these parameters were written over by subsequent code before
+the matrix (i.e., \texttt{mat}) was updated. Regardless, operationally,
+\texttt{mat} was defined as a matrix of zeroes with
+\texttt{num\_features} rows and \texttt{num\_samples} columns (L119). A
+vector with \texttt{num\_features} values, \texttt{gradient}, was
+defined as a linear interpolation between the values of 0 and 10 (L120).
+Similarly, a vector with \texttt{num\_samples} values, \texttt{mu}, was
+defined as a linear interpolation between the values of 0 and 10 (L121).
+These values along with a \texttt{sigma} value of 1 were used to create
+a \texttt{num\_samples} long vector of arrays, which were each
 \texttt{num\_features} long (L123-124). This vector of arrays,
-\texttt{xs}, takes its values from the Normal probability density
-function at the \texttt{num\_features} values of \texttt{gradient} under
-a distribution with a mean at each of the \texttt{num\_samples} values
-of \texttt{mu} with a standard deviation of \texttt{sigma} (i.e., 1).
-The \texttt{num\_features} by \texttt{num\_samples} matrix \texttt{mat}
-is generated by combining each element of \texttt{xs} as the columns. As
-suggested in the comment above from L108-110, this matrix has maximum
-probabilities along the diagonal of the matrix. Values far off the
-diagonal are nearly zero. For example, the value for the first feature
-in the first sample was
-\texttt{\{python\}\ f\textquotesingle{}\{round(mat{[}0,0{]},\ 4):.4f\}\textquotesingle{}}
-and it was
-\texttt{\{python\}\ f\textquotesingle{}\{mat{[}0,199{]}:.1e\}\textquotesingle{}}
-in the last sample. The following is a heatmap visualization of the raw
-values in the matrix (the matrix has been transposed).
+\texttt{xs}, took its values from the Normal probability density
+function (i.e., \texttt{norm.pdf}) at the \texttt{num\_features} values
+of \texttt{gradient} under a distribution with a mean at each of the
+\texttt{num\_samples} values of \texttt{mu} with a standard deviation of
+\texttt{sigma} (i.e., 1). The \texttt{num\_features} by
+\texttt{num\_samples} matrix \texttt{mat} was generated by combining
+each element of \texttt{xs} as the columns. As suggested in the comment
+above from L108-110, this matrix had maximum probabilities along the
+diagonal of the matrix. Values far off the diagonal were nearly zero.
+For example, the value for the first feature in the first sample was
+0.3989 and it was 7.7e-23 in the last sample. The following heatmap
+shows the raw values in the matrix (the matrix has been transposed).
 
-\includegraphics{supplemental_text_files/figure-pdf/unnamed-chunk-4-3.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{supplemental_text_files/figure-pdf/unnamed-chunk-5-3.pdf}}
 
 As stated above in my description of L117-125, the values of
-\texttt{mat} are largely overwritten by the following lines of code.
+\texttt{mat} were largely overwritten by the following lines of code.
 
 \setstretch{1.0}\footnotesize
 
@@ -645,31 +651,34 @@ As stated above in my description of L117-125, the values of
 
 \normalsize\setstretch{1.75}
 
-L127 and L128 define the number of columns (\texttt{block\_cols}) and
-rows (\texttt{block\_rows}) in each block. Because \texttt{nblocks} is 2
-for all simulations, these values become 100 and 500, respectively. At
-L129, a loop is initiated for values of the index variable \texttt{b},
-which ranges between 0 and the integer less than \texttt{nblocks-1} or
-0. Therefore, the loop is only executed once and the else statement at
-L146-159 is never executed. At L131 and L133 new versions of
-\texttt{gradient} and \texttt{mu} are generated. All the values in
-\texttt{gradient} are 5 and the values in \texttt{mu} are taken from a
-linear extrapolation between 0 and 10. \textbf{This is evidence that
-Martino's simulation considered the overlap of samples rather than
-features.} The vector \texttt{mu} has \texttt{block\_cols} (i.e., 100)
-plus \texttt{overlap} (i.e., 20) values. Because the columns contain
-sample data the additional 20 columns represent 20 additional samples
-rather than features. The code that was described at L123-125 is
-repeated as L135-138, using a standard deviation of 2 rather than 1. The
-resulting matrix, \texttt{B}, has 500 rows and 120 columns. Each row of
-\texttt{B} is identical with the columns being the value of the
-probability distribution function at 5.0 (i.e., \texttt{gradient} as
-defined at L131) for a normal distribution with the 120 values of
-\texttt{mu} as the mean and 2.0 (i.e., \texttt{sigma}) as the standard
-deviation. At L145, this matrix is used to replace the values in the
-upper left quadrant of \texttt{mat} in L139-145. The values of the first
-500 rows in the last 80 columns are all nearly zero and are taken from
-the value of \texttt{mat} generated at L125.
+L127 and L128 defined the number of columns (\texttt{block\_cols}) and
+rows (\texttt{block\_rows}) in each block. Because \texttt{nblocks} was
+2 for all simulations, these values became 100 and 500, respectively. At
+L129, a loop was initiated for values of an index variable, \texttt{b},
+which ranged between 0 and the integer less than \texttt{nblocks-1} or
+0. Therefore, the loop was only executed once and the else statement at
+L146-159 was never executed. At L131 and L133 new versions of
+\texttt{gradient} and \texttt{mu} were generated. All the values in
+\texttt{gradient} were 5 and the values in \texttt{mu} were taken from a
+linear extrapolation between 0 and 10. The vector \texttt{mu} had
+\texttt{block\_cols} (i.e., 100) plus \texttt{overlap} (i.e., 20)
+values. Because the columns contained sample data, the additional 20
+columns represented 20 additional samples rather than features.
+\textbf{This was further evidence that Martino's simulation considered
+the overlap of samples rather than features.} The code that was
+described at L123-125 was repeated as L135-138, using a standard
+deviation of 2 rather than 1. The resulting matrix, \texttt{B}, had 500
+rows and 120 columns. Each row of \texttt{B} was identical with the
+columns being the value of the probability distribution function at 5.0
+(i.e., \texttt{gradient} as defined at L131) for a normal distribution
+with the 120 values of \texttt{mu} as the mean and 2.0 (i.e.,
+\texttt{sigma}) as the standard deviation. At L145, this matrix was used
+to replace the values in the upper left quadrant of \texttt{mat} in
+L139-145. The values of the first 500 rows in the last 80 columns were
+all nearly zero and were taken from the value of \texttt{mat} generated
+at L125.
+
+The code shown below was similar to what was done at L131-138.
 
 \setstretch{1.0}\footnotesize
 
@@ -690,46 +699,46 @@ the value of \texttt{mat} generated at L125.
 
 \normalsize\setstretch{1.75}
 
-The code shown here is very similar to what was done at L131-138. The
-only difference was that in this chunk they used a standard deviation of
-4.0 (i.e., \texttt{sigma}) instead of 2.0. The new value of \texttt{B}
-defined at L168 was used to complete the value of \texttt{mat} by
-filling in the last 500 rows and the last 120 columns (L170). Again, the
-values of the first 80 columns in the last 500 rows were nearly zero.
+The only difference was that in this code chunk they used a standard
+deviation of 4.0 (i.e., \texttt{sigma}) instead of 2.0. The new value of
+\texttt{B} defined at L168 was used to complete the value of
+\texttt{mat} by filling in the last 500 rows and the last 120 columns
+(L170). Again, the values of the first 80 columns in the last 500 rows
+were nearly zero.
 
-In conclusion there were three issues with the code in the
+In conclusion, there were three issues with the code in the
 \texttt{block\_diagonal\_gaus} function. First, the code at the
 beginning of the function (L117-125) was extraneous. Second, and more
 important, the features had the same relative abundance within each
 sample. Finally, and perhaps most important, samples were shared across
 features rather than features being shared across samples. As written in
 the original Jupyter notebook, the at the end of the
-\texttt{block\_diagonal\_gaus} function, using values of \texttt{ncols}
-set to 200, \texttt{nrows} to 1000, \texttt{nblocks} to 2,
-\texttt{overlap} to 20, and \texttt{maxval} to 2500 resulted in a 1000
-row by 200 column matrix. This is a heatmap depiction of the raw values
-in \texttt{mat} with lighter colors are lower abundance while darker
-colors are higher abundance.
+\texttt{block\_diagonal\_gaus} function, values of \texttt{ncols} set to
+200, \texttt{nrows} to 1000, \texttt{nblocks} to 2, \texttt{overlap} to
+20, and \texttt{maxval} to 2500 resulted in a 1000 row by 200 column
+matrix. Below is a heatmap depiction of the raw values in \texttt{mat}
+with lighter colors are lower abundance while darker colors are higher
+abundance.
 
-\includegraphics{supplemental_text_files/figure-pdf/unnamed-chunk-5-5.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{supplemental_text_files/figure-pdf/unnamed-chunk-6-5.pdf}}
 
 To highlight the observation that the probabilities were the same for
 each feature across non-overlapping samples within the same block, the
 following heatmap shows the relative abundances of each feature:
 
-\includegraphics{supplemental_text_files/figure-pdf/unnamed-chunk-6-7.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{supplemental_text_files/figure-pdf/unnamed-chunk-7-7.pdf}}
 
 \subsection{\texorpdfstring{Review of
 \texttt{Homoscedastic}}{Review of Homoscedastic}}\label{review-of-homoscedastic}
 
-The \texttt{Homoscedastic} function applies noise randomly sampled from
-a normal distribution to each sample-taxon pair of the matrix using the
-abundance of the sample-taxon pair as the mean and \texttt{intensity} as
-the standard deviation. For the cases where overlap was included between
-the treatment groups, the intensity was the model parameter (e.g., 2500)
-divided by 15 (i.e., 166.6667) and for the case where there was no
-overlap between the treatment groups, the intensity was the model
-parameter divided by 60 (i.e., 41.6667).
+The \texttt{Homoscedastic} function applied noise generated by randomly
+sampling from a normal distribution to each sample-taxon pair of the
+matrix using the abundance of the sample-taxon pair as the mean and
+\texttt{intensity} as the standard deviation. For the cases where
+overlap was included between the treatment groups, the intensity was the
+model parameter (e.g., 2500) divided by 15 (i.e., 166.6667) and for the
+case where there was no overlap between the treatment groups, the
+intensity was the model parameter divided by 60 (i.e., 41.6667).
 
 \setstretch{1.0}\footnotesize
 
@@ -747,41 +756,37 @@ parameter divided by 60 (i.e., 41.6667).
 
 \normalsize\setstretch{1.75}
 
-The code from L42-48 shows a potential problem. The median abundance in
-\texttt{X\_noise} coming into \texttt{Homoscedastic} across all samples
-was \texttt{\{python\}\ median\_abundance} with a maximum value of
-\texttt{\{python\}\ max\_abundance} (see the two previous heatmaps).
-Considering that random numbers were drawn from distributions with a
-standard deviation of
-\texttt{\{python\}\ f\textquotesingle{}\{intensity:.2f\}\textquotesingle{}}
-it was likely that negative values would result. In fact, for this
-example, \texttt{\{python\}\ percent\_negative}\% of the sample-taxon
-pairs were negative. It is likely that the normal distribution should
+The code from L42-48 revealed another potential problem. The median
+abundance in \texttt{X\_noise} coming into \texttt{Homoscedastic} across
+all samples was 115.7 with a maximum value of 498.6 (see the two
+previous heatmaps). Considering that random numbers were drawn from
+distributions with a standard deviation of 166.67 it was likely that
+negative values would result. In fact, for this example, 28.5\% of the
+sample-taxon pairs were negative. The normal distribution likely should
 have been truncated by turning negative values to zeroes. Below is a
 heatmap depiction of \texttt{X\_noise} after running the
 \texttt{Homoscedastic} function on L257 of the
 \texttt{build\_block\_model} function in \texttt{simulations.py}.
 
-\includegraphics{supplemental_text_files/figure-pdf/unnamed-chunk-8-9.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{supplemental_text_files/figure-pdf/unnamed-chunk-9-9.pdf}}
 
 \subsection{\texorpdfstring{Review of
 \texttt{Heteroscedastic}}{Review of Heteroscedastic}}\label{review-of-heteroscedastic}
 
 Similar to \texttt{Homoscedastic}, the \texttt{Heteroscedastic} function
-applies noise randomly sampled from a normal distribution using the
+applied noise randomly sampled from a normal distribution using the
 abundance of the sample-taxon pair from \texttt{X\_noise} as the mean
 and \texttt{intensity} as the standard deviation. Again, for the
 simulations of the partially overlapping features between treatment
 groups, the intensity was the model parameter (e.g., 2500) divided by 15
 (i.e., 166.6667) and for the case where there was no overlap between the
 treatment groups, the intensity was the model parameter divided by 60
-(i.e., 41.6667). The primary difference from \texttt{Homoscedastic} is
-that \texttt{Heteroscedastic}. The ``Simulations'' subsection of the
-``Materials and Methods'' section of Martino indicated that the
-heteroscedastic source of noise was only supposed to be applied to a
-random subset of the sample-taxon pairs. However, review of the code for
-the \texttt{Heteroscedastic} function shows that it applied the noise to
-all values of \texttt{X\_noise} rather than to a subset.
+(i.e., 41.6667). The ``Simulations'' subsection of the ``Materials and
+Methods'' section of Martino indicated that the heteroscedastic source
+of noise was only supposed to be applied to a random subset of the
+sample-taxon pairs. However, review of the code for the
+\texttt{Heteroscedastic} function indicated that it applied noise to all
+values of \texttt{X\_noise} rather than to a subset.
 
 \setstretch{1.0}\footnotesize
 
@@ -801,41 +806,38 @@ all values of \texttt{X\_noise} rather than to a subset.
 
 \normalsize\setstretch{1.75}
 
-At L53 the code generates \texttt{err}, which is a matrix with the same
-dimensions as \texttt{X\_noise} where every cell has the value of the
-intensity
-(e.g.,\texttt{\{python\}\ f\textquotesingle{}\{intensity:.2f\}\textquotesingle{}}).
-On L54-55 they select 5000 random row and column indices that are then
-used in L56 to assign values of \texttt{err} to \texttt{intensity}.
-Except, L54-56 do not change the existing values of \texttt{err} since
-the values in the matrix were all already set to the value of
-\texttt{intensity} at L53. At L57, noise is added to all values of
-\texttt{X\_noise} much like was done in \texttt{Homoscedastic} at L46.
-It is likely that the authors intended to use the numpy
-\texttt{zeros\_like} function on L53 instead of the \texttt{ones\_like}
-function. Then at L56, \texttt{err} would have had 5000 cells with the
-value of \texttt{intensity} and the \texttt{rand.normal} function would
-have changed only those values at L57. One notable difference to
-\texttt{Homoscedastic} is that L57 uses \texttt{abs} to return the
-absolute value of \texttt{rand.normal}. Prior to applying the absolute
-value to the abundances with the additional noise,
-\texttt{\{python\}\ percent\_negative}\% of the sample-taxon pairs were
-negative. Using \texttt{abs} would certainly add noise to a subset of
-\texttt{X\_noise}, but it would not be random since it would
-disproportionately impact low abundance features. As mentioned for
-\texttt{Homoscedastic} returning zero rather than negative values or
-their absolute value would likely have been preferred. Below is a
-heatmap depiction of \texttt{X\_noise} after running the
-\texttt{Heteroscedastic} function on L259 of the
+At L53 the code generated \texttt{err}, which was a matrix with the same
+dimensions as \texttt{X\_noise} where every cell had the value of the
+intensity (e.g., 166.67). On L54-55 they selected 5000 random row and
+column indices that were then used in L56 to assign values of
+\texttt{err} to \texttt{intensity}. Except, L54-56 did not change the
+existing values of \texttt{err} since the values in the matrix were all
+already set to the value of \texttt{intensity} at L53. At L57, noise was
+added to all values of \texttt{X\_noise} much like was done in
+\texttt{Homoscedastic} at L46. It was likely that the authors intended
+to use the numpy \texttt{zeros\_like} function on L53 instead of the
+\texttt{ones\_like} function. Then at L56, \texttt{err} would have had
+5000 cells with the value of \texttt{intensity} and the
+\texttt{rand.normal} function would have changed only those values at
+L57. One notable difference to \texttt{Homoscedastic} was that L57 used
+\texttt{abs} to return the absolute value of \texttt{rand.normal}. Prior
+to applying the absolute value to the abundances with the additional
+noise, 32.2\% of the sample-taxon pairs were negative. Using
+\texttt{abs} would certainly add noise to a subset of \texttt{X\_noise},
+but it would not be random since it would disproportionately impact low
+abundance features. As mentioned for \texttt{Homoscedastic}, returning
+zero rather than negative values or their absolute value would likely
+have been preferred. Below is a heatmap depiction of \texttt{X\_noise}
+after running the \texttt{Heteroscedastic} function on L259 of the
 \texttt{build\_block\_model} function in \texttt{simulations.py}.
 
-\includegraphics{supplemental_text_files/figure-pdf/unnamed-chunk-10-11.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{supplemental_text_files/figure-pdf/unnamed-chunk-11-11.pdf}}
 
 \subsection{\texorpdfstring{Review of
 \texttt{Subsample}}{Review of Subsample}}\label{review-of-subsample}
 
 In the final step of \texttt{simulations.py}, the values of
-\texttt{X\_noise} are used to generate a count matrix with the desired
+\texttt{X\_noise} were used to generate a count matrix with the desired
 number of individuals per sample (L261) using the \texttt{Subsample}
 function.
 
@@ -857,15 +859,15 @@ function.
 
 \normalsize\setstretch{1.75}
 
-This function takes \texttt{X\_noise} as input along with the
+This function took \texttt{X\_noise} as input along with the
 \texttt{spar} and \texttt{num\_samples} parameters. The value of
-\texttt{spar} is the same model parameter value that was used to scale
+\texttt{spar} was the same model parameter value that was used to scale
 the relative abundances in \texttt{block\_diagonal\_gaus} (e.g., 2500).
 At L54, the relative abundance of features within each sample was
 determined and then multiplied by \texttt{spar} to generate \texttt{mu}
 which was a \texttt{num\_features} by \texttt{num\_samples} array. These
 values were used to generate counts for each sample-taxon pair using a
-Poisson-lognormal distribution, which produces a new version of
+Poisson-lognormal distribution, which produced a new version of
 \texttt{X\_noise}, which was returned to \texttt{build\_block\_model}
 and used for the rest of the analysis.
 
@@ -873,26 +875,23 @@ Below is a heatmap depiction of the central log ratio transformation of
 \texttt{X\_noise} after adding 1 to each cell at the end of the
 \texttt{build\_block\_model} function in \texttt{simulations.py}.
 
-\includegraphics{supplemental_text_files/figure-pdf/unnamed-chunk-12-13.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{supplemental_text_files/figure-pdf/unnamed-chunk-13-13.pdf}}
 
 The matrix generated from \texttt{Subsample} did not have a consistent
 total number of counts for each sample. When using the model parameter
 of 2500, values near 4000 individuals per sample were obtained, but
 there was considerable variation. Using the model parameter value of
-2500, the mean number of individuals per sample was
-\texttt{\{python\}\ f\textquotesingle{}\{total\_mean:.1f\}\textquotesingle{}}
-with a range between \texttt{\{python\}\ total\_min} and
-\texttt{\{python\}\ total\_max}. Considering the claim that RPCA is
-invariant to differences in sampling effort, it would be desirable to
-control whether samples had the same number of individuals. As a
-workaround for this problem, I increased the model parameter (e.g.,
-2800) so that the minimum sample size was greater than the desired
-number of individuals and then down sampled each sample to the desired
-number.
+2500, the mean number of individuals per sample was 4143.125 with a
+range between 3605 and 4685. Considering the claim that RPCA is
+invariant to differences in sampling effort, it was desirable to control
+whether samples had the same number of individuals. As a workaround for
+this problem, I increased the model parameter (e.g., from 2500 to 2800)
+so that the minimum sample size was greater than the desired number of
+individuals and then down sampled each sample to the desired number.
 
 \subsection{Summary}\label{summary}
 
-Five problems were found in the code as written in the original
+Seven problems were found in the code as written in the original
 \texttt{simulations.py} script. They are listed here in order of
 importance.
 
@@ -907,59 +906,57 @@ that the abundance distribution within each sample varied by feature.\\
 \textbf{3. The total number of individuals varied across each sample.}
 Although there were claims that RPCA was insensitive to uneven sampling
 effort, this was not actually demonstrated in Martino. It was necessary
-for me to make the sampling effort uniform so this could be tested
+for me to make the sampling effort uniform so this could be tested.\\
 \textbf{4. The heteroscedastic source of noise was actually applied to
 all sample-taxon pairs.} The result was a second addition of noise to
 all sample-taxon values rather than the intended subset of values.\\
 \textbf{5. Negative mean values were used as the mean in normal
 distribution sampling functions when calculating the heteroscedastic
-noise.} It is likely that the intention was for negative values to be
+noise.} It was likely that the intention was for negative values to be
 transformed to zeros before sampling the distribution.\\
 \textbf{6. The signs of negative values generated after applying the
-heteroscedastic noise were made positive.} It is likely that the
+heteroscedastic noise were made positive.} It was likely that the
 intention was for negative values to be transformed to zeros.\\
 \textbf{7. Setting the random number generator seed was inadequate to
 ensure that rerunning \texttt{simulations.py} with the same parameters
 yielded the same result.}
 
-I suspect that the confusion over the information contained in the rows
-and columns of the positive and negative controls was principally caused
-by the first two problems listed in this summary. Taken together, these
-problems do not entirely invalidate the claims made by Martino about the
-performance of RPCA. Regardless, it was necessary to re-evaluate the
-claims with revised code. Therefore, I rewrote \texttt{simulations.py}
-as an R script \texttt{simulations.R} (found in
-\texttt{workflow/scripts/}) that resolved the above-mentioned problems.
+Taken together, these problems did not entirely invalidate the claims
+made by Martino about the performance of RPCA. Regardless, it was
+necessary to re-evaluate the claims with corrected code. Therefore, I
+rewrote \texttt{simulations.py} as an R script \texttt{simulations.R}
+(found in \texttt{workflow/scripts/}) that resolved the above-mentioned
+problems.
 
 \section{Review of simulation analysis
 code}\label{review-of-simulation-analysis-code}
 
 Continuing my review of the code used in the published benchmarking
-analysis of the simulated data, I next inspected the code that was used
-to calculate the PERMANOVA F statistics and P-values and k-Nearest
-Neighbor (KNN) accuracy values. Review of the code in
+analysis of the simulated data, I inspected the code that was used to
+calculate the PERMANOVA F statistics and P-values and k-Nearest Neighbor
+(KNN) accuracy values. Review of the code in
 \texttt{deicode\_benchmarking/simulations/negative\_control.ipynb} and
 \texttt{deicode\_benchmarking/simulations/scripts/cluster\_build.py} and
 the data outputted to
 \texttt{deicode\_benchmarking/simulations/cluster\_models/simulation\_subsampled\_noisy.csv.gz}
 made it clear that each simulation (i.e., negative, positive, and
-overlapping) were only replicated a single time making it impossible to
-assess the sensitivity of the simulation results on the choice of the
-random number generator seed.
+overlapping) was only replicated a single time. This would have made it
+impossible to assess the sensitivity of the simulation results on the
+choice of the random number generator seed.
 
-Aside from the lack of simulation replication, my primary critique was
-the KNN analysis. The manuscript stated ``ordination output was compared
-by permutational multivariate analysis of variance (PERMANOVA)
-F-statistic and supervised k-nearest neighbor (KNN) classification
-cross-validation (40:60) split''. The convention for describing
-cross-validation splits is to indicate the percentage of samples used in
-the training set followed by the percentage used in the testing set.
-Therefore, according to a 40:60 split, 40\% of the samples would have
-been used to train the model and 60\% would have been used to test the
-model. Such a split would be curious since the training set is typically
-larger than the testing set. Furthermore, a split is typically performed
-multiple times to remove bias from the selection of the random number
-generator seed.
+Aside from the lack of simulation replication, my primary critique
+concerned the KNN analysis. The manuscript stated ``ordination output
+was compared by permutational multivariate analysis of variance
+(PERMANOVA) F-statistic and supervised k-nearest neighbor (KNN)
+classification cross-validation (40:60) split''. The convention for
+describing cross-validation splits is to indicate the percentage of
+samples used in the training set followed by the percentage used in the
+testing set. Therefore, according to a 40:60 split, 40\% of the samples
+would have been used to train the model and 60\% would have been used to
+test the model. Such a split would have been an odd choice since the
+training set is typically larger than the testing set. Furthermore, a
+split is often performed multiple times to remove bias from the
+selection of the random number generator seed.
 
 Analysis of the benchmarking code made it clear that a 40:60 split was
 not used. In fact, for the negative and positive control analyses
@@ -985,8 +982,8 @@ here:
 
 \normalsize\setstretch{1.75}
 
-In contrast, they used 60:40 training-testing splits to analyze the data
-simulated with overlapping features. This can be seen on L75 of
+In contrast, to analyze the data simulated with overlapping features
+they used 60:40 training-testing splits. This can be seen on L75 of
 \texttt{deicode\_benchmarking/simulations/scripts/cluster\_results.py}
 as shown here:
 
@@ -1011,25 +1008,24 @@ Review of the code in both \texttt{negative\_control.ipynb} and
 \texttt{cluster\_results.py} made it clear that only a single split of
 the data was performed.
 
-Finally, the choice of the number of neighbors (i.e., k) to use in the
-KNN analysis was not described in the manuscript. Often the training set
-will be repeatedly split to fit such hyperparameters
-{[}\textbf{XXXXXX}{]}. As shown above in the code from box 186
-\texttt{negative\_control.ipynb} at L10, a k value of 10 was used for
-classifying the positive and negative control data. In contrast, as
-shown above in the code from \texttt{cluster\_results.py} at L78, a k
-value of 13 was selected for classifying the samples with overlapping
-features.
+The choice of the number of neighbors (i.e., hyperparameter k) used in
+the KNN analysis was not described in the manuscript. Often the training
+set will be repeatedly split to fit such hyperparameters (2). As shown
+above in the code at L10 from box 186 from
+\texttt{negative\_control.ipynb}, a k value of 10 was used to classify
+the positive and negative control data. In contrast, as shown above in
+the code from \texttt{cluster\_results.py} at L78, a k value of 13 was
+used to classify the samples with overlapping features.
 
 In summary, the authors used inconsistent splits and k-values in their
 simulations, misstated the nature of the split, did not incorporate
 multiple splits, and provided no information for how the k-value was
-selected. These problems raise the question of whether their models were
-overfit (i.e., too small of a k value) or under fit (i.e., too large of
-a k value). I implemented my own version of a KNN classifier
-(\texttt{workflow/scripts/test\_train\_knn.R}) that allows users to
-input a distance matrix, training, validation, and testing fractions,
-and the number of iterations.
+selected. These problems raised the question of whether their models
+were overfit (i.e., too small of a k value) or under fit (i.e., too
+large of a k value). Therefore, I implemented my own version of a KNN
+classifier (\texttt{workflow/scripts/test\_train\_knn.R}) that allowed
+me to input a distance matrix, training, validation, and testing
+fractions, and the number of iterations.
 
 \section{Review of case study analysis
 code}\label{review-of-case-study-analysis-code}
@@ -1039,24 +1035,22 @@ datasets}\label{processing-of-case-study-datasets}
 
 After benchmarking RPCA using simulated data, Martino evaluated the
 method relative to using Bray-Curtis and weighted UniFrac distances with
-the Sponges and Sleep Apnea datasets {[}\textbf{XXXXX}{]}. Both datasets
-consist of two treatment groups represented by varying numbers of
-samples, each with a wide distribution in the number of sequences
-(\textbf{Fig. XXXXX}). The datasets were analyzed separately by similar
-methods. Before commenting on the analysis of these datasets, several
-issues are noteworthy.
+the Sponges and Sleep Apnea datasets (3, 4). Both datasets consisted of
+two treatment groups represented by varying numbers of samples, each
+with a wide distribution in the number of sequences (\textbf{Figure 5}).
+The datasets were analyzed separately by similar methods. Before
+commenting on the analysis of these datasets, several issues are
+noteworthy.
 
-First, to create balanced experimental designs, with the authors
-randomly selected an equal number of samples from each treatment group.
-While unbalanced design is problematic for KNN classification, PERMANOVA
-is not known to be sensitive to such designs. To mitigate the effects of
+First, to create balanced experimental designs, the authors randomly
+selected an equal number of samples from each treatment group. While
+unbalanced design is problematic for KNN classification, PERMANOVA is
+not known to be sensitive to such designs. To mitigate the effects of
 the random number generator seed, they repeated this sampling. The text
 of the manuscript states that they performed ``10-fold random subsamples
 of the data''. In fact, at L45 of
-\texttt{deicode\_benchmarking/case\_studies/scripts/subsample.py} it is
-clear that they only performed 9-fold random subsamples. Admittedly,
-this is unlikely to have had a meaningful impact on the results of the
-case study analysis
+\texttt{deicode\_benchmarking/case\_studies/scripts/subsample.py} it was
+clear that they only performed 9-fold random subsamples.
 
 \setstretch{1.0}\footnotesize
 
@@ -1084,15 +1078,18 @@ example:
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 \end{verbatim}
 
+Admittedly, this was unlikely to have had a meaningful impact on the
+results of the case study analysis.
+
 Second, Bray-Curtis and weighted UniFrac distances are known to be
 sensitive to uneven sampling effort of the samples being compared;
-Martino claims evidence that RPCA is not. To mitigate the effects of
-uneven sequencing depth among samples, Martino performed a single
-subsampling of the data down to 1,000 sequences per sample when
-calculating the Bray-Curtis and weighted UniFrac distances; all samples
-with more than 1,000 sequences were used for RPCA without subsampling to
-a common number of sequences. This is illustrated in L38-49 and 61-62
-from \texttt{deicode\_benchmarking/case\_studies/scripts/distances.py}.
+Martino claimed that RPCA was not. To mitigate the effects of uneven
+sequencing depth among samples, Martino performed a single subsampling
+of the data down to 1,000 sequences per sample when calculating the
+Bray-Curtis and weighted UniFrac distances; all samples with more than
+1,000 sequences were used for RPCA without subsampling to a common
+number of sequences. This was encoded at L38-49 and L61-62 from
+\texttt{deicode\_benchmarking/case\_studies/scripts/distances.py}.
 
 \setstretch{1.0}\footnotesize
 
@@ -1131,33 +1128,33 @@ from \texttt{deicode\_benchmarking/case\_studies/scripts/distances.py}.
 
 \normalsize\setstretch{1.75}
 
-From this code, one will note on that \texttt{table\_path\_qiime} is
-created on L653 and updated at L655 (filtering to remove samples smaller
-than 1,000 sequences), L657 (tree cleaning), and L659 (each sample
+From this code, one will note on that \texttt{table\_path\_qiime} was
+created on L37 and updated at L39 (filtering to remove samples smaller
+than 1,000 sequences), L41 (tree cleaning), and L43 (each sample
 subsampled once to 1,000 sequences). The data in
 \texttt{table\_path\_qiime} was used to calculate Bray-Curtis and
-UniFrac distances at L662 and 665, respectively. When RPCA was performed
-on L672, the input is \texttt{table\_path}, which was created on L649
-and used as the input to create the biom-formatted file in the initial
-version of the data in \texttt{table\_path\_qiime} (L653). It is also
+UniFrac distances at L46 and L49, respectively. When RPCA was performed
+on L62, the input was \texttt{table\_path}, which was created on L33 and
+used as the input to create the biom-formatted file in the initial
+version of the data in \texttt{table\_path\_qiime} (L37). It is also
 worth noting that Bray-Curtis and weighted UniFrac distances from a
 single subsampling were used rather than using the average of a large
-number of subsamplings (e.g., 100) {[}\textbf{XXXXXX}{]}.
+number of subsamplings (e.g., 100) (5).
 
-As shown in \textbf{Fig. XXXXXX}, 1,000 appears to have been an
-arbitrary threshold. It could have been greater than 10,000 sequences
-for both datasets without losing a significant number of samples. That
-so many more sequences were included in the RPCA analyses could create
-an advantage to the sensitivity of RPCA over the other distance
+As shown in \textbf{Figure 5}, 1,000 appears to have been an arbitrary
+threshold. It could have been greater than 10,000 sequences for both
+datasets without losing a significant number of samples. That so many
+more sequences were included in the RPCA analyses could create an
+advantage to the sensitivity of RPCA over the other distance
 calculations.
 
-Third, the methods section of Martino indicates, ``Both data sets were
-then preprocessed with the robust centered log ratio (rclr) transform,
-and RPCA was run with a rank of 2 because there were two metadata
-categories of interest in each comparison''. However, different ranks
-were used when running RPCA for the Sleep Apnea and Sponges dataset.
-Three ranks were used with the Sleep Apnea dataset and two were used
-with the Sponges dataset. This can be seen at L23 and 24 of
+Third, the methods section of Martino stated, ``Both data sets were then
+preprocessed with the robust centered log ratio (rclr) transform, and
+RPCA was run with a rank of 2 because there were two metadata categories
+of interest in each comparison''. However, different ranks were used
+when running RPCA for the Sleep Apnea and Sponges dataset. Three ranks
+were used with the Sleep Apnea dataset and two were used with the
+Sponges dataset. This can be seen at L23 and L24 of
 \texttt{deicode\_benchmarking/case\_studies/scripts/distances.py}
 
 \setstretch{1.0}\footnotesize
@@ -1172,46 +1169,46 @@ with the Sponges dataset. This can be seen at L23 and 24 of
 \normalsize\setstretch{1.75}
 
 As indicated above at L62 of the same file, the value of \texttt{ranks}
-set here in L23 and 24 is given to \texttt{deicode\_rpca} in the
+set here in L23 and L24 were given to \texttt{deicode\_rpca} in the
 \texttt{-\/-rank} argument for each dataset. That a rank of 3 was used
 for the Sleep Apnea dataset was used can also be seen in Martino's
 Figure 4F. The percent of the total variation explained by the two axes
-does not add to 100\% for the RPCA data. In contrast, for the Sponges
+did not add to 100\% for the RPCA data. In contrast, for the Sponges
 dataset shown in Martino's Figure 4E they add to 100\%.
 
-Among these issues, the most salient is likely the disparity in the
-number of sequence reads used by RPCA and in calculating the Bray-Curtis
-and weighted UniFrac distances. As shown in my analysis, RPCA is
-actually highly sensitive to uneven sequencing effort.
+Among these issues, the most salient issue was likely the disparity in
+the number of sequence reads used by RPCA and in calculating the
+Bray-Curtis and weighted UniFrac distances.
 
 \subsection{PERMANOVA analysis of case study
 datasets}\label{permanova-analysis-of-case-study-datasets}
 
-The factors outlined in the previous section would likely impact the
-results of Martino's PERMANOVA analysis of the case study datasets.
-Several factors are worth raising and emphasizing.
+The factors outlined in the previous section would likely also impact
+the results of Martino's PERMANOVA analysis of the case study datasets.
+Several additional factors were worth raising and emphasizing.
 
-First, throughout Martino's analysis, they report the PERMANOVA
-F-statistic rather than the test's P-value. This is likely because there
-was a pronounced effect size between the treatment groups in both
+First, throughout Martino's analysis, they reported the PERMANOVA
+F-statistic rather than the test's P-value. This was likely because
+there was a large effect size between the treatment groups in both
 studies that was clearly evident in the first two axes of the
-ordinations shown in Martino's Fig. 4EF. Reporting all tests as having
+ordinations shown in Martino's Figure 4EF. Reporting all tests as having
 significant P-values regardless of the method used to calculate the
 distance would not have been interesting. However, comparing
-F-statistics is biased in favor of RPCA. This is because RPCA was run
+F-statistics was biased in favor of RPCA. This was because RPCA was run
 using 2 (i.e., Sponges) or 3 (i.e., Sleep Apnea) axes and then used as
 the basis for calculating the Euclidean distance between samples. The
 analysis effectively removed higher ordered components thus dramatically
-reducing the MSerror term in the denominator of the F-statistic
-calculation. In contrast, Bray-Curtis and weighted UniFrac distances
-were used without further processing in PERMANOVA leaving in the higher
-ordered components. As done in my analysis, using datasets where the
-first two axes for Bray-Curtis distances did not explain so much of the
-variation would have provided a more balanced comparison of the methods.
+reducing the MS\textsubscript{error} term in the denominator of the
+F-statistic calculation. In contrast, Bray-Curtis and weighted UniFrac
+distances were used without further processing in PERMANOVA leaving in
+the higher ordered components. As done in my analysis, using datasets
+where the first two axes for Bray-Curtis distances did not explain so
+much of the variation would have provided a more balanced comparison of
+the methods.
 
-Second, Martino did not show the variation across their 9 subsamplings
-for their PERMANOVA or KNN classification analyses. This can be seen in
-L43-72 of code block 104 from
+Second, Martino's Figure 4A-E did not show the variation across their 9
+subsamplings for their PERMANOVA or KNN classification analyses. This
+can be seen in L43-72 of code block 104 from
 \texttt{deicode\_benchmarking/case\_studies/case\_studies.ipynb}. An
 illustrative example is shown here:
 
@@ -1231,10 +1228,10 @@ illustrative example is shown here:
 
 The \texttt{pointplot()} function from the Seaborn data visualization
 library plots the mean of multiple values across a series of categorical
-values. By default it returns the 95\% confidence interval. However, as
-shown by the \texttt{ci=0} in L47 above, the authors set the confidence
-interval to zero to suppress it's output. Using the data included in the
-\texttt{deicode\_benchmarking} repository
+values. By default it would have returned the 95\% confidence interval.
+However, the authors removed the confidence intervals when they used the
+\texttt{ci=0} argument in L47, which suppressed its output. Using the
+data included in the \texttt{deicode\_benchmarking} repository
 \texttt{deicode\_benchmarking/case\_studies/subsample\_results.tar.gz},
 I calculated the median, interquartile range (IQR), minimum, and maximum
 values across the 9 subsamplings for each dataset, distance method, and
@@ -1245,13 +1242,13 @@ sample in the Sleep Apnea dataset were used in this analysis.
 \setstretch{1.0}
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1471}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1765}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.2794}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1029}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.0882}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1029}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1029}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1471}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1765}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.2794}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1029}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0882}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1029}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1029}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 analysis
@@ -1299,32 +1296,33 @@ because all samples were used in the analysis and no subsampling was
 performed to obtain equal sampling depth across the samples.
 
 Third, the performance of PERMANOVA is not known to be negatively
-impacted by unbalanced designs where treatment groups have different
-numbers of samples. Although understanding the effect of the number of
-samples on PERMANOVA is a worthy question, it is curious that the entire
-Sponges dataset was not included in Martino's analysis. The Sponges
-dataset had 124 Healthy samples with more than 1,000 sequences and 79
-Stressed samples. Yet, for the largest number of samples in Figure 4 the
-largest subsample was 79 Healthy and 79 Stressed samples.
+impacted by unbalanced designs (i.e., where treatment groups have
+different numbers of samples). Although understanding the effect of the
+number of samples on PERMANOVA's statistical power is a worthy question,
+it was curious that the entire Sponges dataset was not included in
+Martino's analysis. The Sponges dataset had 124 Healthy samples and 79
+Stressed samples with more than 1,000 sequences. Yet, for the largest
+number of samples in Figure 4 the largest subsample was 79 Healthy and
+79 Stressed samples.
 
 Among the issues I have identified, the primary concerns with how
-Martino used PERMANOVA with the case studies was (i) that they used
+Martino used PERMANOVA with the case studies were (i) that they used
 datasets with large effect sizes and (ii) that RPCA has a built-in bias
 over Bray-Curtis and weighted UniFrac distances for such datasets when
-calculating the F-statistics, which are all significant regardless of
+calculating the F-statistics, which were all significant regardless of
 the magnitude of the statistic.
 
 \subsection{KNN analysis of case study
 datasets}\label{knn-analysis-of-case-study-datasets}
 
-In addition to PERMANOVA, Martino also used KNN classification using
-their two case study datasets to demonstrate the performance of RPCA
-over weighted UniFrac and Bray-Curtis distances. The issues identified
-earlier with the simulation data were also present with their case study
-analysis (i.e., 60:40 vs.~40:60 splits and choice of K). Several
-additional issues were identified in the application of KNN to the case
-study datasets. The Python code that was used to implement their KNN
-analysis is found in
+In addition to PERMANOVA, Martino also used KNN classification to
+demonstrate the performance of RPCA over weighted UniFrac and
+Bray-Curtis distances with their two case study datasets. The issues
+identified earlier with the simulation data were also present with their
+case study analysis (i.e., 60:40 vs.~40:60 splits and choice of K).
+Several additional issues were identified in the application of KNN to
+the case study datasets. The Python code that was used to implement
+their KNN analysis was found in
 \texttt{deicode\_benchmarking/case\_studies/scripts/sub\_results.py}
 between L123 and L174.
 
@@ -1391,39 +1389,37 @@ between L123 and L174.
 
 First, when describing their KNN analysis Martino again stated that they
 performed 40:60 splits. As shown at L139 the test fraction was 0.4
-rather than 0.6 as would have been expected from a 40:60 split. As
-shown, Martino implemented a 60:40 split where 60\% of the data were
-used to train the model an 40\% were used to test the model.
+rather than 0.6 as would have been expected from a 40:60 split. Martino
+actually implemented a 60:40 split where 60\% of the data were used to
+train the model an 40\% were used to test the model.
 
-Second, inspection of the above code chunk demonstrates that they only
-performed a single split of the data. Moreover, there was only one split
-across all subsamples for each dataset. At L142 and L143 they assign the
-output of the training-testing split from L138-141 to two variables,
-\texttt{train\_index} (L142) and \texttt{test\_index} (L143). These
-variables contain the indices for the samples in the training and
-testing set across all the samples, stratified by the number of samples
-in each treatment group (L140). It is important to note that the code
-between L124 and L143 is only run once for each dataset creating a
-single 60:40 split that is then used for each subsampling. On L155 and
-L156, training and testing sets, respectively, are created for each
-subsample based on the split that was performed at L138-L143. Because
-the sample subsampling was not performed based on the 60:40 split,
-different numbers samples from each treatment group appear in each of
-the replicate subsamples. Thus, the training and testing sets were not
-equally represented by both treatment groups. Considering KNN is
-sensitive to unbalanced sampling designs, this would artificially
-increase or decrease the accuracy of the classification. Finally, at
-L163 to L169 it appears that KNN is run 10 times (i.e., see the
-\texttt{range(11)} statement). However, the 10 values in \texttt{acc\_s}
-are identical to each other. Furthermore, \texttt{acc\_s} is not used
-outside the loop. At L171, the mean of \texttt{acc\_} is calculated;
-however, \texttt{acc\_} is a single value. Regardless, because the
-classifier does not use a random number generator seed, the ten values
-in \texttt{acc\_s} would be identical to \texttt{acc\_} and of course
-the mean of \texttt{acc\_}. For each dataset, subsampling, and iteration
-of subsampling Martino should have split the data into a training and
-testing split stratified by the treatment group. Also, these splits
-should have been repeated many times (e.g., 10 or 100) with the mean
+Second, inspection of the above code chunk demonstrated that they only
+performed a single split of the data at L138-141. Moreover, there was
+only one split across all subsamplings for each dataset. At L142 and
+L143 they assigned the output of the training-testing split from
+L138-141 to two variables, \texttt{train\_index} (L142) and
+\texttt{test\_index} (L143). These variables contained the indices for
+the samples in the training and testing set across all the samples,
+stratified by the number of samples in each treatment group (L140). It
+is important to note that the code between L124 and L143 was only run
+once for each dataset creating a single 60:40 split that was then used
+for each subsampling. On L155 and L156, training and testing sets,
+respectively, were created for each subsample based on the split that
+was performed at L138-L143. Because the sample subsampling was not
+performed based on the 60:40 split, different numbers of samples from
+each treatment group appeared in each of the replicate subsamples. Thus,
+the training and testing sets were not equally represented by both
+treatment groups. Considering KNN is sensitive to unbalanced sampling
+designs, this would have artificially increased or decreased the
+accuracy of the classification. Finally, at L163 to L169 it appeared
+that KNN was run 10 times (i.e., see the \texttt{range(11)} statement).
+Because the training and testing data were the same in each iteration of
+the loop, the values of \texttt{acc\_} that were saved into
+\texttt{acc\_s} at L169 were identical. For each dataset, subsampling,
+and iteration of subsampling Martino should have split the data into a
+training and testing split stratified by the treatment group. Instead
+they did the split once on the entire dataset. Furthermore, these splits
+should have been repeated multiple times (e.g., 10 or 100) with the mean
 accuracy of those repeats returned as the mean accuracy for the
 iteration of the subsampling for the dataset. The lack of replication or
 balanced stratification of the treatment groups within the subsamples
@@ -1448,78 +1444,132 @@ Martino subsetted the metadata data frame (i.e., \texttt{meta\_}) using
 the values in the test data (i.e., \texttt{tmp\_test\_index}). Then they
 used the \texttt{.shape} function to return the number of rows and
 columns. The smaller number was then divided by 1.4 and converted to an
-integer. There are several problems with this calculation. First, one
-would expect the choice of k to be dependent on the number of samples
-included in the \textbf{training} dataset and not the \textbf{testing}
-dataset since its the observations in the training set that result in
-the classification. Instead Martino subsetted \texttt{meta\_} by the
-samples in the \textbf{testing} dataset. Furthermore, the number of
-samples and not the amount of metadata for each sample that would be
-relevant to determining the value of k. To illustrate this further, the
-number of columns for the Sponges dataset was 46 and for the Sleep Apnea
-dataset it was 50 (one column added for \texttt{y\_encode}). Therefore,
-when more than 115 and 125 total samples, respectively, were in a
-subsample k would hav been selected based on the number of columns in
-\texttt{meta\_} (e.g.~46/0.4 = 114). These would have been the 150 and
-158 subsamples for the Sponges datset and 150 and 184 subsamples for the
-Sleep Apnea dataset. The values of k would have been 32 and 35 for these
-subsamples in the Sponges and Sleep Apnea datasets, respectively. For
-the other subsamples k would have been the total number of samples in
-the subsample times 0.4 divided by 1.4. The subsamples with 70 samples
-would have had a k value of 20 and the 110 subsamples would have had a k
-value of 31. Because the stratification was not balanced (see above
-discussion) these thresholds are approximate. For context, in the
+integer. There were several problems with this calculation. First, one
+would have expected the choice of k to be dependent on the number of
+samples included in the \textbf{training} dataset and not the
+\textbf{testing} dataset since the observations in the training and not
+the testing dataset affected the classification. Instead Martino
+subsetted \texttt{meta\_} by the samples in the \textbf{testing}
+dataset. Furthermore, the number of samples and not the amount of
+metadata for each sample would have been relevant to fitting the value
+of k. To illustrate this further, the number of columns for the Sponges
+dataset was 46 and for the Sleep Apnea dataset it was 50 (one column
+added for \texttt{y\_encode}). Therefore, when more than 115 and 125
+total samples, respectively, were in a subsample k would have been
+selected based on the number of columns in \texttt{meta\_} (e.g.~46/0.4
+= 114). These would have been the 150 and 158 subsamples for the Sponges
+datset and 150 and 184 subsamples for the Sleep Apnea dataset. The
+values of k would have been 32 and 35 for these subsamples in the
+Sponges and Sleep Apnea datasets, respectively. For the other
+subsamples, k would have been the total number of samples in the
+subsample times 0.4 divided by 1.4. The subsamples with 70 samples would
+have had a k value of 20 and the 110 subsamples would have had a k value
+of 31. Because the stratification was not balanced (see above
+discussion) these thresholds were approximate. For context, in the
 simulations there were 200 samples with 120 in the training set and 80
 in the testing set. A k of 13 was used. Therefore, the ratio of k to the
 number of samples in the training set was 0.108333. Although no
-justification was given for the k of 13, if the same ratio was used with
-the case study datasets, the k values would have been 4, 7, 9, 10, and
-12 for the subsamples of 70, 110, 150, 158, 185 samples, respectively
-(e.g., 150 times 0.6 times 0.108333 = 9.75, converted to an integer
-gives 9). As discussed above with the KNN analysis of the simulation
-data, a preferred approach would have subdivided the training dataset
-into a secondary training set and a validation datset. The secondary and
-validation training sets could have been used to identify the optimal
-value of k to use with the full training set on the testing dataset
-{[}\textbf{XXXXXX}{]}. As described above with the discussion of the
-choice of k for the simulation data, if a too small value of k is chosen
-the model could be underfit to the data while too large of a value of k
-could overfit the model to the data. Given the problems identified here,
-it is clear that in practice there was no logic to the choice of k.
-Therefore, it is difficult to have confidence in the reported accuracy
+justification was given for the k of 13, if the same ratio had been used
+with the case study datasets, the k values would have been 4, 7, 9, 10,
+and 12 for the subsamples of 70, 110, 150, 158, 185 samples,
+respectively (e.g., 150 times 0.6 times 0.108333 = 9.75, converted to an
+integer gives 9). As discussed above with the KNN analysis of the
+simulation data, a preferred approach would have subdivided the training
+dataset into a secondary training set and a validation datset. The
+secondary and validation training sets could have been used to identify
+the optimal value of k to use with the full training set on the testing
+dataset (2). As described above with the discussion of the choice of k
+for the simulation data, if a too small value of k were chosen the model
+would have been overfit to the data while too large of a value of k
+could have underfit the model to the data. Given the problems identified
+here, it was clear that there was no clear logic to the choice of k.
+Therefore, it was difficult to have confidence in the reported accuracy
 values from the KNN analysis.
 
 Fourth, at L159 two dimensions from a principle coordinates analysis
 (PCoA) performed on the Bray-Curtis and weighted UniFrac distances and
 two dimensions from the RPCA were used to define the dataset for KNN;
 this line would have ignored the third dimension from the Sleep Apnea
-dataset and many dimensions from the PCoA. The KNN used a euclidean
+dataset and many dimensions from the PCoA. The KNN used a Euclidean
 distance to find the k nearest neighbors in the training dataset for
-each value in the testing dataset. Because so much information was
-censored from the Bray-Curtis and weighted UniFrac distances, those
-methods were disadvantaged relative to RPCA. Considering a distance was
-calculated by the \texttt{KNeighborsClassifier} function when called at
-L165-166 it seems to be an odd choice to calculate a euclidean distance
-on a distorted representation of the data rather than using the actual
-Bray-Curtis or weighted UniFrac distances. Since
-\texttt{KNeighborsClassifier} does not take distance matrices as input,
-Martino could have at least used all of the dimensions for the
-Bray-Curtis and weighted UniFrac distances to make a more fair
-comparison to RPCA. Overall, the implementation of the KNN analysis was
-biased towards favoring the RPCA approach. This was exacerbated by the
-choice of datasets that had large differences between their treatment
-groups.
+each value in the testing dataset. Because so much information in the
+higher ordination axes was censored from the Bray-Curtis and weighted
+UniFrac distances, those methods were disadvantaged relative to RPCA.
+Considering \texttt{KNeighborsClassifier} could take distance matrices
+as input, it was surprising that Martino did not use the Bray-Curtis and
+weighted UniFrac distances to make a more fair comparison to RPCA.
+Overall, the implementation of the KNN analysis was biased towards
+favoring the RPCA approach. This was exacerbated by the choice of
+datasets that had large differences between their treatment groups.
 
 Given the problems in the implementation of KNN by Martino, I rewrote
-the method in R. The functions to run my analysis is found in
+the method in R. The functions to run my analysis were found in
 \texttt{workflow/scripts/test\_train\_knn.R}. I rewrote the KNN analysis
 to implement the fitting of k using the training dataset with a
-secondary training and validation dataset. Furthermore, it also accepts
-distance matrices from the user rather than the PCoA ordination. Users
-can alter the training, testing, and validation fractions and number of
-replications. Appropriate parameter values could be used to replicate
-Martino's approach or the approach outlined by Topcuoglu et
-al.~{[}\textbf{XXXXXX}{]}.
+secondary training and validation dataset. I was able to alter the
+training, testing, and validation fractions and number of replications.
+I could use my R code to replicate Martino's approach or the approach
+outlined by Topcuoglu et al. (2).
+
+\section*{Literature cited}\label{literature-cited}
+\addcontentsline{toc}{section}{Literature cited}
+
+\phantomsection\label{refs}
+\begin{CSLReferences}{0}{1}
+\bibitem[\citeproctext]{ref-Martino2019}
+\CSLLeftMargin{1. }%
+\CSLRightInline{\textbf{Martino C}, \textbf{Morton JT}, \textbf{Marotz
+CA}, \textbf{Thompson LR}, \textbf{Tripathi A}, \textbf{Knight R},
+\textbf{Zengler K}. 2019. A novel sparse compositional technique reveals
+microbial perturbations. mSystems \textbf{4}.
+doi:\href{https://doi.org/10.1128/msystems.00016-19}{10.1128/msystems.00016-19}.}
+
+\bibitem[\citeproctext]{ref-Topuolu2020}
+\CSLLeftMargin{2. }%
+\CSLRightInline{\textbf{Topçuoğlu BD}, \textbf{Lesniak NA},
+\textbf{Ruffin MT}, \textbf{Wiens J}, \textbf{Schloss PD}. 2020. A
+framework for effective application of machine learning to
+microbiome-based classification problems. mBio \textbf{11}.
+doi:\href{https://doi.org/10.1128/mbio.00434-20}{10.1128/mbio.00434-20}.}
+
+\bibitem[\citeproctext]{ref-Tripathi2018}
+\CSLLeftMargin{3. }%
+\CSLRightInline{\textbf{Tripathi A}, \textbf{Melnik AV}, \textbf{Xue J},
+\textbf{Poulsen O}, \textbf{Meehan MJ}, \textbf{Humphrey G},
+\textbf{Jiang L}, \textbf{Ackermann G}, \textbf{McDonald D},
+\textbf{Zhou D}, \textbf{Knight R}, \textbf{Dorrestein PC},
+\textbf{Haddad GG}. 2018. Intermittent hypoxia and hypercapnia, a
+hallmark of obstructive sleep apnea, alters the gut microbiome and
+metabolome. mSystems \textbf{3}.
+doi:\href{https://doi.org/10.1128/msystems.00020-18}{10.1128/msystems.00020-18}.}
+
+\bibitem[\citeproctext]{ref-MoitinhoSilva2017}
+\CSLLeftMargin{4. }%
+\CSLRightInline{\textbf{Moitinho-Silva L}, \textbf{Nielsen S},
+\textbf{Amir A}, \textbf{Gonzalez A}, \textbf{Ackermann GL},
+\textbf{Cerrano C}, \textbf{Astudillo-Garcia C}, \textbf{Easson C},
+\textbf{Sipkema D}, \textbf{Liu F}, \textbf{Steinert G},
+\textbf{Kotoulas G}, \textbf{McCormack GP}, \textbf{Feng G},
+\textbf{Bell JJ}, \textbf{Vicente J}, \textbf{Björk JR}, \textbf{Montoya
+JM}, \textbf{Olson JB}, \textbf{Reveillaud J}, \textbf{Steindler L},
+\textbf{Pineda M-C}, \textbf{Marra MV}, \textbf{Ilan M}, \textbf{Taylor
+MW}, \textbf{Polymenakou P}, \textbf{Erwin PM}, \textbf{Schupp PJ},
+\textbf{Simister RL}, \textbf{Knight R}, \textbf{Thacker RW},
+\textbf{Costa R}, \textbf{Hill RT}, \textbf{Lopez-Legentil S},
+\textbf{Dailianis T}, \textbf{Ravasi T}, \textbf{Hentschel U},
+\textbf{Li Z}, \textbf{Webster NS}, \textbf{Thomas T}. 2017. The sponge
+microbiome project. GigaScience \textbf{6}.
+doi:\href{https://doi.org/10.1093/gigascience/gix077}{10.1093/gigascience/gix077}.}
+
+\bibitem[\citeproctext]{ref-Schloss2024b}
+\CSLLeftMargin{5. }%
+\CSLRightInline{\textbf{Schloss PD}. 2024. Rarefaction is currently the
+best approach to control for uneven sequencing effort in amplicon
+sequence analyses. mSphere \textbf{9}.
+doi:\href{https://doi.org/10.1128/msphere.00354-23}{10.1128/msphere.00354-23}.}
+
+\end{CSLReferences}
+
 
 
 

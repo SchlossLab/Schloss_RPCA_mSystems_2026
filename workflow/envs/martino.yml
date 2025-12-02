@@ -14,11 +14,12 @@ dependencies:
   - r-ggtext=0.1.2
   - r-data.table=1.14.8
   - bioconductor-phyloseq=1.44.0 #for reading biom files
-  - quarto=1.4.550
+  - quarto=1.8.26
   - r-zcompositions=1.4.0
   - r-ggh4x=0.2.6
   - r-hmisc=5.1_1
   - r-here=1.0.1
+  - r-reticulate=1.43.0
   - imagemagick=7.1.1_29
     #for supplemental text document...
   - nbclient=0.8.0
