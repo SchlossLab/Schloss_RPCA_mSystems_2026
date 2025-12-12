@@ -1,4 +1,5 @@
 % Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
@@ -6,22 +7,23 @@
 \documentclass[
   11pt,
 ]{article}
-
+\usepackage{xcolor}
+\usepackage[margin=1.0in]{geometry}
 \usepackage{amsmath,amssymb}
-\usepackage{setspace}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
 \usepackage{lmodern}
-\ifPDFTeX\else  
-    % xetex/luatex font selection
+\ifPDFTeX\else
+  % xetex/luatex font selection
   \setmainfont[]{Nimbus Sans}
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
@@ -30,6 +32,7 @@
   \usepackage[]{microtype}
   \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
+\usepackage{setspace}
 \makeatletter
 \@ifundefined{KOMAClassName}{% if non-KOMA class
   \IfFileExists{parskip.sty}{%
@@ -40,23 +43,32 @@
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
-\usepackage{xcolor}
-\usepackage[margin=1.0in]{geometry}
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
+\makeatletter
 \ifx\paragraph\undefined\else
   \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
 \fi
 \ifx\subparagraph\undefined\else
   \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
+\makeatother
 
 
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -68,17 +80,21 @@
 \makesavenoteenv{longtable}
 \usepackage{graphicx}
 \makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
 % Set default figure placement to htbp
-\makeatletter
 \def\fps@figure{htbp}
 \makeatother
+
+
 % definitions for citeproc citations
 \NewDocumentCommand\citeproctext{}{}
 \NewDocumentCommand\citeproc{mm}{%
@@ -112,6 +128,18 @@
 \newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
 \newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
 \newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
 
 \usepackage[left]{lineno}
 \linenumbers
@@ -160,13 +188,9 @@
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
 \makeatother
-\ifLuaTeX
-  \usepackage{selnolig}  % disable illegal ligatures
-\fi
 \usepackage{bookmark}
-
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
+\urlstyle{same}
 \hypersetup{
   colorlinks=true,
   linkcolor={blue},
@@ -175,10 +199,11 @@
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
 
+
 \author{}
 \date{}
-
 \begin{document}
+
 
 \setstretch{1.75}
 \raggedright
@@ -223,28 +248,29 @@ practice was adopted by microbial ecologists. But rarefaction has been
 strongly criticized leading to the development of compositional data
 analysis and normalization methods. Therefore, I reassessed the
 benchmarking data that was generated by the developers of one such
-method, robust Aitchison PCA. I found numerous problems in the code that
-led to the support of robust Aitchison PCA. These problems extended to
-the creation of simulated datasets, implementation of machine learning
-methods, and choice of parameters. Furthermore, the analysis of the
-simulated and case study datasets was done in a manner that was foreign
-to standard microbiome analyses. I corrected the problems in the
-original code, added datasets with smaller effect sizes, and expanded
-the collection of methods that purport to correct for uneven sequencing
-effort. Contrary to the claims of the original analysis, robust
-Aitchison PCA was not insensitive to uneven sequencing effort and did
-not perform as well as rarefaction. In fact, even using the analysis
-framework from the original analysis, rarefaction outperformed robust
-Aitchison PCA, other compositional data analysis methods, and
-normalization. Rarefaction remains the preferred method of controlling
-for uneven sampling effort in amplicon sequence studies.
+method, robust Aitchison PCA. I found numerous problems in the Python
+code that led to the support of robust Aitchison PCA. These problems
+extended to the creation of simulated datasets, implementation of
+machine learning methods, and choice of analysis parameters.
+Furthermore, the analysis of the simulated and case study datasets was
+done in a manner that was foreign to standard microbiome analyses. I
+corrected the problems in the original code, added datasets with smaller
+effect sizes, and expanded the collection of methods that purport to
+correct for uneven sequencing effort. Contrary to the claims of the
+original analysis, robust Aitchison PCA was not insensitive to uneven
+sequencing effort and did not perform as well as rarefaction. In fact,
+even using the benchmarking framework from the original analysis,
+rarefaction outperformed robust Aitchison PCA, other compositional data
+analysis methods, and other normalization methods. Rarefaction remains
+the preferred method of controlling for uneven sampling effort in
+amplicon sequence studies.
 
 \subsection{Importance}\label{importance}
 
 Efforts to connect the the structure of microbial communities with
 environmental processes and host health have captured widespread
-interest among scientists and the general public. The methods of
-generating the sequencing data that are fundamental to these efforts
+interest among scientists and the general public. The methods used to
+generate the sequencing data that are fundamental to these efforts
 result in wide variation in the number of sequences per sample. This
 variation and how to account for it can have detrimental effects on the
 ability to draw valid conclusions. Compositional data analysis methods
@@ -264,10 +290,10 @@ A persistent challenge in amplicon and shotgun metagenomic sequencing of
 microbial communities is the variation in the number of reads obtained
 across samples (e.g., 1, 2, 3). The variation in the number of reads
 generally occurs because of an accumulation of sampling errors during
-library generation that includes attempts to pool equimolar amounts of
-DNA for subsequent sequencing. It is not uncommon to observe as much as
-100-fold variation in sequencing depth (4). This challenge is not unique
-to microbial ecologists and has long plagued landscape and animal
+attempts to pool equimolar amounts of DNA to generate libraries for
+subsequent sequencing. It is not uncommon to observe as much as 100-fold
+variation in sequencing depth (4). This challenge is not unique to
+microbial ecologists and has long plagued landscape and animal
 ecologists (5, 6). The classical approach to control for uneven sampling
 has been rarefaction (7). In rarefaction, a consistent number of
 individuals are randomly sampled from each sample. An alpha or beta
@@ -304,8 +330,8 @@ so-called Aitchison distances (24). Aside from controlling for the
 compositional nature of sequence data, proponents of the Aitchison
 distance claim that the distances are insensitive to differences in
 sampling effort (10, 23). A challenge of Aitchison distances is that
-because microbial communities are patchy a large number of features will
-have a frequency of zero in each sample. This will cause the geometric
+because microbial communities are patchy a large number of features
+often have a frequency of zero. These zero values cause the geometric
 mean to be undefined. To overcome this challenge, factors are added to
 the data. Three approaches have been proposed: adding a pseudocount of 1
 all frequency data (i.e., One CLR), adding a pseudocount of 1 divided by
@@ -357,31 +383,32 @@ study comparing the microbial communities found on people's fingertips
 and their computer keyboards (27). As described in Martino, the overall
 simulation framework involved simulating two treatment groups each
 represented by 100 communities for a total of 200 communities. Each
-community contained as many as 1,000 taxa. For each treatment group they
-fit a normal distribution to the relative abundances of taxa from two
-individuals' samples to obtain a mean and standard deviation for each
-taxon. The fraction of taxa that overlapped between treatment groups was
-also selected to mimic the overlap observed between the two individuals.
-The expected taxon relative abundances for each sample were the same
-across each sample within the same treatment group. Next, a common
-normal distribution with a single mean and standard deviation was used
-to generate noise (i.e., homoscedastic noise) that was added to each
-relative abundance value to create variation across samples and
-features. Next, a random subset of sample-taxa combinations were
-selected for incorporation of additional noise (i.e., heteroscedastic
-noise). Finally, the sample-taxa combinations were randomly sampled
-using a Poisson-lognormal distribution to generate the simulated number
-of sequences for each sample-taxa combination so that the total number
-of sequences within a sample contained approximately 1,000, 2,000,
-4,000, or 10,000 sequences per simulation; one set of 200 samples were
-simulated for each sequencing depth. In addition to the simulation where
-a subset of taxa was shared in both treatment groups, Martino created
-positive and negative control simulations. In the positive control
-simulation, there were no overlapping taxa resulting in two clearly
-defined groups of samples. In the negative control simulation all the
-taxa were shared in similar abundance so that the groups of samples
-could not be distinguished. Finally, they compared RPCA to other methods
-using two published datasets.
+community contained as many as 1,000 taxa. They stated that for each
+treatment group they fit a normal distribution to the relative
+abundances of taxa from two individuals' samples to obtain a mean and
+standard deviation for each taxon. The fraction of taxa that overlapped
+between treatment groups was also selected to mimic the overlap observed
+between the two individuals. The expected taxon relative abundances for
+each sample were the same across each sample within the same treatment
+group. Next, a common normal distribution with a single mean and
+standard deviation was used to generate noise (i.e., homoscedastic
+noise) that was added to each relative abundance value to create
+variation across samples and features. Next, a random subset of
+sample-taxa combinations were selected for incorporation of additional
+noise (i.e., heteroscedastic noise). Finally, the sample-taxa
+combinations were randomly sampled using a Poisson-lognormal
+distribution to generate the simulated number of sequences for each
+sample-taxa combination so that the total number of sequences within a
+sample contained approximately 1,000, 2,000, 4,000, or 10,000 sequences
+per simulation; one set of 200 samples were simulated for each
+sequencing depth. In addition to the simulation where a subset of taxa
+was shared in both treatment groups, Martino created positive and
+negative control simulations. In the positive control simulation, there
+were no overlapping taxa resulting in two clearly defined groups of
+samples. In the negative control simulation all the taxa were shared in
+similar abundance so that the groups of samples could not be
+distinguished. Finally, they compared RPCA to other methods using two
+published datasets.
 
 This difference in modelling strategy created an interesting opportunity
 to reassess the performance of RPCA and other CLR-based approaches
@@ -401,7 +428,7 @@ communities}\label{description-of-simulated-communities}
 To maintain a connection to Martino's original simulations and implement
 a broader set of tests, several changes were necessary in the
 implementation of Martino's code. First, Martino's code did not return
-the exact same number of sequences per sample. Because one goal of the
+the same number of sequences for each sample. Because one goal of the
 current study was to assess the effect of variation in sequencing effort
 on the performance of RPCA, I modified the parameters inputted to
 Martino's code to produce more than the desired number of sequences per
@@ -422,9 +449,9 @@ superficial. The most notable difference to Martino's version of the
 figure was that they inadvertently switched the labels of the axes and
 performed the One CLR transformation on features rather than samples
 (\textbf{Supplementary Text}). Replicating what Martino reported, the
-first two axes of the Bray-Curtis ordinations only explain a fraction of
-the total variation in the data while the RPCA ordinations explained all
-the variation. However, this was because RPCA is run by giving the
+first two axes of the Bray-Curtis ordinations only explained a fraction
+of the total variation in the data while the RPCA ordinations explained
+all the variation. However, this was because RPCA is run by giving the
 algorithm a desired number of axes; in this case, 2 axes. Regardless,
 the ratio of the fraction of the variation explained by the first two
 axes were similar between RPCA and PCoA with Bray-Curtis.
@@ -432,38 +459,38 @@ axes were similar between RPCA and PCoA with Bray-Curtis.
 \subsubsection{Comparison of simulated communities using
 PERMANOVA}\label{comparison-of-simulated-communities-using-permanova}
 
-Martino used the PERMANOVA F-statistic to compare the ability of RPCA to
+Martino used the PERMANOVA F statistic to compare the ability of RPCA to
 differentiate treatment groups using raw counts or removing zero values
 prior to calculating the CLR (RCLR). Using the partially overlapping
-treatment groups they found that the RCLR pretreatment yielded larger
-F-statistics than using raw counts. Repeating Martino's PERMANOVA
+treatment groups they found that the RCLR pretreatment yielded larger F
+statistics than using raw counts. Repeating Martino's PERMANOVA
 analysis, I replicated their results when using RPCA (\textbf{Figure
 2}). However, by generating 10 replicate datasets (Martino only
 performed one), I observed considerable variation across replicates for
-the F-statistics calculated using RPCA with raw counts. Unfortunately,
+the F statistics calculated using RPCA with raw counts. Unfortunately,
 Martino did not make any comparisons to other methods of calculating
 distances. When I calculated Euclidean distances using other CLR and
 DeSeq2 transformations and Bray-Curtis distances using raw counts and
-normalized data, all resulted in small F-statistics. I suspected that
-the RPCA data generated relatively large F-statistics because the
+normalized data, all resulted in small F statistics. I suspected that
+the RPCA data generated relatively large F statistics because the
 Euclidean distances calculated using RPCA was only done with the first
 two axes. This would have removed a considerable amount of variation
 that was embedded in the third and higher axes. The result would be
-elevated F-statistics. To test this hypothesis, I performed PCoA on
+elevated F statistics. To test this hypothesis, I performed PCoA on
 Bray-Curtis distances, calculated Euclidean distances using the first
 two axes of the resulting PCoA, and subjected those distances to
 PERMANOVA (see ``Bray-Curtis PCoA'' data in the Euclidean distance
-section of \textbf{Figure 2}). The calculated F-statistics were even
+section of \textbf{Figure 2}). The calculated F statistics were even
 larger than those generated by RPCA. This suggested that RPCA may make
 communities appear more similar than they are when differences are more
-pronounced in higher axes. Regardless of the relative scale of the
-F-statistics, the replicates for all approaches yielded significant
+pronounced in higher axes. Regardless of the relative scale of the F
+statistics, the replicates for all approaches yielded significant
 P-values except for those generated using RPCA with raw counts.
 
 \subsubsection{Comparison of simulated communities using KNN
 Classification}\label{comparison-of-simulated-communities-using-knn-classification}
 
-In addition to comparing PERMANOVA F-statistics, Martino used KNN
+In addition to comparing PERMANOVA F statistics, Martino used KNN
 classification to distinguish between the two partially overlapping
 treatment groups. Although Martino's text indicated they used 40\% of
 the samples in the training set and 60\% in the testing set (i.e., a
@@ -472,19 +499,16 @@ actually the opposite with 60\% of the samples in the training set and
 the remaining in the testing set (\textbf{Supplemental Text}); a 60:40
 split is more conventional. To execute the KNN classification, Martino
 used the first two axes calculated from RPCA using raw counts and RCLR
-transformed data as the input to their KNN classification. Because I was
-interested in comparing other transformations and the use of Bray-Curtis
-distances, I wrote a KNN classification procedure that would allow me to
-input distance matrices. Furthermore, I replicated the 60:40 split 100
-times for each of the 10 simulations reporting the median accuracy on
-the 40\% testing data for each simulation. The original Martino data
-indicated that the accuracy of using raw counts with RPCA was near 0.5,
-indicating it did no better than randomly guessing. While the minimum
-values I observed across the 10 replicate simulations overlapped with
-these results, the median values were all better than random (``Raw +
-RPCA'' in \textbf{Figure 2}). I replicated Martino's result showing that
-using RCLR transformed counts as input to RPCA yielded higher accuracy
-than using raw counts.
+transformed data as the input to their KNN classification. I replicated
+the 60:40 split 100 times for each of the 10 simulations reporting the
+median accuracy on the 40\% testing data for each simulation. The
+original Martino data indicated that the accuracy of using raw counts
+with RPCA was near 0.5, indicating it did no better than randomly
+guessing. While the minimum values I observed across the 10 replicate
+simulations overlapped with these results, the median values were all
+better than random (``Raw + RPCA'' in \textbf{Figure 2}). I replicated
+Martino's result showing that using RCLR transformed counts as input to
+RPCA yielded higher accuracy than using raw counts.
 
 Next I sought to place the RPCA results in context with other methods. I
 generated Euclidean distance matrices using other CLR methods and
@@ -515,7 +539,8 @@ datasets, the median optimal number of neighbors was 58 (IQR=42 to 65).
 Regardless of finding that the optimal number of neighbors was
 consistently larger than the 13 that Martino used, the difference in
 accuracy values was only modestly better than the other fitting
-procedures when using 80:20 splits (\textbf{Figure S1}).
+procedures when using 80:20 splits with the simulated data
+(\textbf{Figure S1}).
 
 \subsubsection{Comparing PERMANOVA and KNN classification results with
 more similar treatment
@@ -529,34 +554,34 @@ large, it was not possible to easily differentiate between the methods'
 performance. Therefore, I created treatment groups that were more
 similar than those simulated by Martino. Unfortunately, in the process
 of modifying their code, I identified a number of incongruities between
-Martino's written description and their code. This limited my ability to
-reuse their code to simulate greater overlap between the treatment
-groups (\textbf{Supplemental Text}). These issues included: (i) samples
-rather than features were shared between treatment groups; (ii) among
-samples from the same treatment group, the relative abundance
-distributions for the features were uniform; (iii) the total number of
-individuals in the samples varied across the simulated datasets; (iv)
-the heteroscedastic source of noise was actually applied to all
-sample-feature combinations; (v) negative mean values were used when
-sampling normal distribution sampling functions when calculating the
-heteroscedastic noise; (vi) negative abundance values generated after
-applying the heteroscedastic noise were made positive; and (vii) setting
-the random number generator seed was unable to produce reproducible
-simulations. I rewrote the simulation code in the R programming language
-to correct these issues. To simulate a more nuanced difference in
-treatment groups, I increased the total number of features across all
-samples from 1,000 to 10,000 and set 12 features to be differentially
-abundant between the treatment groups. These values were selected to
-create conditions where approximately 50\% of PERMANOVA tests using
-Bray-Curtis distances yielded P-values less than 0.05. Using the same
-number of features, I recreated negative and positive control
-simulations in which all features were shared or where the features were
-differentially represented between one of the two treatment groups. The
-resulting simulations provided more realistic benchmarking data than
-what was observed by Martino (\textbf{Figure 3}). The simulations were
-replicated 100 times to obtain greater precision in calculating the
-power to detect differences by PERMANOVA and the accuracy of KNN
-classification.
+Martino's written description in their paper and in their code. This
+limited my ability to reuse their code to simulate greater overlap
+between the treatment groups (\textbf{Supplemental Text}). These issues
+included: (i) samples rather than features were shared between treatment
+groups; (ii) among samples from the same treatment group, the relative
+abundance distributions for the features were uniform; (iii) the total
+number of individuals in the samples varied across the simulated
+datasets; (iv) the heteroscedastic source of noise was actually applied
+to all sample-feature combinations; (v) negative mean values were used
+when sampling normal distribution sampling functions when calculating
+the heteroscedastic noise; (vi) negative abundance values generated
+after applying the heteroscedastic noise were made positive; and (vii)
+setting the random number generator seed was unable to produce
+reproducible simulations. I rewrote the simulation code in the R
+programming language to correct these issues. To simulate a more nuanced
+difference in treatment groups, I increased the total number of features
+across all samples from 1,000 to 10,000 and set 12 features to be
+differentially abundant between the treatment groups. These parameter
+values were selected to create conditions where approximately 50\% of
+PERMANOVA tests using Bray-Curtis distances yielded P-values less than
+0.05. Using the same number of features, I recreated negative and
+positive control simulations in which all features were shared or where
+the features were differentially represented between one of the two
+treatment groups. The resulting simulations provided more realistic
+benchmarking data than what was observed by Martino (\textbf{Figure 3}).
+The simulations were replicated 100 times to obtain greater precision in
+calculating the power to detect differences by PERMANOVA and the
+accuracy of KNN classification.
 
 Using the revised simulation data revealed a considerable difference in
 the performance of PERMANOVA and KNN classification relative to the
@@ -597,10 +622,10 @@ there was a smaller effect size. Therefore, I added a third dataset from
 a study that explored associations between the microbiome and colorectal
 cancer (3). The differences between healthy individuals and those with
 screen relevant colonic neoplasias were not obvious by PCoA and the
-study included more subjects. The colorectal cancer dataset included 261
-subjects with healthy colons and 229 subjects with screen relevant
-colonic neoplasias (\textbf{Figure 5}). The sponge, sleep apnea, and
-colorectal cancer datasets were analyzed in parallel.
+study included more subjects. The colorectal cancer (CRC) dataset
+included 261 subjects with healthy colons and 229 subjects with screen
+relevant colonic neoplasias (\textbf{Figure 5}). The sponge, sleep
+apnea, and colorectal cancer datasets were analyzed in parallel.
 
 After conducting an exhaustive review of the code that Martino and
 colleagues provided in their GitHub repository, I discovered several
@@ -644,20 +669,20 @@ number of samples per treatment group to maintain a balanced design.
 This choice was peculiar since PERMANOVA is not sensitive to unbalanced
 sampling. When I used all of the samples available and performed the
 PERMANOVA analysis, the only dataset and methods that did not yield a
-significant result was for the CRC dataset using RPCA with 2 or 3 axes
-(P = 0.11 and 0.07, respectively). A second peculiar choice was to
-subsample the number of sequences to 1,000 sequences per sample when
-calculating Bray-Curtis distances but to use all of the sequences with
-RPCA. They could have increased the number of sequences by more than
-ten-fold without adversely impacting the number of samples in their
+significant result was for the colorectal cancer dataset using RPCA with
+2 or 3 axes (P = 0.11 and 0.07, respectively). A second peculiar choice
+was to subsample the number of sequences to 1,000 sequences per sample
+when calculating Bray-Curtis distances but to use all of the sequences
+with RPCA. They could have increased the number of sequences by more
+than ten-fold without adversely impacting the number of samples in their
 analysis (\textbf{Figure 5}). Acceptable thresholds could have been
 11,879 sequences for the sleep apnea dataset, 13,755 sequences for the
-sponge dataset, and 10,439 sequences for the CRC dataset. Overall, using
-the higher sequence count thresholds did not drastically alter the
-results of the analyses; however, it typically resulted in larger
-PERMANOVA F statistics (\textbf{Figure 6}). For the remainder of the
-PERMANOVA analysis, I have used the larger number of sequences instead
-of 1,000 sequences.
+sponge dataset, and 10,439 sequences for the colorectal cancer dataset.
+Overall, using the higher sequence count thresholds did not drastically
+alter the results of the analyses; however, it typically resulted in
+larger PERMANOVA F statistics (\textbf{Figure 6}). For the remainder of
+the PERMANOVA analysis, I have used the larger number of sequences
+instead of 1,000 sequences.
 
 The results of my reanalysis of the sponge and sleep apnea datasets
 using PERMANOVA replicated what was observed in the original study
@@ -689,7 +714,7 @@ results of the analyses; however, it typically resulted in higher
 accuracy to classify samples into the treatment groups for the sleep
 apnea dataset, which had fewer samples (\textbf{Figure 6}). For the
 remainder of this analysis, I will describe the results using the larger
-number of sequence.
+number of sequences.
 
 Similar to the PERMANOVA analysis, my KNN classification results largely
 replicated those observed for the sleep apnea and sponge datasets by
@@ -701,11 +726,11 @@ not have a consistent effect on classification accuracy. Caution should
 be used in interpreting such results as there was no \emph{a priori}
 reason to use more than 2 axes. Within the sponge dataset there was
 little variation in the classification accuracy with most methods
-yielding values between 0.94 and 1.00; the worst performer was using raw
-abundances as input to RPCA with two axes (accuracy = 0.88). With the
-sleep apnea dataset the CLR-based methods and DeSeq2 transformed data
-outperformed the RPCA methods, which outperformed the other
-Euclidean-distance methods; accuracies calculated using KNN with
+yielding values between 0.94 and 1.00; the worst performing method was
+using raw abundances as input to RPCA with two axes (accuracy = 0.88).
+With the sleep apnea dataset the CLR-based methods and DeSeq2
+transformed data outperformed the RPCA methods, which outperformed the
+other Euclidean-distance methods; accuracies calculated using KNN with
 Bray-Curtis distances performed similar to the RPCA-based methods.
 Finally, with the colorectal cancer dataset, KNN classification using
 Bray-Curtis distances outperformed the Euclidean-based distances for all
@@ -775,29 +800,30 @@ or RCLR-transformed data. Missing from their benchmarking was a
 comparison to Bray-Curtis or UniFrac distances or use of other methods
 of controlling for uneven sampling effort. The result was a ``straw
 man'' comparison that made their new method appear considerably better
-than a method that no one would think to use. Second, they used of KNN
-as a classification tool rather than using logistic regression or random
-forest. KNN is simply not used for classifying microbiome data.
-Compounding the problem of using KNN was that they did so based on
-distances from the first two or three axes of a PCoA using a Bray-Curtis
-distance matrix rather than directly using the Bray-Curtis distances
-themselves. The effect was a loss of information stored in higher
-dimensions. Even with the limitations of KNN (e.g., requirement of
-balanced design), RPCA was outperformed by the other methods.
+than a method that no one else has used in a published microbiome
+analysis. Second, they used KNN as a classification tool rather than
+using logistic regression or random forest. KNN is simply not used for
+classifying microbiome data. Compounding the problem of using KNN was
+that they did so based on distances from the first two or three axes of
+a PCoA using a Bray-Curtis or weighted UniFrac distance matrices rather
+than directly using the ecological distances themselves. The effect was
+a loss of information stored in higher dimensions. Even with the
+limitations of KNN (e.g., requirement of balanced design), RPCA was
+outperformed by the other methods.
 
-Even if RPCA's performance were better, there are several limitations
-inherent in the method. First, there is no guidance on selecting the
-number of axes one should use with RPCA. Martino used 2 axes with their
-simulated and sponges dataset and 3 axes with the sleep apnea dataset; 3
-is the default value in their publicly released gemelli software for
-running RPCA. As I showed with the real datasets, increasing the number
-of axes increased the power to detect differences and the classification
-accuracy. This creates a scenario where users could select a number of
-axes to fit their expected results (i.e., ``P-hacking''). Second, as
-Martino indicated the method does not perform well with time series data
-or where there is considerable variation between the samples. This is
-likely when effect sizes between treatment groups are small as is
-typical in most microbiome analyses.
+There are several limitations inherent in RPCA that would still limit
+its use even if its performance were better. First, there is no guidance
+on selecting the number of axes one should use with RPCA. Martino used 2
+axes with their simulated and sponges dataset and 3 axes with the sleep
+apnea dataset; 3 is the default value in their publicly released gemelli
+software for running RPCA. As I showed with the real datasets,
+increasing the number of axes increased the power to detect differences
+and the classification accuracy. This creates a scenario where users
+could select a number of axes to fit their expected results (i.e.,
+``P-hacking''). Second, as Martino indicated the method does not perform
+well with time series data or where there is considerable variation
+between the samples. This is likely when effect sizes between treatment
+groups are small as is typical in most microbiome analyses.
 
 Martino made the claim in their paper's Discussion section that
 Aitchison distances calculated using RPCA are insensitive to uneven
@@ -869,18 +895,17 @@ by obtaining sequence data and metadata from the Sequence Read Archive.
 The sequence data was processed using the mothur software program (29).
 This included assembling the paired reads that covered the V4 region of
 the 16S rRNA gene using a quality score-aware method (30), aligning the
-assembled contig to a SILVA reference alignment (31,
-\textbf{Preusse2007?}), pre-clustering to remove residual sequencing
-errors (32) chimera checking and removal (33), and clustering of
-sequences into OTUs using the OptiClust algorithm (34). OTUs were
-defined a group of sequences not more than than 3\% different from each
-other.
+assembled contig to a SILVA reference alignment (31, 32), pre-clustering
+to remove residual sequencing errors (33) chimera checking and removal
+(34), and clustering of sequences into OTUs using the OptiClust
+algorithm (35). OTUs were defined a group of sequences not more than
+than 3\% different from each other.
 
 \subsubsection{Distance-based K Nearest Neighbor (KNN)
 classification}\label{distance-based-k-nearest-neighbor-knn-classification}
 
 Martino's KNN classification analysis used the KNeighborsClassifier
-function from scikit-learn (35). Although that function could have taken
+function from scikit-learn (36). Although that function could have taken
 a pre-computed distance matrix as input in the version of scikit-learn
 that Martino used (v.0.5.9), they gave the function the ordination
 results with the desired number of axes. I reimplemented an R-based
@@ -918,28 +943,27 @@ calculated as the abundance of each OTU in a sample divided by the total
 number of sequences in the sample; (xi) subsampling, which involved
 randomly selecting a specified number of sequences from each sample and
 removing any samples that had fewer than the desired number of
-sequences; (xii) rarefaction, which involved repeating subsampling 100
-times and calculating a distance matrix after each iteration followed by
-calculating the mean distance matrix.
+sequences; and (xii) rarefaction, which involved repeating subsampling
+100 times and calculating a distance matrix after each iteration
+followed by calculating the mean distance matrix.
 
 \subsubsection{Methods for calculating distances between
 communities}\label{methods-for-calculating-distances-between-communities}
 
-The vegan R package (v.2.6\_4) was used to calculate ecological distance
-matrices using the Euclidean and Bray-Curtis formulations (36, 37).
-Euclidean distances are not typically used in microbiome analyses
-because they inflate the similarity of communities. However, they are
-used with CLR transformed data resulting in so-called Aitchison
-distances. The OptSpace and RPCA algorithms outputted Euclidean
-distances directly from the Deicode and gemelli software. Euclidean
-distances were calculated for raw counts, and data transformed by the
-CLR-based methods, DeSeq2, relative abundance, subsampling, and
-rarefaction using the vegdist function in vegan. Because OptSpace,
-CLR-based methods, and DeSeq2 outputted negative values, it was not
-possible to calculate Bray-Curtis distances on those data. Bray-Curtis
-distances were calculated using raw counts, relative abundances, and
-subsampled data using the vegdist function in vegan; rarefaction was
-performed using vegan's avgdist function.
+The vegan R package (v.2.6\_4) was used to calculate Euclidean and
+Bray-Curtis distance matrices (37, 38). Euclidean distances are not
+typically used in microbiome analyses because they inflate the
+similarity of communities. However, they are used with CLR transformed
+data resulting in so-called Aitchison distances. The OptSpace and RPCA
+algorithms outputted Euclidean distances directly from the Deicode and
+gemelli software. Euclidean distances were calculated for raw counts,
+and data transformed by the CLR-based methods, DeSeq2, relative
+abundance, subsampling, and rarefaction using the vegdist function in
+vegan. Because OptSpace, CLR-based methods, and DeSeq2 outputted
+negative values, it was not possible to calculate Bray-Curtis distances
+on those data. Bray-Curtis distances were calculated using raw counts,
+relative abundances, and subsampled data using the vegdist function in
+vegan; rarefaction was performed using vegan's avgdist function.
 
 \subsubsection{Measuring effects of controlling for uneven sampling
 effort on performance of
@@ -947,7 +971,7 @@ PERMANOVA}\label{measuring-effects-of-controlling-for-uneven-sampling-effort-on-
 
 I used the adonis2 function from the vegan R package (v.2.6\_4) to
 calculate the PERMANOVA F statistic for comparisons of treatment groups
-in the simulations and case studies (36, 38). Euclidean or Bray-Curtis
+in the simulations and case studies (37, 39). Euclidean or Bray-Curtis
 distance matrices and a map indicating which group each sample belonged
 to were used as input to the function. Except for the simulation
 measuring the ability of the various methods to control the effects of
@@ -966,14 +990,14 @@ the sequencing levels. A sequencing depth variable was added to the
 treatment group label. Each dataset was replicated 10 times with a
 different random number generator seed. To test the effects of
 sequencing depth, I used the adonis2 function from the vegan R package
-(v.2.6\_4) (36) to test the model, Distance \textasciitilde{} Treatment
+(v.2.6\_4) (37) to test the model, Distance \textasciitilde{} Treatment
 + Sequencing Depth + Treatment x Sequencing Depth. Although this model
 tested for a treatment effect, it's P-value was biased downward. This
 was because every sample was artificially duplicated, which made each
 treatment look more similar to itself than it really was, leading to
 reduced the intra-treatment variation. The result was a larger F
 statistic and smaller P-value for the treatment effect. My analysis of
-this simulation focused on the significance of the sequencing depth
+this simulation only focused on the significance of the sequencing depth
 effect.
 
 \subsubsection{Data availability}\label{data-availability}
@@ -986,10 +1010,11 @@ repository includes a Snakemake-based workflow (v.7.32.4) includes all
 of the steps in the analyses described in this manuscript. The workflow
 uses R (v.4.3.3) and Python (v.3.11.14) packages and code. Notable R
 packages not already indicated included tidyverse (v.2.0.0), data.table
-(v.1.14.8), ggh4x (v.0.2.6), ggtext (v.0.1.2), patchwork (v.1.1.3), and
-quarto (v.1.4.550), Notable Python packages not already indicated
-included matplotlib (v.3.8.1), numpy (v.1.12.1), pandas (v.2.1.3),
-scikit-bio (v.0.5.9), scikit-learn (v.1.3.2), and scipy (v.1.10.0).
+(v.1.14.8), ggh4x (v.0.2.6), ggtext (v.0.1.2), patchwork (v.1.1.3),
+quarto (v.1.4.550), and reticulate (v.1.43.0). Notable Python packages
+not already indicated included matplotlib (v.3.8.1), numpy (v.1.12.1),
+pandas (v.2.1.3), scikit-bio (v.0.5.9), scikit-learn (v.1.3.2), and
+scipy (v.1.10.0).
 
 \subsection{Acknowledgements}\label{acknowledgements}
 
@@ -1258,15 +1283,24 @@ sequence aligner for microbial ecology studies. PLoS ONE
 \textbf{4}:e8230.
 doi:\href{https://doi.org/10.1371/journal.pone.0008230}{10.1371/journal.pone.0008230}.}
 
-\bibitem[\citeproctext]{ref-Schloss2011}
+\bibitem[\citeproctext]{ref-Pruesse2007}
 \CSLLeftMargin{32. }%
+\CSLRightInline{\textbf{Pruesse E}, \textbf{Quast C}, \textbf{Knittel
+K}, \textbf{Fuchs BM}, \textbf{Ludwig W}, \textbf{Peplies J},
+\textbf{Glockner FO}. 2007. SILVA: A comprehensive online resource for
+quality checked and aligned ribosomal RNA sequence data compatible with
+ARB. Nucleic Acids Research \textbf{35}:7188--7196.
+doi:\href{https://doi.org/10.1093/nar/gkm864}{10.1093/nar/gkm864}.}
+
+\bibitem[\citeproctext]{ref-Schloss2011}
+\CSLLeftMargin{33. }%
 \CSLRightInline{\textbf{Schloss PD}, \textbf{Gevers D}, \textbf{Westcott
 SL}. 2011. Reducing the effects of PCR amplification and sequencing
 artifacts on 16S rRNA-based studies. PLoS ONE \textbf{6}:e27310.
 doi:\href{https://doi.org/10.1371/journal.pone.0027310}{10.1371/journal.pone.0027310}.}
 
 \bibitem[\citeproctext]{ref-Edgar2011}
-\CSLLeftMargin{33. }%
+\CSLLeftMargin{34. }%
 \CSLRightInline{\textbf{Edgar RC}, \textbf{Haas BJ}, \textbf{Clemente
 JC}, \textbf{Quince C}, \textbf{Knight R}. 2011. {UCHIME} improves
 sensitivity and speed of chimera detection. Bioinformatics
@@ -1274,14 +1308,14 @@ sensitivity and speed of chimera detection. Bioinformatics
 doi:\href{https://doi.org/10.1093/bioinformatics/btr381}{10.1093/bioinformatics/btr381}.}
 
 \bibitem[\citeproctext]{ref-Westcott2017}
-\CSLLeftMargin{34. }%
+\CSLLeftMargin{35. }%
 \CSLRightInline{\textbf{Westcott SL}, \textbf{Schloss PD}. 2017.
 {OptiClust}, an improved method for assigning amplicon-based sequence
 data to operational taxonomic units. {mSphere} \textbf{2}:e00073--17.
 doi:\href{https://doi.org/10.1128/mspheredirect.00073-17}{10.1128/mspheredirect.00073-17}.}
 
 \bibitem[\citeproctext]{ref-Pedregosa2011}
-\CSLLeftMargin{35. }%
+\CSLLeftMargin{36. }%
 \CSLRightInline{\textbf{Pedregosa F}, \textbf{Varoquaux G},
 \textbf{Gramfort A}, \textbf{Michel V}, \textbf{Thirion B},
 \textbf{Grisel O}, \textbf{Blondel M}, \textbf{Prettenhofer P},
@@ -1292,20 +1326,20 @@ learning in {P}ython. Journal of Machine Learning Research
 \textbf{12}:2825--2830.}
 
 \bibitem[\citeproctext]{ref-Dixon2003}
-\CSLLeftMargin{36. }%
+\CSLLeftMargin{37. }%
 \CSLRightInline{\textbf{Dixon P}. 2003. {VEGAN}, a package of r
 functions for community ecology. Journal of Vegetation Science
 \textbf{14}:927--930.
 doi:\href{https://doi.org/10.1111/j.1654-1103.2003.tb02228.x}{10.1111/j.1654-1103.2003.tb02228.x}.}
 
 \bibitem[\citeproctext]{ref-Magurran2004}
-\CSLLeftMargin{37. }%
+\CSLLeftMargin{38. }%
 \CSLRightInline{\textbf{Magurran AE}. 2004.
 \href{https://books.google.com/books?id=tUqzLSUzXxcC}{Measuring
 biological diversity}. Wiley.}
 
 \bibitem[\citeproctext]{ref-Anderson2001}
-\CSLLeftMargin{38. }%
+\CSLLeftMargin{39. }%
 \CSLRightInline{\textbf{Anderson MJ}. 2001. A new method for
 non-parametric multivariate analysis of variance. Austral Ecology
 \textbf{26}:32--46.
@@ -1315,7 +1349,7 @@ doi:\href{https://doi.org/10.1111/j.1442-9993.2001.01070.pp.x}{10.1111/j.1442-99
 
 \newpage{}
 
-\includegraphics[width=0.8\textwidth,height=\textheight]{../figures/heatmap_pcoa_martino.png}
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{../figures/heatmap_pcoa_martino.png}
 
 \textbf{Figure 1. Rerunning the original Martino code in my
 computational environment produced qualitatively similar results to what
@@ -1332,7 +1366,7 @@ variation that each axis explained.
 
 \newpage{}
 
-\includegraphics[width=0.8\textwidth,height=\textheight]{../figures/fst_knn_martino.png}
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{../figures/fst_knn_martino.png}
 
 \textbf{Figure 2. RPCA-based methods did not consistently perform as
 well as other methods by PERMANOVA or KNN classification when attempting
@@ -1350,7 +1384,7 @@ guessing the treatment group.
 
 \newpage{}
 
-\includegraphics[width=0.8\textwidth,height=\textheight]{../figures/heatmap_pcoa_pds.png}
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{../figures/heatmap_pcoa_pds.png}
 
 \textbf{Figure 3. Graphical representation of an example dataset
 comparing communities simulated rewritten in R based on the description
@@ -1372,14 +1406,14 @@ control using RPCA.
 
 \newpage{}
 
-\includegraphics[width=0.8\textwidth,height=\textheight]{../figures/fst_knn_pds.png}
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{../figures/fst_knn_pds.png}
 
 \textbf{Figure 4. Relative to other methods, RPCA-based methods were not
 as effective at differentiating between groups of communities using
 PERMANOVA and KNN classification when using a revised simulation
 approach.} This figure is analogous to Figure 2 except that it uses 100
 instead of 10 replicates and the power to detect differences by
-PERMANOVA is shown instead of the Fst statistic. Each circle represents
+PERMANOVA is shown instead of the F statistic. Each circle represents
 the median of the 100 replicate simulations and the confidence line
 indicates the range between the minimum and maximum values. The median
 KNN classification accuracy and range were the median of 10 median
@@ -1392,7 +1426,7 @@ since the data were too sparse for the imputation algorithm to complete.
 
 \newpage{}
 
-\includegraphics{../figures/cs_seq_depth.png}
+\pandocbounded{\includegraphics[keepaspectratio]{../figures/cs_seq_depth.png}}
 
 \textbf{Figure 5. Martino selected an arbitrarily small number of
 sequences and a pair of datasets that were small relative to other
@@ -1402,32 +1436,32 @@ calculating Bray-Curtis and weighted UniFrac distances. The vertical
 solid line indicates the higher threshold that was added in this study
 to explore the effects of sequencing depths. The higher threshold was
 11,879 sequences for the sleep apnea dataset, 13,755 sequences for the
-sponges dataset, and 10,439 sequences for the CRC dataset.
+sponges dataset, and 10,439 sequences for the colorectal cancer dataset.
 
 \newpage{}
 
-\includegraphics[width=0.8\textwidth,height=\textheight]{../figures/fst_knn_depth_diff_cs.png}
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{../figures/fst_knn_depth_diff_cs.png}
 
 \textbf{Figure 6. Increasing the minimum number of sequences per sample
-from 1,000 to more than 10,000 resulted in larger PERMANOVA Fst test
-statistics and KNN accuracies.} Calculation of the difference in Fst was
+from 1,000 to more than 10,000 resulted in larger PERMANOVA F statistics
+and KNN accuracies.} Calculation of the difference in F statistic was
 performed using values obtained when running PERMANOVA with all
 available samples. The difference in Bray-Curtis PCoA values was 220\%
 and is not shown for the sleep apnea dataset because it was so much
 larger than the other values. Calculation of the difference in
 classification accuracy was performed using the largest possible
 balanced design, which included 78 samples for the sponges dataset, 87
-samples for the sleep apnea dataset, and 229 samples for the CRC
-dataset. Because 10 iterations of the sample subsampling were performed
-we measured the difference in accuracy for each iteration. Each point
-represents the median difference and the confidence intervals represent
-the range. The vertical gray lines indicate where the Fst or accuracy
-was not different between using 1,000 sequences and the number of
-sequences indicated for that dataset in the legend.
+samples for the sleep apnea dataset, and 229 samples for the colorectal
+cancer dataset. Because 10 iterations of the sample subsampling were
+performed we measured the difference in accuracy for each iteration.
+Each point represents the median difference and the confidence intervals
+represent the range. The vertical gray lines indicate where the F
+statistic or accuracy was not different between using 1,000 sequences
+and the number of sequences indicated for that dataset in the legend.
 
 \newpage{}
 
-\includegraphics{../figures/heatmap_permanova_sig_cs.png}
+\pandocbounded{\includegraphics[keepaspectratio]{../figures/heatmap_permanova_sig_cs.png}}
 
 \textbf{Figure 7. Although all methods perform well on datasets with a
 large effect size between treatment groups, the RPCA-based methods
@@ -1441,7 +1475,7 @@ subsamplings yielded a significant result.
 
 \newpage{}
 
-\includegraphics{../figures/heatmap_knn_cs.png}
+\pandocbounded{\includegraphics[keepaspectratio]{../figures/heatmap_knn_cs.png}}
 
 \textbf{Figure 8. The RPCA-based methods performed worse or at best, no
 better, than other methods for classifying samples when using KNN
@@ -1452,7 +1486,7 @@ those subsamplings.
 
 \newpage{}
 
-\includegraphics{../figures/heatmap_depth_sig.png}
+\pandocbounded{\includegraphics[keepaspectratio]{../figures/heatmap_depth_sig.png}}
 
 \textbf{Figure 9. RPCA did not alleviate clustering of samples by
 sequencing depth; rarefaction and subsampling did.} The numbers within
@@ -1465,7 +1499,7 @@ PERMANOVA. Each simulation was repeated 10 times.
 
 \subsection{Supplemental Figures}\label{supplemental-figures}
 
-\includegraphics{../figures/knn_methods_martino.png}
+\pandocbounded{\includegraphics[keepaspectratio]{../figures/knn_methods_martino.png}}
 
 \textbf{Figure S1. The choice of K and the size of the training and
 testing data sets had a minimal effect on KNN classification accuracy
@@ -1477,7 +1511,7 @@ number of neighbors using 60:40 and 80:20 training-testing splits. The
 
 \newpage{}
 
-\includegraphics{../figures/knn_methods_pds.png}
+\pandocbounded{\includegraphics[keepaspectratio]{../figures/knn_methods_pds.png}}
 
 \textbf{Figure S2. The choice of K and the size of the training and
 testing data sets had a minimal effect on KNN classification accuracy
@@ -1486,6 +1520,7 @@ split 60\% of their data into a training set using 13 neighbors and
 tested on the remaining 40\%. Following Topcuoglu et al. (28), I
 optimized the number of neighbors using 60:40 and 80:20 training-testing
 splits. The 80:20 data were used in the Results section.
+
 
 
 
