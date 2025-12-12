@@ -1,6 +1,6 @@
-# Re-evaluating *A Novel Sparse Compositional Technique...*
+# Rarefaction is better than robust Aitchison PCA and other compositional data analysis methods at controlling for uneven sequencing effort
 
-This is a reanalaysis of Martino et al.'s 2019 manuscript, ["A Novel Sparse Compositional Technique Reveals Microbial Perturbations"](https://journals.asm.org/doi/10.1128/msystems.00016-19) published *mSystems*. The benchmarking code, primarily
+This is a reanalysis of Martino et al.'s 2019 manuscript, ["A Novel Sparse Compositional Technique Reveals Microbial Perturbations"](https://journals.asm.org/doi/10.1128/msystems.00016-19) published *mSystems*. The benchmarking code, primarily
 written in Python, was obtained from [its GitHub repository](https://github.com/cameronmartino/deicode-benchmarking). I have a copy of the repository as originally posted on January 28, 2019 in the `deicode-benchmarking` directory.
 
 
