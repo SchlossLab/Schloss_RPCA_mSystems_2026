@@ -985,3 +985,15 @@ rule supplemental_text:
     """
     quarto render submission/supplemental_text.qmd
     """
+
+
+rule response_to_reviewers:
+  input:
+    "submission/response_to_reviewers.qmd",
+  output:
+    expand("submission/response_to_reviewers.{format}",
+          format = ["pdf", "md", "tex"])
+  shell:
+    """
+    quarto render submission/response_to_reviewers.qmd
+    """

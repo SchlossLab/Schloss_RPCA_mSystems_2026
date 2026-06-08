@@ -1,0 +1,162 @@
+---
+format:
+  pdf:
+    documentclass: article
+    keep-tex: true
+    lof: false
+    toc: false
+    number-sections: false
+    mainfont: "Nimbus Sans"
+  docx: default
+  gfm: default
+bibliography: references.bib
+csl: asm.csl
+geometry: margin=1.0in
+fontsize: 11pt
+linestretch: 1.75
+header-includes:
+ - \usepackage[left]{lineno}
+ - \linenumbers
+ - \modulolinenumbers
+ - \usepackage{helvet}
+ - \renewcommand*\familydefault{\sfdefault}
+ - \usepackage[T1]{fontenc}
+execute:
+  echo: FALSE
+  tidy: TRUE
+  eval: TRUE
+  warning: FALSE
+  message: FALSE
+  cache: FALSE
+---
+
+\raggedright
+
+## Editor's comments:
+
+**The reviewers are in strong agreement that the current scope of the study is too narrow and the presentation too one-sided for publication in mSystems. Both recommend an expansion of the study to encompass both more datasets and more metrics of success, and suggest adopting a more neutral tone with a focus on when rarefaction is most appropriate and when it may not be.**
+
+**If these changes are beyond the scope of the study the manuscript may be more appropriate for Spectrum but would still require some revision and review.**
+
+.  
+.  
+.  
+
+
+## Reviewer #1
+
+**This manuscript revisits the long-standing debate on rarefaction vs normalization/compositional approaches for uneven sequencing depth and concludes that rarefaction is superior. The author re-analyzes Martino et al.’s RPCA benchmarking, reports coding and methodological issues, modifies the simulations, and re-runs comparisons, ultimately concluding that rarefaction “remains the preferred method.” The author has made valuable contributions in recent years advocating for rarefaction through systematic reanalysis of prior benchmarking studies (Schloss, 2023, 2024.), establishing rarefaction's practical utility. While the paper raises important reproducibility concerns and provides useful re-analysis, the current manuscript reads primarily as a targeted rebuttal rather than a balanced and comprehensive benchmarking study. Here are the major concerns**
+
+.  
+.  
+.  
+
+**1. The manuscript addresses a focused methodological question through a reanalysis and modification of a previously published benchmark (Martino et al.). While this re-evaluation is useful and technically sound, the overall scope and impact may be limited. The study primarily revisits an existing simulation framework, identifies implementation issues, and evaluates rarefaction under revised settings using a relatively narrow set of tasks (e.g., PERMANOVA power, KNN classification, and sequencing-depth sensitivity). As currently framed, the work reads more as a methodological clarification or refinement of a prior benchmark than as a broadly impactful advance for the microbiome field. To strengthen the manuscript’s impact, the evaluation should be expanded to include a broader range of common microbiome analyses—such as differential abundance testing, diversity estimation, distance metrics, regression models, multivariate inference, and count-based modeling—so that the conclusions are better supported across the wider microbiome workflow.**
+
+.  
+.  
+.  
+
+**2. The manuscript is currently framed more as a rebuttal to a specific prior study than as a neutral benchmark. The narrative repeatedly focuses on identifying issues in Martino et al.’s work (e.g., implementation details, simulation choices, and comparison setup), which shifts the focus toward a single-case critique and limits the breadth of evidence needed to support general conclusions. A robust benchmarking study would ideally include multiple methods, diverse simulation frameworks, and evaluations across a range of assumptions to assess generalizability. In contrast, the present work centers on critiquing one benchmark, replacing it with a revised simulation framework, and drawing broader conclusions. This narrower design limits the generalizability of the findings and suggests that a more balanced, multi-method benchmarking approach would strengthen the manuscript.**
+
+.  
+.  
+.  
+
+**3. The revised simulation framework still reflects a single modeling perspective. Although the manuscript critiques the simulations of Martino et al. and replaces them with a modified design, this does not remove simulation dependence but rather substitutes one set of assumptions for another. Key parameters, such as the number of features, the number of differential taxa, and calibration of effect sizes to achieve a specific PERMANOVA power, represent design choices that can strongly influence comparative performance. A comprehensive benchmarking study would ideally evaluate multiple simulation paradigms, including established microbiome simulation tools (e.g., MIDASim, GUniFrac-based simulations), along with a range of effect sizes, sparsity levels, and compositional structures. As currently presented, the results primarily reflect conclusions under a single simulation framework, which limits the generalizability of the findings.**
+
+.  
+.  
+.  
+
+**4. The manuscript demonstrates careful attention to detail in examining the statement that “the most notable difference to Martino’s version of the figure was that they inadvertently switched the labels of the axes and performed the One CLR transformation on features rather than samples.” However, this interpretation may be somewhat over-scrutinized. Differences in data orientation are very common between statistics and biology: statistical workflows typically place samples in rows and variables in columns, whereas biological pipelines often arrange features in rows and samples in columns. Depending on the input format used in Martino’s implementation, their approach may simply reflect the statistical convention and therefore may not require transposing the data. This point should ideally be confirmed with the authors of the original paper before drawing firm conclusions.**
+
+.  
+.  
+.  
+
+**5. This statement in line 155 appears overly critical. In practice, focusing on the first two axes is a common and reasonable convention in microbiome analyses because ordination plots are primarily used for visualization. When group differences are strong, they typically appear in the leading axes for PCA/PCoA-type methods. If signals emerge only in higher dimensions, this more likely indicates a weaker or more diffuse effect rather than a methodological flaw. RPCA does not inherently require the use of two axes; the rank is a user-defined parameter similar to the number of principal components in PCA. From this perspective, the original choice to focus on two axes does not constitute an error. Instead, the present manuscript’s extension to additional axes can be viewed as a useful expansion that explores additional scenarios. However, this extension is limited in scope and largely represents a comparison with a single method, which reduces the broader impact of this point.**
+
+.  
+.  
+.  
+
+**6. Some researchers view compositional transformations as an alternative to rarefaction rather than a preprocessing step that must be applied after rarefaction. In the compositional data analysis framework, library size differences are treated as a scaling factor, and methods such as CLR or other normalization approaches are intended to account for this directly. From this perspective, applying rarefaction prior to CLR may be considered redundant, as both steps are intended to address sequencing depth effects, albeit from different methodological viewpoints. This broader context may also help explain why Martino et al. did not apply rarefaction prior to RPCA. Their work is grounded in the compositional data analysis paradigm, which assumes that sequencing counts are compositional and that differences in library size can be addressed through normalization or log-ratio transformations rather than subsampling. From this perspective, the absence of rarefaction is a methodological choice consistent with that framework rather than an oversight.**
+
+.  
+.  
+.  
+
+**7. In line 345, the statement that RPCA-based methods performed worse when the effect size was small should be interpreted cautiously. Reduced performance in low–effect size settings may reflect the well-known trade-off associated with log-ratio transformations, where variance stabilization and compositional correction can come at the cost of statistical power, particularly in sparse microbiome data. Reduced performance in low–effect size settings is not unexpected and may reflect the known trade-off associated with log-ratio transformations, which tend to shrink variability and attenuate contrasts, particularly in sparse microbiome data. As such, this observation does not necessarily indicate a flaw specific to RPCA, but may instead reflect broader properties of CLR-based approaches.**
+
+.  
+.  
+.  
+
+**8. The rarefaction versus normalization debate has persisted for over a decade, originating from fundamentally different statistical philosophies. McMurdie & Holmes (2014) criticized rarefaction as "inadmissible," yet acknowledged that transformations can reduce power depending on model assumptions—a critical nuance often ignored. Weiss et al. (2017, Microbiome) demonstrated that normalization performance depends strongly on data characteristics, with no single method universally superior. Despite this established complexity, the current manuscript fails to comprehensively address why this debate persists or how to resolve it. The analysis does not answer fundamental questions: Under what specific conditions (sparsity, effect size, library size variation) does each approach maintain valid error control and optimal power? How do rarefaction's theoretical limitations (no variance model, arbitrary thresholds, information loss) compare quantitatively to log-ratio transformations' known drawbacks in sparse data (Gloor et al., 2017, Front. Microbiol.)? By selectively benchmarking RPCA against rarefaction using metrics and datasets that favor depth-equalizing methods, rather than systematically characterizing when different approaches succeed or fail, the manuscript perpetuates advocacy rather than providing principled guidance. Both approaches have documented limitations. Rarefaction has been criticized for inducing bias and discarding data (Willis, 2019; McMurdie & Holmes, 2014), while normalization methods show data-dependent performance and can inflate false discovery rates (Weiss et al., 2017; Lin & Peddada, 2020). A comprehensive evaluation would focus on developing decision frameworks for method selection based on dataset characteristics. The long-standing debate will continue until the field moves beyond polarized positions and establishes clear, evidence-based guidelines for when rarefaction's empirical robustness versus normalization's statistical rigor is most appropriate.**
+
+.  
+.  
+.  
+
+## Reviewer #2
+
+**This manuscript challenges the prevailing compositional-data paradigm by arguing that rarefaction can outperform RPCA and related methods in controlling uneven sequencing depth. The author presents extensive benchmarking across the Martino et al. datasets and additional datasets, which is valuable. However, several conceptual, methodological, and presentation issues should be addressed before the conclusions can be fully supported.**
+
+.  
+.  
+.  
+
+**1. Although rarefaction outperforms compositional methods in certain scenarios, the manuscript draws a very strong conclusion that "Rarefaction remains the preferred method." This framing is unnecessarily polarizing and overlooks the contextual nature of normalization choices. The more relevant question is not which method is universally superior, but under which conditions each method is appropriate. The author should explicitly discuss scenarios such as:**
+**a) part of samples with low sequencing depth or sparse counts;**
+**b) strong batch effects and cross-study heterogeneity in amplicon datasets;**
+**c) variability in rRNA gene copy number across microbes.**
+
+**A nuanced decision framework (rather than a universal recommendation) would significantly improve the manuscript's impact and fairness.**
+
+.  
+.  
+.  
+
+**2. The manuscript primarily evaluates preprocessing methods using classification and PERMANOVA. However, microbiome studies also aim to identify biomarkers, infer ecological structure, or construct co-occurrence networks. Rarefaction and CLR-based transformations can affect these downstream analyses differently. At minimum, the author should discuss potential implications for biomarker discovery and network inference, or ideally provide benchmarking results for at least one such downstream task.**
+
+.  
+.  
+.  
+
+**3. In datasets with unequal group sizes (e.g., the sponge dataset), accuracy alone is not an adequate performance metric. AUROC, AUPRC, or balanced accuracy would provide a more comprehensive assessment. The manuscript should report at least AUROC for imbalanced scenarios.**
+
+.  
+.  
+.  
+
+**4. The author states that weighted UniFrac was not included due to difficulty in generating reliable trees and because Bray-Curtis and weighted UniFrac rarely disagree (but no reference was cited in the manuscript). Since all sequences were mapped to the SILVA database, which provides a reference phylogeny. Therefore, UniFrac distances could be computed using the SILVA tree.**
+
+.  
+.  
+.  
+
+**5. The analysis focuses on amplicon OTU/ASV datasets. It remains unclear whether the conclusions extend to shotgun metagenomic profiles, which have different count distributions and compositional properties. The author should either provide additional analyses or explicitly discuss the expected applicability and limitations in shotgun metagenomics.**
+
+.  
+.  
+.  
+
+**6. For multi-panel figures (e.g., Figures 1 and 3), each panel should be explicitly described in the figure legend. This will improve readability and reduce ambiguity for readers and reviewers.**
+
+.  
+.  
+.  
+
+**7. This manuscript adopts a strongly adversarial tone toward Martino et al., using phrases such as "straw man," "critical errors," and "foreign to standard microbiome analyses." While scientific critique is appropriate, such language may be perceived as polemical and could detract from the manuscript's reception. I recommend moderating the rhetoric and focusing on technical arguments rather than adversarial framing.**
+
+.  
+.  
+.  
+
+**8. In addition, I also suggest to change the article type from "Research Article" to "Methods and Protocols" or "Opinions/Hypotheses".**
+
+.  
+.  
+.  
+
