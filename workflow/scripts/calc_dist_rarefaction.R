@@ -3,6 +3,7 @@
 library(tidyverse)
 library(vegan)
 library(glue)
+library(data.table)
 
 set.seed(19760620)
 
@@ -20,7 +21,7 @@ output_fname <- str_replace(count_table_name,
                             "raw.tsv.gz",
                             glue("rare.{distance_method}.dist.gz"))
 
-read_tsv(count_table_name) %>%
+fread(count_table_name) %>%
   column_to_rownames("sample") %>%
   avgdist(sample = seq_depth, dmethod = distance_method, iterations = 100) %>%
   as.matrix() %>%

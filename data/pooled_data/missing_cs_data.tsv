@@ -1,0 +1,3 @@
+dataset	column	n_otus	n_tree_tips	n_missing	percent_missing
+sponges	health_status	11160	11074	86	0.6888974840923551
+sleep_apnea	exposure_type	1369	1345	24	39.71158988026378

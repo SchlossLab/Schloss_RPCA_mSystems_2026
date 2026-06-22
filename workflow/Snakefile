@@ -48,9 +48,9 @@ paritions_reps = {
 }
 
 processes_dists = {
-  'raw':          {'euclidean', 'bray'},
-  'rare':         {'euclidean', 'bray'},
-  'sub':          {'euclidean', 'bray'},
+  'raw':          {'euclidean', 'bray', 'wunifrac'},
+  'rare':         {'euclidean', 'bray', 'wunifrac'},
+  'sub':          {'euclidean', 'bray', 'wunifrac'},
   'relabund':     {'euclidean', 'bray'},
   'oclr':         {'euclidean'},
   'nclr':         {'euclidean'},
@@ -62,7 +62,7 @@ processes_dists = {
   'gemelli_auto': {'euclidean'},
   'optspace':     {'euclidean'},
   'bray_pcoa':    {'euclidean'},
-  'srs':          {'bray'},
+  'srs':          {'bray', 'wunifrac'},
   'css':          {'bray'},
   'deseq2':       {'euclidean'}
 }
@@ -112,18 +112,25 @@ for ds in seq_depths.keys():
 zclr_regex = r'pds/data.[12]000\..*zclr'
 deseq2_regex_a = r'positive_pds/data.1000\..*deseq2'
 deseq2_regex_b = r'negative/data.[12]000\..*deseq2'
-regexes_combined = re.compile("(%s|%s|%s)" % (zclr_regex, deseq2_regex_a, deseq2_regex_b))
+wunifrac_regex_a = r'positive.*/*unifrac'
+wunifrac_regex_b = r'negative.*/*unifrac'
+wunifrac_regex_c = r'overlap.*/*unifrac'
+regexes_combined = re.compile("(%s|%s|%s|%s|%s|%s)" % (zclr_regex, deseq2_regex_a, deseq2_regex_b, wunifrac_regex_a, wunifrac_regex_b, wunifrac_regex_c))
 
 pcoa_axes_files = [i for i in pcoa_axes_files if not regexes_combined.search(i)]
 permanova_treatment_files = [i for i in permanova_treatment_files if not regexes_combined.search(i)]
 knn_results_files = [i for i in knn_results_files if not regexes_combined.search(i)]
+permanova_size_files = [i for i in permanova_size_files if not regexes_combined.search(i)]
 
 gemelli_auto_files = [s for s in pcoa_axes_files if 'auto' in s]
 
 rule targets:
   input:
-    "submission/manuscript.pdf",
-    "submission/supplemental_text.pdf"
+    "data/pooled_data/permanova_treatment.tsv.gz",
+    "data/pooled_data/permanova_size.tsv.gz",
+    "data/pooled_data/knn_results.tsv.gz"
+    # "submission/manuscript.pdf",
+    # "submission/supplemental_text.pdf"
 
 ##******************************************************************************
 ##
@@ -139,7 +146,9 @@ rule targets:
 ##
 ## For the sponges and sleep_apnea, I am modifying the original code to (i) use
 ## more sensible sequencing depths and (ii) make it easier to have 10 replicates
-## of each partition (original only had 9).
+## of each partition (original only had 9). I also found that the trees the 
+## authors provided for their case studies were missing a number of the
+## sequences in the count table; recreating those trees using mothur
 ##
 ## I have added a CRC dataset that doesn't have as large a treatment effect as
 ## was seen in the simulations and sponges and sleep_apnea case studies. 
@@ -160,6 +169,18 @@ rule decompress_biom_casestudy:
       gunzip -c {input.metadata_gz} > {output.metadata}
     """
 
+rule get_silva_reference:
+  input:
+    script="workflow/scripts/get_silva_reference.sh"
+  output:
+    "data/references/silva.v4.align"
+  conda:
+    "envs/mothur.yml"
+  shell:
+    """
+    {input.script}
+    """
+
 rule collect_data_metadata_cs:
   input:
     biom="data/{case_study}/table.biom",
@@ -167,6 +188,7 @@ rule collect_data_metadata_cs:
     rscript="workflow/scripts/collect_data_metadata_cs.R"
   output:
     "data/{case_study}/data_treatment.tsv.gz",
+    "data/{case_study}/data_treatment.fasta",
   params:
     column=lambda wcs: treatment_groups[wcs.case_study]
   resources:
@@ -178,14 +200,55 @@ rule collect_data_metadata_cs:
     {input.rscript} {input.biom} {input.metadata} {params.column}
     """
 
+rule build_data_products_cs:
+  input:
+    reference="data/references/silva.v4.align",
+    count_file="data/{case_study}/data_treatment.tsv.gz",
+    fasta_file="data/{case_study}/data_treatment.fasta",
+    mothur_script="workflow/scripts/build_data_products_cs.sh"
+  output:
+    "data/{case_study}/data_treatment.tre"
+  conda:
+    "envs/mothur.yml"
+  shell:
+    """
+    {input.mothur_script} {input.fasta_file} {input.count_file}
+    """
+
+
+
+rule build_data_products_crc:
+  input:
+    script="workflow/scripts/build_data_products_crc.sh",
+    fasta="data/crc/data.fasta.gz",
+    ctable="data/crc/data.count_table.gz",
+    taxonomy="data/crc/data.taxonomy.gz"
+  output:
+    "data/crc/data.otu.shared.gz",
+    "data/crc/data.otu.fasta",
+    "data/crc/data.otu.count_table",
+    "data/crc/data.otu.tre"
+  conda:
+    "envs/mothur.yml"
+  resources:
+    mem_mb=12000,
+    threads=16,
+  shell:
+    """
+    mkdir -p data/crc
+    {input.script} data/crc {resources.threads}
+    """
+
 rule collect_data_metadata_crc:
   input:
     rscript="workflow/scripts/collect_data_metadata_crc.R",
     shared="data/crc/data.otu.shared.gz",
-    metadata="data/crc/sra_info.tsv.gz"
+    metadata="data/crc/sra_info.tsv.gz",
+    tree="data/crc/data.otu.tre",
+    fasta="data/crc/data.otu.fasta"
   output:
-    "data/crc/data.{depth, \\d+}.raw.tsv.gz",
-    "data/crc/data.{depth, \\d+}.design",
+    "data/crc/data_treatment.tsv.gz",
+    "data/crc/data_treatment.tre",
   shell:
     """
     mkdir -p data/crc  
@@ -229,16 +292,19 @@ rule collect_data_metadata_pds:
 
 rule remove_rare_samples:
   input:
-    tsv="data/{case_study}/data_treatment.tsv.gz",
-    rscript = "workflow/scripts/remove_rare_samples.R"
+    rscript = "workflow/scripts/remove_rare_samples.R",
+    count_file="data/{case_study}/data_treatment.tsv.gz",
+    tree="data/{case_study}/data_treatment.tre",
   output:
     counts = "data/{case_study}/data.{depth}.all_1.raw.tsv.gz",
+    tree = "data/{case_study}/data.{depth}.all_1.raw.tre",
+    count_table = "data/{case_study}/data.{depth}.all_1.raw.count_table",
     design = "data/{case_study}/data.{depth}.all_1.design",
   wildcard_constraints:
       case_study="sponges|sleep_apnea|crc"
   shell:
     """
-    {input.rscript} {input.tsv} {wildcards.depth}
+    {input.rscript} {input.count_file} {input.tree} {wildcards.depth}
     """
 
 ##******************************************************************************
@@ -254,45 +320,53 @@ rule remove_rare_samples:
 
 rule partition_by_nsamples:
   input:
-    all =     "data/{case_study}/data.{depth}.all_1.raw.tsv.gz",
-    design =  "data/{case_study}/data.{depth}.all_1.design",
-    rscript = "workflow/scripts/partition_by_nsamples.R"
+    counts = "data/{case_study}/data.{depth}.all_1.raw.tsv.gz",
+    tree = "data/{case_study}/data.{depth}.all_1.raw.tre",
+    design = "data/{case_study}/data.{depth}.all_1.design",
+    rscript = "workflow/scripts/partition_by_nsamples.R",
+    patch = "workflow/scripts/ape_patch.R"
   output:
     "data/{case_study}/data.{depth, \\d+}.{partition, \\d+}_{rep, \\d+}.raw.tsv.gz",
+    "data/{case_study}/data.{depth, \\d+}.{partition, \\d+}_{rep, \\d+}.raw.tre",
     "data/{case_study}/data.{depth, \\d+}.{partition, \\d+}_{rep, \\d+}.design",
-  # group:
-  #   "partition_by_nsamples"
-  # resources:
-  #   mem_mb=200
+    "data/{case_study}/data.{depth, \\d+}.{partition, \\d+}_{rep, \\d+}.raw.count_table",
+  group:
+    "partition_by_nsamples"
+  resources:
+    mem_mb=200
   wildcard_constraints:
       case_study="sponges|sleep_apnea|crc"
   shell:
     """
-    {input.rscript} {input.all} {input.design} {wildcards.partition} {wildcards.rep}
+    {input.rscript} {input.counts} {input.tree} {input.design} {wildcards.partition} {wildcards.rep}
     """
 
 rule partition_by_sizes_cs:
   input:
-    all =     "data/{case_study}/data.10000.all_1.raw.tsv.gz",
-    design =  "data/{case_study}/data.10000.all_1.design",
-    rscript = "workflow/scripts/partition_by_size.R"
+    count_file = "data/{case_study}/data.10000.all_1.raw.tsv.gz",
+    tree = "data/{case_study}/data.10000.all_1.raw.tre",
+    design = "data/{case_study}/data.10000.all_1.design",
+    rscript = "workflow/scripts/partition_by_size.R",
+    patch = "workflow/scripts/ape_patch.R"
   output:
     "data/{case_study}/data.5000.size_{rep, \\d+}.raw.tsv.gz",
+    "data/{case_study}/data.5000.size_{rep, \\d+}.raw.tre",
     "data/{case_study}/data.5000.size_{rep, \\d+}.design",
+    "data/{case_study}/data.5000.size_{rep, \\d+}.raw.count_table",
   wildcard_constraints:
     case_study = "crc|sleep_apnea|sponges"
-  # group:
-  #   "partition_by_size"
-  # resources:
-  #   mem_mb=500
+  group:
+    "partition_by_size"
+  resources:
+    mem_mb=1000
   shell:
     """
-    {input.rscript} {input.all} {input.design} {wildcards.rep}
+    {input.rscript} {input.count_file} {input.tree} {input.design} {wildcards.rep}
     """
 
 rule partition_by_sizes_sim:
   input:
-    all =     "data/{simulation}/data.10000.100_{rep}.raw.tsv.gz",
+    count_file = "data/{simulation}/data.10000.100_{rep}.raw.tsv.gz",
     design =  "data/{simulation}/data.10000.100_{rep}.design",
     rscript = "workflow/scripts/partition_by_size.R"
   output:
@@ -300,13 +374,13 @@ rule partition_by_sizes_sim:
     "data/{simulation}/data.5000.size_{rep, \\d+}.design",
   wildcard_constraints:
     simulation = "positive|negative|overlap|positive_pds|negative_pds|overlap_pds"
-  # group:
-  #   "partition_by_size"
-  # resources:
-  #   mem_mb=500
+  group:
+    "partition_by_size"
+  resources:
+    mem_mb=500
   shell:
     """
-    {input.rscript} {input.all} {input.design} {wildcards.rep}
+    {input.rscript} {input.count_file} "no_tree" {input.design} {wildcards.rep}
     """
 
 
@@ -326,10 +400,10 @@ rule transform_clr:
     tsv="data/{dataset}/data.{other_stuff}.{trans}clr.tsv.gz",
   wildcard_constraints:
     trans="n|z|o"
-  # group:
-  #   "transform_clr"
-  # resources:
-  #   mem_mb=600
+  group:
+    "transform_clr"
+  resources:
+    mem_mb=600
   shell:
     """
     {input.rscript} {input.tsv}
@@ -341,10 +415,10 @@ rule transform_srs:
     rscript="workflow/scripts/transform_srs.R"
   output:
     tsv="data/{dataset}/data.{other_stuff}.srs.tsv.gz",
-  # group:
-  #   "transform_srs"
-  # resources:
-  #   mem_mb=600
+  group:
+    "transform_srs"
+  resources:
+    mem_mb=600
   shell:
     """
     {input.rscript} {input.tsv}
@@ -356,10 +430,10 @@ rule transform_relabund:
     rscript="workflow/scripts/transform_relabund.R"
   output:
     tsv="data/{dataset}/data.{other_stuff}.relabund.tsv.gz",
-  # group:
-  #   "transform_relabund"
-  # resources:
-  #   mem_mb=600
+  group:
+    "transform_relabund"
+  resources:
+    mem_mb=600
   shell:
     """
     {input.rscript} {input.tsv}
@@ -373,10 +447,10 @@ rule transform_css:
     tsv="data/{dataset}/data.{other_stuff}.css.tsv.gz",
   conda:
     "envs/metagenomeseq.yml"
-  # group:
-  #   "transform_css"
-  # resources:
-  #   mem_mb=600
+  group:
+    "transform_css"
+  resources:
+    mem_mb=600
   shell:
     """
     {input.rscript} {input.tsv}
@@ -390,10 +464,10 @@ rule transform_deseq2:
     tsv="data/{dataset}/data.{other_stuff}.deseq2.tsv.gz",
   conda:
     "envs/deseq2.yml"
-  # group:
-  #   "transform_deseq2"
-  # resources:
-  #   mem_mb=600
+  group:
+    "transform_deseq2"
+  resources:
+    mem_mb=1000
   shell:
     """
     {input.rscript} {input.tsv}
@@ -416,13 +490,64 @@ rule calc_dist_norare:
   wildcard_constraints:
     process="oclr|nclr|zclr|raw|relabund|srs|css|deseq2",
     distance="euclidean|bray"
-  # group:
-  #   "calc_dist_norare"
-  # resources:
-  #   mem_mb=1000
+  group:
+    "calc_dist_norare"
+  resources:
+    mem_mb=1000
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance}
+    """
+
+rule prepare_srs_for_wunifrac:
+  input:
+    tsv="data/{dataset}/data.{other_stuff}.srs.tsv.gz",
+    tree="data/{dataset}/data.{other_stuff}.raw.tre",
+    rscript="workflow/scripts/prepare_srs_for_wunifrac.R"
+  output:
+    "data/{dataset}/data.{other_stuff}.srs.count_table",
+    "data/{dataset}/data.{other_stuff}.srs.tre",
+  shell:
+    """
+    {input.rscript} {input.tsv} {input.tree}
+    """
+
+
+rule calc_dist_norare_wunifrac:
+  input:
+    tree_file="data/{dataset}/data.{other_stuff}.{process}.tre",
+    count_file="data/{dataset}/data.{other_stuff}.{process}.count_table",
+    script="workflow/scripts/calc_dist_norare_wunifrac.sh"
+  output:
+    "data/{dataset}/data.{other_stuff}.{process}.wunifrac.dist.gz"
+  conda:
+    "envs/mothur.yml"
+  wildcard_constraints:
+    process="raw|srs"
+  resources:
+    threads=16,
+  shell:
+    """
+    {input.script} {input.tree_file} {input.count_file} {resources.threads}
+    """
+
+
+ruleorder: calc_dist_subsample_wunifrac > calc_dist_subsample
+
+rule calc_dist_subsample_wunifrac:
+  input:
+    tree_file="data/{dataset}/data.{other_stuff}.raw.tre",
+    count_file="data/{dataset}/data.{other_stuff}.raw.count_table",
+    script="workflow/scripts/calc_dist_wrare_wunifrac.sh"
+  output:
+    "data/{dataset}/data.{other_stuff}.sub.wunifrac.dist.gz"
+  conda:
+    "envs/mothur.yml"
+  resources:
+    threads=16,
+  shell:
+    """
+    {input.script} {input.tree_file} {input.count_file} 1 {resources.threads}
     """
 
 rule calc_dist_subsample:
@@ -431,13 +556,32 @@ rule calc_dist_subsample:
     rscript="workflow/scripts/calc_dist_subsample.R"
   output:
     "data/{dataset}/{data, [a-z]+}.{depth, [0-9]+}.{other_stuff}.sub.{distance}.dist.gz"
-  # group:
-  #   "calc_dist_sub"
-  # resources:
-  #   mem_mb=1000
+  group:
+    "calc_dist_subsample"
+  resources:
+    mem_mb=1000
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance} {wildcards.depth}
+    """
+
+ruleorder: calc_dist_rarefaction_wunifrac > calc_dist_rarefaction
+
+rule calc_dist_rarefaction_wunifrac:
+  input:
+    tree_file="data/{dataset}/data.{other_stuff}.raw.tre",
+    count_file="data/{dataset}/data.{other_stuff}.raw.count_table",
+    script="workflow/scripts/calc_dist_wrare_wunifrac.sh"
+  output:
+    "data/{dataset}/data.{other_stuff}.rare.wunifrac.dist.gz"
+  conda:
+    "envs/mothur.yml"
+  resources:
+    threads=16,
+    mem_mb=95000 # for crc size
+  shell:
+    """
+    {input.script} {input.tree_file} {input.count_file} 100 {resources.threads}
     """
 
 rule calc_dist_rarefaction:
@@ -446,10 +590,10 @@ rule calc_dist_rarefaction:
     rscript="workflow/scripts/calc_dist_rarefaction.R"
   output:
     "data/{dataset}/{data, [a-z]+}.{depth, [0-9]+}.{other_stuff}.rare.{distance}.dist.gz"
-  # group:
-  #   "calc_dist_rare"
-  # resources:
-  #   mem_mb=2000
+  group:
+    "calc_dist_rarefaction"
+  resources:
+    mem_mb=2000
   shell:
     """
     {input.rscript} {input.tsv} {wildcards.distance} {wildcards.depth}
@@ -464,10 +608,10 @@ rule calc_dist_axes_gemelli:
     "data/{dataset}/data.{other_stuff}.gemelli_{rank}.euclidean.pcoa.axes"
   conda:
     "envs/rpca.yml"
-  # group:
-  #   "calc_dist_axes_gemelli"
-  # resources:
-  #   mem_mb=200
+  group:
+    "calc_dist_axes_gemelli"
+  resources:
+    mem_mb=1000
   shell:
     """
     {input.bash} {input.tsv} {wildcards.rank}
@@ -482,6 +626,8 @@ rule calc_dist_axes_optspace:
     "data/{dataset}/data.{other_stuff}.optspace.euclidean.pcoa.axes",
   conda:
     "envs/rpca.yml"
+  group:
+    "calc_dist_axes_optspace"
   shell:
     """
     {input.pyscript} {input.tsv}
@@ -493,10 +639,10 @@ rule calc_dist_from_pcoa:
     rscript="workflow/scripts/calc_dist_frompcoa.R"
   output:
     "data/{dataset}/data.{other_stuff}.bray_pcoa.euclidean.dist.gz"
-  # group:
-  #   "calc_dist_from_pcoa"
-  # resources:
-  #   mem_mb=1000
+  group:
+    "calc_dist_from_pcoa"
+  resources:
+    mem_mb=1000
   shell:
     """
     {input.rscript} {input.tsv}
@@ -510,10 +656,10 @@ rule calc_pcoa_from_dist:
     "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.pcoa.axes",
   wildcard_constraints:
     process="raw|oclr|nclr|zclr|rare|sub|bray_pcoa|relabund|deseq2|css|srs"
-  # group:
-  #   "calc_pcoa_from_dist"
-  # resources:
-  #   mem_mb=200
+  group:
+    "calc_pcoa_from_dist"
+  resources:
+    mem_mb=200
   shell:
     """
     {input.rscript} {input.dmatrix} {output}
@@ -537,10 +683,10 @@ rule test_permanova_treatment:
     rscript = "workflow/scripts/test_permanova_treatment.R"
   output:
     "data/{dataset}/data.{depth}.{partition}_{iter}.{process}.{dist}.permanova.tsv",
-  # group:
-  #   "test_permanova_treatment"
-  # resources:
-  #   mem_mb=1000
+  group:
+    "test_permanova_treatment"
+  resources:
+    mem_mb=1000
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -553,10 +699,10 @@ rule test_permanova_size:
     rscript = "workflow/scripts/test_permanova_size.R"
   output:
     "data/{dataset}/data.5000.size_{iter}.{process}.{dist}.permanova.tsv",
-  # group:
-  #   "test_permanova_size"
-  # resources:
-  #   mem_mb=1000
+  group:
+    "test_permanova_size"
+  resources:
+    mem_mb=1000
   shell:
     """
     {input.rscript} {input.dmatrix} {input.design} {output}
@@ -664,7 +810,7 @@ rule pool_permanova_treatment:
     tsvs = permanova_treatment_files,
     rscript = "workflow/scripts/pool_permanova_treatment.R"
   output:
-    "data/pooled_data/permanova_treatment.tsv"
+    "data/pooled_data/permanova_treatment.tsv.gz"
   shell:
     """
     {input.rscript} {input.tsvs}
@@ -675,7 +821,7 @@ rule pool_permanova_size:
     tsvs = permanova_size_files,
     rscript = "workflow/scripts/pool_permanova_size.R"
   output:
-    "data/pooled_data/permanova_size.tsv"
+    "data/pooled_data/permanova_size.tsv.gz"
   shell:
     """
     {input.rscript} {input.tsvs}
@@ -719,6 +865,22 @@ rule pool_ns:
     {input.rscript} {input.tsvs}
     """
 
+
+rule find_missing_cs_data:
+  input:
+    biom = expand("data/{dataset}/table.biom", dataset = ["sleep_apnea", "sponges"]),
+    tree = expand("deicode_benchmarking/case_studies/data/{dataset}/tree_relabelled.tre.gz",
+      dataset = ["sleep_apnea", "sponges"]),
+    metadata = expand("data/{dataset}/metadata.tsv", dataset = ["sleep_apnea", "sponges"]),
+    rscript = "workflow/scripts/find_missing_cs_data.R"
+  output:
+    "data/pooled_data/missing_cs_data.tsv"
+  resources:
+    mem_mb=12000
+  shell:
+    """
+    {input.rscript}
+    """
 
 ##******************************************************************************
 ##
@@ -796,7 +958,7 @@ rule plot_heatmap_pcoa_martino:
 rule plot_martino_fst_knn:
   input:
     rscript = "workflow/scripts/plot_martino_fst_knn.R",
-    permanova = "data/pooled_data/permanova_treatment.tsv",
+    permanova = "data/pooled_data/permanova_treatment.tsv.gz",
     knn = "data/pooled_data/knn_results.tsv.gz"
   output:
     "figures/fst_knn_martino.tiff",
@@ -830,7 +992,7 @@ rule plot_heatmap_pcoa_pds:
 rule plot_pds_fst_knn:
   input:
     rscript = "workflow/scripts/plot_pds_fst_knn.R",
-    permanova = "data/pooled_data/permanova_treatment.tsv",
+    permanova = "data/pooled_data/permanova_treatment.tsv.gz",
     knn = "data/pooled_data/knn_results.tsv.gz"
   output:
     "figures/fst_knn_pds.tiff",
@@ -857,7 +1019,7 @@ rule plot_fst_knn_depth_diff_cs:
   input:
     rscript="workflow/scripts/plot_fst_knn_depth_diff_cs.R",
     knn = "data/pooled_data/knn_results.tsv.gz",
-    permanova = "data/pooled_data/permanova_treatment.tsv"
+    permanova = "data/pooled_data/permanova_treatment.tsv.gz"
   output:
     "figures/fst_knn_depth_diff_cs.tiff"
   shell:
@@ -869,7 +1031,7 @@ rule plot_fst_knn_depth_diff_cs:
 rule plot_heatmap_permanova_sig_cs:
   input:
     rscript="workflow/scripts/plot_heatmap_permanova_sig_cs.R",
-    permanova = "data/pooled_data/permanova_treatment.tsv"
+    permanova = "data/pooled_data/permanova_treatment.tsv.gz"
   output:
     "figures/heatmap_permanova_sig_cs.tiff"
   shell:
@@ -893,7 +1055,7 @@ rule plot_heatmap_knn_cs:
 rule plot_heatmap_depth_sig:
   input:
     rscript="workflow/scripts/plot_heatmap_depth_sig.R",
-    data = "data/pooled_data/data/pooled_data/permanova_size.tsv",
+    data = "data/pooled_data/data/pooled_data/permanova_size.tsv.gz",
   output:
     "figures/heatmap_depth_sig.tiff"
   shell:
@@ -948,7 +1110,7 @@ rule make_paper:
     qmd = "submission/manuscript.qmd",
     ref = "submission/references.bib",
     csl = "submission/asm.csl",
-    data1 = "data/pooled_data/permanova_treatment.tsv",
+    data1 = "data/pooled_data/permanova_treatment.tsv.gz",
     data2 = "data/pooled_data/knn_results.tsv.gz",
     data3 = "data/pooled_data/case_study_ns.tsv",
     fig1 = "figures/heatmap_pcoa_martino.png",
@@ -974,6 +1136,7 @@ rule supplemental_text:
   input:
     "submission/supplemental_text.qmd",
     "data/pooled_data/case_study_ns.tsv",
+    "data/pooled_data/missing_cs_data.tsv",
     "deicode_benchmarking/case_studies/subsample_results/Sleep_Apnea_exposure_type_classifier.csv",
     "deicode_benchmarking/case_studies/subsample_results/Sleep_Apnea_exposure_type_fstat.csv",
     "deicode_benchmarking/case_studies/subsample_results/Sponges_health_status_classifier.csv",

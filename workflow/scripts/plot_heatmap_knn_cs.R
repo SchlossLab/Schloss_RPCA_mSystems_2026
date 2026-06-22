@@ -25,7 +25,8 @@ pretty_processes <- c(
 
 pretty_distances <- c(
   euclidean = "Euclidean",
-  bray = "Bray-Curtis"
+  bray = "Bray-Curtis",
+  wunifrac = "Weighted\nUniFrac"
 )
 
 pretty_datasets <- c(
@@ -96,5 +97,5 @@ case_study_data %>%
     panel.ontop = TRUE
   )
 
-ggsave("figures/heatmap_knn_cs.tiff", width = 8, height = 5,
+ggsave("figures/heatmap_knn_cs.tiff", width = 8, height = 6.5,
       compression = "lzw+p")

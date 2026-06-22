@@ -29,7 +29,7 @@ pretty_distance <- c(
   bray = "Bray-Curtis"
 )
 
-overlap_power <- read_tsv("data/pooled_data/permanova_treatment.tsv") %>%
+overlap_power <- read_tsv("data/pooled_data/permanova_treatment.tsv.gz") %>%
   filter(dataset %in% simulations) %>%
   filter(process %in% processes) %>%
   select(-dataset, -nsamples_per_group) %>%

@@ -2,21 +2,26 @@
 
 library(tidyverse)
 library(data.table)
+library(ape)
 library(glue)
-
+source("workflow/scripts/ape_patch.R")
 
 args <-  commandArgs(trailingOnly = TRUE)
 count_in_fname <- args[1]
-design_in_fname <- args[2]
-seed <- args[3]
+tree_in_fname <- args[2] # if == "no_tree" skips tree processing
+design_in_fname <- args[3]
+seed <- args[4]
 
 # count_in_fname <- "data/sponges/data.10000.all_1.raw.tsv.gz"
+# tree_in_fname <- "data/sponges/data.10000.all_1.raw.tre"
 # design_in_fname <- "data/sponges/data.10000.all_1.design"
+# seed <- 1
 
 # count_in_fname <- "data/positive/data.10000.100_1.raw.tsv.gz"
+# tree_in_fname <- "no_tree"
 # design_in_fname <- "data/positive/data.10000.100_1.design"
-
 # seed <- 1
+
 
 set.seed(seed)
 
@@ -36,7 +41,7 @@ design_data <- read_tsv(design_in_fname,
 
 
 count_design <- inner_join(count_data, design_data, by = "sample") %>%
-  pivot_longer(cols = starts_with("OTU")) %>%
+  pivot_longer(cols = -c(sample, treatment)) %>%
   filter(value > 0) %>%
   uncount(weights = value)
 
@@ -55,9 +60,36 @@ count_design_pool <- bind_rows(count_design_10k, count_design_5k) %>%
 
 
 count_design_pool %>%
-  select(sample, starts_with("OTU")) %>%
+  select(-treatment) %>%
   write_tsv(count_out_fname)
 
 count_design_pool %>%
   select(sample, treatment) %>%
   write_tsv(design_out_fname)
+
+if(tree_in_fname != "no_tree"){
+
+  tree_out_fname <- str_replace(tree_in_fname,
+                                "\\.10000\\..*\\.raw.tre",
+                                glue(".5000.size_{seed}.raw.tre"))
+
+  counttable_out_fname <- str_replace(tree_in_fname,
+                                "\\.10000\\..*\\.raw.tre",
+                                glue(".5000.size_{seed}.raw.count_table"))
+
+  in_otu_names <- colnames(count_data)[-1]
+  out_otu_names <- colnames(count_design_pool)[-c(1, 2)]
+  remove_otu_names <- in_otu_names[!in_otu_names %in% out_otu_names]
+
+  read.tree(tree_in_fname) %>%
+    drop.tip(remove_otu_names) %>%
+    write.tree_patch(tree_out_fname)
+
+  count_design_pool %>%
+    select(-treatment) %>%
+    pivot_longer(-sample, names_to = "Representative_Sequence") %>%
+    mutate(total = sum(value), .by = Representative_Sequence) %>%
+    pivot_wider(values_from = value, names_from = sample) %>%
+    write_tsv(counttable_out_fname)
+
+}

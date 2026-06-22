@@ -26,7 +26,8 @@ pretty_processes <- c(
 
 pretty_distances <- c(
   euclidean = "Euclidean",
-  bray = "Bray-Curtis"
+  bray = "Bray-Curtis",
+  wunifrac = "Weighted\nUniFrac"
 )
 
 pretty_datasets <- c(
@@ -35,7 +36,7 @@ pretty_datasets <- c(
   crc = "Colorectal cancer"
 )
 
-case_study_data <- read_tsv("data/pooled_data/permanova_treatment.tsv") %>%
+case_study_data <- read_tsv("data/pooled_data/permanova_treatment.tsv.gz") %>%
   filter(
     dataset %in% names(pretty_datasets) &
     process != "gemelli_auto") %>%
@@ -103,5 +104,5 @@ balanced %>%
     panel.ontop = TRUE
   )
 
-ggsave("figures/heatmap_permanova_sig_cs.tiff", width = 8, height = 5,
+ggsave("figures/heatmap_permanova_sig_cs.tiff", width = 7.5, height = 6,
        compression = "lzw+p")

@@ -20,6 +20,7 @@ dependencies:
   - r-hmisc=5.1_1
   - r-here=1.0.1
   - r-reticulate=1.43.0
+  - r-ape=5.8.1
   - imagemagick=7.1.1_29
     #for supplemental text document...
   - nbclient=0.8.0

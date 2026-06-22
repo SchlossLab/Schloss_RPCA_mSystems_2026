@@ -23,4 +23,4 @@ permanova_fnames <- commandArgs(trailingOnly = TRUE)
 
 permanova_fnames %>%
   map_dfr(., parse_fnames) %>%
-  write_tsv("data/pooled_data/permanova_size.tsv")
+  write_tsv("data/pooled_data/permanova_size.tsv.gz")

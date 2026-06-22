@@ -5,6 +5,7 @@ notes.md
 .snakemake
 Rplots.pdf
 slurm-*.out
+mothur.*logfile
 
 #deicode_benchmarking/
 scratch/

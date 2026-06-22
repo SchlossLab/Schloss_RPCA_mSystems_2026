@@ -3,6 +3,7 @@
 library(tidyverse)
 library(vegan)
 library(glue)
+library(data.table)
 
 args <- commandArgs(trailingOnly = TRUE)
 
@@ -16,7 +17,7 @@ output_fname <- str_replace(count_table_name,
                                 "tsv.gz",
                                 glue("{distance_method}.dist.gz"))
 
-read_tsv(count_table_name) %>%
+fread(count_table_name) %>%
   column_to_rownames("sample") %>%
   vegdist(method = distance_method) %>%
   as.matrix() %>%

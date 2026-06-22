@@ -31,7 +31,8 @@ pretty_processes <- c(
 
 pretty_distances <- c(
   euclidean = "Euclidean",
-  bray = "Bray-Curtis"
+  bray = "Bray-Curtis",
+  wunifrac = "Weighted\nUniFrac"
 )
 
 pretty_datasets <- c(
@@ -50,7 +51,7 @@ pretty_experiments <- c(
 )
 
 
-read_tsv("data/pooled_data/permanova_size.tsv") %>%
+read_tsv("data/pooled_data/permanova_size.tsv.gz") %>%
   filter(effect == "size" & process != "gemelli_auto") %>% 
   select(dataset, rep, process, distance, p_value) %>%
   summarize(n_sig = sum(p_value < 0.05), .by = c(dataset, process, distance)) %>%
@@ -99,5 +100,6 @@ read_tsv("data/pooled_data/permanova_size.tsv") %>%
     legend.position = "none"
   )
 
-ggsave('figures/heatmap_depth_sig.tiff', width = 8, height = 5,
+ggsave('figures/heatmap_depth_sig.tiff', width = 8, height = 6,
       compression = "lzw+p")
+

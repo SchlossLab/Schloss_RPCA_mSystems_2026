@@ -4,7 +4,7 @@ library(tidyverse)
 library(glue)
 library(ggtext)
 
-permanova <- read_tsv("data/pooled_data/permanova_treatment.tsv")
+permanova <- read_tsv("data/pooled_data/permanova_treatment.tsv.gz")
 
 n_seqs_cs <- permanova %>%
   filter(nsamples_per_group == "all" & depth != 1000 & process == "raw" & distance == "bray") %>%
@@ -36,7 +36,8 @@ pretty_processes <- c(
 
 pretty_distances <- c(
   euclidean = "Euclidean",
-  bray = "Bray-Curtis"
+  bray = "Bray-Curtis",
+  wunifrac = "Weighted\nUniFrac"
 )
 
 # Need to insert the Ns
@@ -135,5 +136,5 @@ bind_rows(knn = knn_data, fst = fst_data, .id = "metric") %>%
     )
 
 ggsave(
-  "figures/fst_knn_depth_diff_cs.tiff", width = 7, height = 6,
+  "figures/fst_knn_depth_diff_cs.tiff", width = 7, height = 7,
   compression = "lzw+p")
