@@ -126,5 +126,5 @@ grid_plots <- expand_grid(sim = names(simulations),
   plot_layout(widths = 1, heights = 1)
 
 ggsave(output_fname,
-      width = 7.5, height = 12,
+      width = 7, height = 9,
       compression = "lzw+p")

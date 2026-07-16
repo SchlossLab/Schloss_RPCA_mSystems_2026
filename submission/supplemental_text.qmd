@@ -43,6 +43,9 @@ include-before-body:
 ---
 
 ```{r}
+options(tidyverse.quiet = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+
 library(reticulate)
 
 options(reticulate.conda_binary = Sys.which("mamba"))
@@ -702,7 +705,26 @@ From this code, one will note on that `table_path_qiime` was created on L37 and 
 
 As shown in **Figure 5**, 1,000 appears to have been an arbitrary threshold. It could have been greater than 10,000 sequences for both datasets without losing a significant number of samples. That so many more sequences were included in the RPCA analyses could create an advantage to the sensitivity of RPCA over the other distance calculations.
 
-Third, the methods section of Martino stated, "Both data sets were then preprocessed with the robust centered log ratio (rclr) transform, and RPCA was run with a rank of 2 because there were two metadata categories of interest in each comparison". However, different ranks were used when running RPCA for the Sleep Apnea and Sponges dataset. Three ranks were used with the Sleep Apnea dataset and two were used with the Sponges dataset. This can be seen at L23 and L24 of `deicode_benchmarking/case_studies/scripts/distances.py`
+
+```{r missing_data}
+missing <- read_tsv("../data/pooled_data/missing_cs_data.tsv")
+
+sa_otus <- filter(missing, dataset == "sleep_apnea") %>% pull(n_otus)
+sp_otus <- filter(missing, dataset == "sponges") %>% pull(n_otus)
+
+sa_tips <- filter(missing, dataset == "sleep_apnea") %>% pull(n_tree_tips)
+sp_tips <- filter(missing, dataset == "sponges") %>% pull(n_tree_tips)
+
+sa_missing <- filter(missing, dataset == "sleep_apnea") %>% pull(n_missing)
+sp_missing <- filter(missing, dataset == "sponges") %>% pull(n_missing)
+
+sa_missing_perc <- filter(missing, dataset == "sleep_apnea") %>% pull(percent_missing)
+sp_missing_perc <- filter(missing, dataset == "sponges") %>% pull(percent_missing)
+```
+
+Third, in my attempts to reproduce the weighted UniFrac distances, I found that the trees provided in `deicode_benchmarking/case_studies/data/*/tree_relabelled.tre.gz` did not include all of the sequences included in the count data found in the author-supplied biom files. In the Sleep Apnea dataset the biom file contained `r sa_otus` OTUs and the Sponges biom file had `r sp_otus` OTUs. The tree files contained `r sa_tips` and `r sp_tips` OTUs, respectively. When accounting for the total number of sequences represented by each OTU, `r sa_missing_perc` of all of the sequences were missing from the Sleep Apnea trees and `r sp_missing_perc` were missing from the Sponges trees. Martino removed sequences that were missing from the OTU table at L39. The comment preceding this line, "trim biom of any tree issues (should not be any but why not)" seems to indicate that they did not anticipate any discrepencies between the two types of data. When I removed this line from the code, I received an error message that stated, "Compute failed in one_off: Table observation IDs are not a subset of the tree tips.". Given the large percentage of total reads removed from the Sleep Apnea dataset, the discrepency would have the greatest effect on the Bray-Curtis distances from that dataset. Since the filtered OTU table was not used as input to RPCA, this resulted in another uneven comparison between the methods.
+
+Fourth, the methods section of Martino stated, "Both data sets were then preprocessed with the robust centered log ratio (rclr) transform, and RPCA was run with a rank of 2 because there were two metadata categories of interest in each comparison". However, different ranks were used when running RPCA for the Sleep Apnea and Sponges dataset. Three ranks were used with the Sleep Apnea dataset and two were used with the Sponges dataset. This can be seen at L23 and L24 of `deicode_benchmarking/case_studies/scripts/distances.py`
 
 \setstretch{1.0}\footnotesize
 ```{.python startFrom="23"}
@@ -738,9 +760,6 @@ The `pointplot()` function from the Seaborn data visualization library plots the
 
 \setstretch{1.0}
 ```{r}
-options(tidyverse.quiet = TRUE)
-suppressPackageStartupMessages(library(tidyverse))
-
 tbl <- read_csv(
   list.files("../deicode_benchmarking/case_studies/subsample_results",
     full.names = TRUE),

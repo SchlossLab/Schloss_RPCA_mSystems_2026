@@ -499,8 +499,8 @@ The matrix generated from `Subsample` did not have a consistent total
 number of counts for each sample. When using the model parameter of
 2500, values near 4000 individuals per sample were obtained, but there
 was considerable variation. Using the model parameter value of 2500, the
-mean number of individuals per sample was 4112.475 with a range between
-3420 and 4896. Considering the claim that RPCA is invariant to
+mean number of individuals per sample was 4127.715 with a range between
+3614 and 4809. Considering the claim that RPCA is invariant to
 differences in sampling effort, it was desirable to control whether
 samples had the same number of individuals. As a workaround for this
 problem, I increased the model parameter (e.g., from 2500 to 2800) so
@@ -723,7 +723,29 @@ more sequences were included in the RPCA analyses could create an
 advantage to the sensitivity of RPCA over the other distance
 calculations.
 
-Third, the methods section of Martino stated, “Both data sets were then
+Third, in my attempts to reproduce the weighted UniFrac distances, I
+found that the trees provided in
+`deicode_benchmarking/case_studies/data/*/tree_relabelled.tre.gz` did
+not include all of the sequences included in the count data found in the
+author-supplied biom files. In the Sleep Apnea dataset the biom file
+contained 1369 OTUs and the Sponges biom file had 1.116^{4} OTUs. The
+tree files contained 1345 and 1.1074^{4} OTUs, respectively. When
+accounting for the total number of sequences represented by each OTU,
+39.7115899 of all of the sequences were missing from the Sleep Apnea
+trees and 0.6888975 were missing from the Sponges trees. Martino removed
+sequences that were missing from the OTU table at L39. The comment
+preceding this line, “trim biom of any tree issues (should not be any
+but why not)” seems to indicate that they did not anticipate any
+discrepencies between the two types of data. When I removed this line
+from the code, I received an error message that stated, “Compute failed
+in one_off: Table observation IDs are not a subset of the tree tips.”.
+Given the large percentage of total reads removed from the Sleep Apnea
+dataset, the discrepency would have the greatest effect on the
+Bray-Curtis distances from that dataset. Since the filtered OTU table
+was not used as input to RPCA, this resulted in another uneven
+comparison between the methods.
+
+Fourth, the methods section of Martino stated, “Both data sets were then
 preprocessed with the robust centered log ratio (rclr) transform, and
 RPCA was run with a rank of 2 because there were two metadata categories
 of interest in each comparison”. However, different ranks were used when

@@ -104,5 +104,5 @@ balanced %>%
     panel.ontop = TRUE
   )
 
-ggsave("figures/heatmap_permanova_sig_cs.tiff", width = 7.5, height = 6,
+ggsave("figures/heatmap_permanova_sig_cs.tiff", width = 7, height = 6,
        compression = "lzw+p")

@@ -84,5 +84,5 @@ pooled_data %>%
         legend.position = "bottom")
 
 ggsave(glue("figures/{fitting_method}_cs.tiff"),
-      width = 9, height = 5,
+      width = 7, height = 5,
       compression = "lzw+p")

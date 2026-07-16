@@ -97,5 +97,5 @@ case_study_data %>%
     panel.ontop = TRUE
   )
 
-ggsave("figures/heatmap_knn_cs.tiff", width = 8, height = 6.5,
+ggsave("figures/heatmap_knn_cs.tiff", width = 7, height = 6.5,
       compression = "lzw+p")

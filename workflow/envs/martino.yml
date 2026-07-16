@@ -31,3 +31,6 @@ dependencies:
   - matplotlib=3.8.1
   - matplotlib-base=3.8.1
   - scipy=1.10.0
+  - r-tinytex
+  - latexdiff
+  

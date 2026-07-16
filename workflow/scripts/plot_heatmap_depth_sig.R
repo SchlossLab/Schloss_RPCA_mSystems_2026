@@ -37,7 +37,7 @@ pretty_distances <- c(
 
 pretty_datasets <- c(
   sponges = "Sponges", 
-  sleep_apnea = "Sleep Apnea",
+  sleep_apnea = "Sleep\nApnea",
   crc = "CRC",
   negative = "Negative",
   overlap = "Overlap",
@@ -50,15 +50,30 @@ pretty_experiments <- c(
   case_study = "Case\nstudies"
 )
 
+border_data <- expand_grid(
+  experiment = factor(c("Original\nsimulations", "Revised\nsimulations",
+      "Case\nstudies")),
+  distance = factor(c("Euclidean", "Bray-Curtis", "Weighted\nUniFrac"))) %>%
+  mutate(xmin = 0.5, ymin = 0.5,
+         ymax = case_when(
+          distance == "Euclidean" ~ 14.5,
+          distance == "Bray-Curtis" ~ 6.5,
+          distance == "Weighted\nUniFrac" ~ 4.5), xmax = 3.5) %>%
+  filter((distance == "Euclidean" | distance == "Bray-Curtis" |
+   (distance == "Weighted\nUniFrac" & experiment == "Case\nstudies")))
+
 
 read_tsv("data/pooled_data/permanova_size.tsv.gz") %>%
   filter(effect == "size" & process != "gemelli_auto") %>% 
   select(dataset, rep, process, distance, p_value) %>%
-  summarize(n_sig = sum(p_value < 0.05), .by = c(dataset, process, distance)) %>%
+  summarize(
+    n_sig = sum(p_value < 0.05), 
+    .by = c(dataset, process, distance)) %>%
   mutate(
-    experiment = case_when(dataset %in% c("negative", "positive", "overlap") ~ "original",
-                           dataset %in% c("crc", "sleep_apnea", "sponges") ~ "case_study",
-                           TRUE ~ "revised"),
+    experiment = case_when(
+      dataset %in% c("negative", "positive", "overlap") ~ "original",
+      dataset %in% c("crc", "sleep_apnea", "sponges") ~ "case_study",
+      TRUE ~ "revised"),
     experiment = factor(experiment,
                       levels = names(pretty_experiments),
                       labels = pretty_experiments),
@@ -77,6 +92,10 @@ read_tsv("data/pooled_data/permanova_size.tsv.gz") %>%
   ggplot(aes(y = process, x = dataset, fill = n_sig, label = n_sig_label)) +
   geom_tile() +
   geom_text(size = 8, size.unit = "pt") +
+  geom_rect(
+    data = border_data,
+    aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    color = "black", fill = NA, linewidth = 0.75, inherit.aes = FALSE) +
   facet_grid(distance~ experiment, scales = "free", space = "free_y") +
   scale_fill_gradient(
     low = "white", high = "orange",
@@ -95,11 +114,9 @@ read_tsv("data/pooled_data/permanova_size.tsv.gz") %>%
     strip.text = element_text(size = 12),
     strip.text.x = element_text(face = "bold"),
     strip.placement = "outside",
-    panel.background = element_rect(color = "black", fill = NA, linewidth = 1),
-    panel.ontop = TRUE,
     legend.position = "none"
   )
 
-ggsave('figures/heatmap_depth_sig.tiff', width = 8, height = 6,
+ggsave('figures/heatmap_depth_sig.tiff', width = 7, height = 6,
       compression = "lzw+p")
 
