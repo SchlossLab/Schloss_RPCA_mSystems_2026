@@ -1,6 +1,6 @@
 Dear Susannah,
 
-I have serious concerns about the reviews that were obtained for my manuscript (mSystems01826-25). The reviews to be superficial without commenting on the actual results I presented. I apologize in advance for the length of this note!
+I have serious concerns about the reviews that were obtained for my manuscript (mSystems01826-25). The reviews to be superficial without commenting on the actual results I presented. I apologize in advance for the length of this note.
 
 I know that authors often complain that reviewers ask for things that were included in a manuscript or that they are asking the author to write a different paper. But in this case, I am convinced that the reviewers did not read the paper to understand that it was an effort reproduce the original work of Martino and reanalyze Martino's RPCA method for handling uneven sampling effort. They go on to ask about feature selection, metagenomics, batch correction, and variation in rrn copy number. These are not germane to this paper, much less the question of whether rarefaction versus compositional methods should be used.
 
@@ -14,7 +14,7 @@ I did my best to respond to the reviewers' comments in my rebuttal and in making
 
 Given the superficial nature of the reviews and the comments that did not align with the text or the literature, I question whether they were produced using generative AI tools. I know that AI detection software is limited and often gives false positives and false negatives. It is also easy for authors to blame an unfavorable result on AI. Regardless of whether AI was used, I hope you'll agree that these reviews were strikingly bad. I have already raised these reviews to the ASM Journal Ethics team who commented that AI use requires reviewers to self-disclose their use of the tools. I really think the reviewers should be asked directly about whether they used generative AI tools in their reviews. I would love to be wrong about the use of AI tools in these reviews.
 
-I know reviewers can have bad days. Again, regardless of whether AI tools were used, these reviews were not substantive and fall short of what I am used to receiving from ASM's reviewers.
+Reviewers can have bad days. Again, regardless of whether AI tools were used, these reviews were not substantive and fall short of what I am used to receiving from ASM's reviewers. I did my best to take the reviews seriously and respond to the suggestions.
 
 Sincerely,
 Pat Schloss

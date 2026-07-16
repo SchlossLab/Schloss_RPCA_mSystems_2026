@@ -232,7 +232,7 @@
 \@ifundefined{codebgcolor}{\definecolor{codebgcolor}{HTML}{F3F3F3}}{}
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, enhanced, sharp corners, borderline west={3pt}{0pt}{shadecolor}, boxrule=0pt, colback={codebgcolor}, breakable]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, boxrule=0pt, breakable, colback={codebgcolor}, sharp corners, borderline west={3pt}{0pt}{shadecolor}, enhanced]}{\end{tcolorbox}}\fi
 \makeatother
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
@@ -881,8 +881,8 @@ The matrix generated from \texttt{Subsample} did not have a consistent
 total number of counts for each sample. When using the model parameter
 of 2500, values near 4000 individuals per sample were obtained, but
 there was considerable variation. Using the model parameter value of
-2500, the mean number of individuals per sample was 4112.795 with a
-range between 3576 and 5047. Considering the claim that RPCA is
+2500, the mean number of individuals per sample was 4131.765 with a
+range between 3421 and 4816. Considering the claim that RPCA is
 invariant to differences in sampling effort, it was desirable to control
 whether samples had the same number of individuals. As a workaround for
 this problem, I increased the model parameter (e.g., from 2500 to 2800)

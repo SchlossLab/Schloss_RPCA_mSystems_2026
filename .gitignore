@@ -1,5 +1,6 @@
 ## .gitignore items specified by PDS
 
+um-gpt*
 notes.md
 .vscode
 .snakemake

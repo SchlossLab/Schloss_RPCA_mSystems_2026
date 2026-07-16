@@ -219,6 +219,9 @@ published in the journal, I will understand. I ask that a decision be
 rendered as soon as possible so that I can transfer the manuscript to
 either \emph{mSphere} or \emph{Microbiology Spectrum}.
 
+The line numbers I reference correspond to the marked up version of the
+resubmitted manuscript.
+
 \subsection{Reviewer \#1}\label{reviewer-1}
 
 \textbf{This manuscript revisits the long-standing debate on rarefaction
@@ -235,20 +238,20 @@ useful re-analysis, the current manuscript reads primarily as a targeted
 rebuttal rather than a balanced and comprehensive benchmarking study.
 Here are the major concerns}
 
-As stated at \textbf{\emph{XXX}} \textbf{\emph{L129-135}}, the goal of
-my paper was to use the benchmarking framework originally used by
-Martino et al to compare their RPCA method to other normalization and
-compositional analysis methods as well as rarefaction. The reviewer is
-correct that this is a targeted rebuttal. I contend that the analysis is
-balanced. I have reused Martino's original simulation framework and then
-improved the framework by fixing the numerous coding errors present in
-their benchmarking code. This study was not intended to be
-comprehensive. Rather it adds to the two papers that the reviewer cited
-in this comment. A comprehensive benchmarking study is well beyond the
-scope of a single study. It is more thorough than Martino's analysis,
-which cherry-picked analysis approaches that are either not used in the
-microbiome field (e.g., KNN analysis) or that put RPCA in a more
-favorable light (e.g., using datasets with large effect sizes).
+As stated at L129-135, the goal of my paper was to use the benchmarking
+framework originally used by Martino et al to compare their RPCA method
+to other normalization and compositional analysis methods as well as
+rarefaction. The reviewer is correct that this is a targeted rebuttal. I
+contend that the analysis is balanced. I have reused Martino's original
+simulation framework and then improved the framework by fixing the
+numerous coding errors present in their benchmarking code. This study
+was not intended to be comprehensive. Rather it adds to the two papers
+that the reviewer cited in this comment. A comprehensive benchmarking
+study is well beyond the scope of a single study. It is more thorough
+than Martino's analysis, which cherry-picked analysis approaches that
+are either not used in the microbiome field (e.g., KNN analysis) or that
+put RPCA in a more favorable light (e.g., using datasets with large
+effect sizes).
 
 \textbf{1. The manuscript addresses a focused methodological question
 through a reanalysis and modification of a previously published
@@ -410,9 +413,8 @@ Martino for not using rarefaction prior to RPCA. After all, The claim
 made by Martino et al.~is that those transformations replace rarefaction
 and are not sensitive to differences in read depth. My criticism of
 Martino was that for Bray-Curtis calculations they rarefied their data
-to a 10-fold smaller depth than was necessary
-(\textbf{\emph{L303-305}}). I went on to point out that the difference
-didn't really matter (\textbf{\emph{L305-307}}).
+to a 10-fold smaller depth than was necessary (L311-316). I went on to
+point out that the difference didn't really matter (L317-318).
 
 \textbf{7. In line 345, the statement that RPCA-based methods performed
 worse when the effect size was small should be interpreted cautiously.
@@ -437,7 +439,8 @@ their use is since one does not know the effect size study \emph{a
 priori}. If one suspects they have a small effect size, then why use a
 low-powered test? Because the analysis in this study is more focused on
 RPCA than CLR-based methods in general, I will limit their critique in
-this sentence to RPCA.
+this sentence to RPCA. I have added text at L393-395 that summarizes the
+need for researchers to select the most powerful tests available.
 
 \textbf{8. The rarefaction versus normalization debate has persisted for
 over a decade, originating from fundamentally different statistical
@@ -573,16 +576,18 @@ manuscript). Since all sequences were mapped to the SILVA database,
 which provides a reference phylogeny. Therefore, UniFrac distances could
 be computed using the SILVA tree.}
 
-I have added the weighted UniFrac analysis requested by the reviewer.
-Through integrating this into my analysis, I found an additional problem
-with Martino's analysis of their case studies. Namely, the trees that
-they supplied did not include all of the sequences in their OTU table.
-As a result, they removed the missing sequences from the OTU table.
-Unfortunately, the filtered OTU table was not used to run RPCA. The
-result was another apples-to-oranges comparison between the Bray-Curtis
-and weighted UniFrac analyses and the RPCA analysis. Text describing
-this has been added to the Supplemental Text and the Manuscript
-(\textbf{\emph{LXXX}}).
+I have added the weighted UniFrac analysis requested by the reviewer
+(introduced at L299-303). Through integrating this into my analysis, I
+found an additional problem with Martino's analysis of their case
+studies. Namely, the trees that they supplied did not include all of the
+sequences in their OTU table. As a result, they removed the missing
+sequences from the OTU table. Unfortunately, the filtered OTU table was
+not used to run RPCA. The result was another apples-to-oranges
+comparison between the Bray-Curtis and weighted UniFrac analyses and the
+RPCA analysis. Text describing this has been added to the Manuscript
+(L283-285) and the Supplemental Text (P16, paragraph beginning with
+``Third, in my attempts to reproduce the weighted UniFrac
+distances\ldots{}'').
 
 \textbf{5. The analysis focuses on amplicon OTU/ASV datasets. It remains
 unclear whether the conclusions extend to shotgun metagenomic profiles,

@@ -499,8 +499,8 @@ The matrix generated from `Subsample` did not have a consistent total
 number of counts for each sample. When using the model parameter of
 2500, values near 4000 individuals per sample were obtained, but there
 was considerable variation. Using the model parameter value of 2500, the
-mean number of individuals per sample was 4127.715 with a range between
-3614 and 4809. Considering the claim that RPCA is invariant to
+mean number of individuals per sample was 4119.42 with a range between
+3643 and 4817. Considering the claim that RPCA is invariant to
 differences in sampling effort, it was desirable to control whether
 samples had the same number of individuals. As a workaround for this
 problem, I increased the model parameter (e.g., from 2500 to 2800) so
